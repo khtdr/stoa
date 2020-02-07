@@ -1,11 +1,5 @@
-
-export type Token = {
-    kind  :Keyword|Regex|'invalid-input'
-    text  :string
-    line? :number
-    col?  :number
-}
-
+// Keyword tokens
+type Keyword = keyof typeof Keywords
 const Keywords = {
     // sorted by Value length
     'def':      'def',
@@ -23,17 +17,52 @@ const Keywords = {
     'slash':    '/',
     'star':     '*',
 }
-type Keyword = keyof typeof Keywords
 
+// Regular Expression tokens
+type Regex = keyof typeof Regexes
 const Regexes = {
     'number':     /^\d+/,
     'variable':   /^\w[\w\d]*/,
     'whitespace': /^\s+/,
 }
-type Regex = keyof typeof Regexes
 
+// Lexer class: new Lexer('program_text').tokenize()
 export class Lexer {
+
     constructor (readonly text :string) {}
+
+    tokenize() {
+        const tokens :Token[] = []
+        const take = this.tokenTaker()
+        let idx = 0
+        while (idx < this.text.length) {
+            const token = this.longestToken(this.possibleTokens(idx))
+            if (!token) {
+                throw JSON.stringify(take({
+                    kind: 'invalid-input',
+                    text: this.text.substr(idx, 1)
+                }))
+            }
+            tokens.push(take(token))
+            idx += token.text.length
+        }
+        return tokens.filter(token => token.kind != 'whitespace')
+    }
+
+    tokenTaker() {
+        let column = 1
+        let line = 1
+        return (token :Token) => {
+            token.col = column
+            token.line = line
+            const lines = token.text.split("\n").length
+            if (lines > 1) {
+                line += lines - 1
+                column = token.text.length - token.text.lastIndexOf("\n")
+            } else column += token.text.length
+            return token
+        }
+    }
 
     possibleTokens(idx :number) {
         const keywordToken = (kind :Keyword) => {
@@ -57,37 +86,12 @@ export class Lexer {
         return tokens.reduce((longest, current) =>
             current.text.length > longest.text.length ? current : longest)
     }
+}
 
-    tokenTaker() {
-        let column = 1
-        let line = 1
-        return (token :Token) => {
-            token.col = column
-            token.line = line
-            const lines = token.text.split("\n").length
-            if (lines > 1) {
-                line += lines - 1
-                column = token.text.length - token.text.lastIndexOf("\n")
-            } else column += token.text.length
-            return token
-        }
-    }
 
-    tokenize() {
-        const tokens :Token[] = []
-        const take = this.tokenTaker()
-        let idx = 0
-        while (idx < this.text.length) {
-            const token = this.longestToken(this.possibleTokens(idx))
-            if (!token) {
-                throw JSON.stringify(take({
-                    kind: 'invalid-input',
-                    text: this.text.substr(idx, 1)
-                }))
-            }
-            tokens.push(take(token))
-            idx += token.text.length
-        }
-        return tokens.filter(token => token.kind != 'whitespace')
-    }
+export type Token = {
+    kind  :Keyword|Regex|'invalid-input'
+    text  :string
+    line? :number
+    col?  :number
 }
