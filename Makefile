@@ -6,6 +6,11 @@ BIN_0=$(BIN_DIR)/stage-0
 DIR_0=$(BIN_DIR)/stage-0.d
 LIB_0=$(DIR_0)/index.js
 
+deps: yarn.lock
+
+yarn.lock:
+	yarn install
+
 $(BIN_0): Makefile bin $(LIB_0)
 	echo "#!/usr/bin/env bash" > $@
 	echo 'cd $$(dirname $$0)/..' >> $@

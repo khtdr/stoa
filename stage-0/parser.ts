@@ -1,59 +1,303 @@
-import { Token, Lexer } from './lexer'
+import { Scanner } from './scanner'
 
-enum NodeKind {
-    'number'
-}
+export type ProgramNode = {
+    name  :'program'
+    value :ExprNode}
 
-interface BaseNode {
-    kind    :NodeKind
-    text    :string
+export type ExprNode = {
+    name  :'expr'
+    value :TermNode|TermListNode}
+
+export type TermNode = {
+    name  :'term'
+    value :CallableNode|ScalarNode}
+
+export type TermListNode = {
+    name  :'term-list'
+    value :ExprNode[]}
+
+export type CallableNode = {
+    name  :'callable'
+    value :CallNode|AssignmentNode|FlowNode|OperatorNode}
+
+export type CallNode = {
+    name  : 'call'
+    value :{
+        identifier :IdentifierNode
+        args   :ArgsNode}}
+
+export type AssignmentNode = {
+    name  :'assignment'
+    value :VariableNode|FunctionNode}
+
+export type VariableNode = {
+    name  :'variable'
+    value :{
+        identifier :IdentifierNode
+        expr   :ExprNode}}
+
+export type FunctionNode = {
+    name  :'function'
+    value :{
+        identifier :IdentifierNode
+        params :IdentifierNode[]
+        expr   :ExprNode}}
+
+export type OperatorNode = {
+    name  :'operator'
+    value :{
+        op   :OpCompNode|OpMathNode
+        args :ArgsNode}}
+
+export type OpCompNode = {
+    name  :'op-comp'
+    value :'='|'<'|'>'}
+
+export type OpMathNode = {
+    name  :'op-math'
+    value :'+'|'-'|'/'|'*'}
+
+export type FlowNode = {
+    name  :'flow'
+    value :FlowIfNode|FlowForNode}
+
+export type FlowIfNode = {
+    name  :'flow-if'
+    value :{
+        cond :ExprNode
+        yay  :ExprNode
+        nay  :ExprNode|void}}
+
+export type FlowForNode = {
+    name  :'flow-for'
+    value :{
+        identifier :IdentifierNode
+        start  :ExprNode
+        end    :ExprNode
+        body   :ExprNode}}
+
+export type ArgsNode = {
+    name  :'args'
+    value :ExprNode[]}
+
+export type ScalarNode = {
+    name  :'scalar'
+    value :IdentifierNode|DigitsNode}
+
+export type DigitsNode = {
+    name  :'digits'
+    value :string}
+
+export type IdentifierNode= {
+    name  :'identifier'
+    value :string}
+
+export type Node = {
+    text?   :string
     line?   :number
     column? :number
-}
+} & (
+    ExprNode       | TermNode     | CallableNode | CallNode     |
+    AssignmentNode | VariableNode | FunctionNode | OperatorNode |
+    OpCompNode     | OpMathNode   | FlowNode     | FlowIfNode   |
+    FlowForNode    | ArgsNode     | ScalarNode   | DigitsNode   |
+    IdentifierNode | TermListNode | ProgramNode)
 
-type Node = {
-    kind :NodeKind.number
-    value :number
-}
+export function parse (scanner :Scanner) :Node|void {
 
-export type Ast = BaseNode & Node
+    return parseProgram()
 
-export class Parser {
+    //program = expr END
+    function parseProgram() :ProgramNode|void {
+        const value = parseExpr()
+        if (scanner.one('endOfInput') && value)
+            return {name:'program', value}}
 
-    constructor(readonly tokens :Token[]) {}
-    private i = 0
+    // expr  = term-list|term
+    function parseExpr() :ExprNode|void {
+        const value = parseTermList() || parseTerm()
+        if (value)
+            return {name:'expr', value}}
 
-    take(kind :Token['kind']) {
-        if (this.tokens[this.i] && this.tokens[this.i].kind == kind) {
-            return this.tokens[this.i++]
-        }
-    }
-    takeMany(kind :Token['kind']) {
-        let token :Token|undefined
-        const tokens :Token[] = []
-        while (token = this.take(kind)) {
-            tokens.push(token)
-        }
-        if (tokens.length) {
-            return tokens
-        }
-    }
+    // term-list = ':' expr+ ('.'|>')'|>END))?.
+    function parseTermList() :TermListNode|void {
+        const revert = scanner.checkpoint()
+        const value :ExprNode[] = []
+        if (!scanner.one('colon')) return revert()
+        let expr = parseExpr()
+        if (!expr) return revert()
+        value.push(expr)
+        while (!scanner.peek('endOfInput') && !scanner.peek('dot') && !scanner.peek('rightParen')) {
+            expr = parseExpr()
+            if (!expr) return revert()
+            value.push(expr)}
+        if (scanner.one('dot') || scanner.peek('endOfInput') || scanner.peek('rightParen')) {
+            return {name: 'term-list', value}}}
 
-    parse() {
-        return this.parseNumber()
-    }
+    // term = callable|scalar.
+    function parseTerm() :TermNode|void {
+        const value = parseCallable() || parseScalar()
+        if (value) return {name: 'term', value}}
 
-    parseNumber() {
-        const tokens = this.takeMany('number')
-        if (tokens) {
-            const digits = tokens.reduce((a,c) => `${a}${c.text}`, '')
-            return {
-                kind: NodeKind.number,
-                text: digits,
-                value: parseInt(digits, 10),
-                line: tokens[0].line,
-                column: tokens[0].col,
-            }
-        }
-    }
-}
+    // callable = call|assignment|flow|operator.
+    function parseCallable() :CallableNode|void {
+        const value =
+            parseCall() || parseAssignment() ||
+            parseFlow() || parseOperator()
+        if (value) return {name: 'callable', value}}
+
+    // call = identifier '(' args ')'.
+    function parseCall() :CallNode|void {
+        const revert = scanner.checkpoint()
+        const identifier = parseIdentifier()
+        if (!identifier) return revert()
+        if (!scanner.one('leftParen')) return revert()
+        const args = parseArgs()
+        if (!scanner.one('rightParen')) return revert()
+        return {
+            name: 'call',
+            value: {identifier, args}}}
+
+    // assignment = variable|function.
+    function parseAssignment() :AssignmentNode|void {
+        const value = parseVariable() || parseFunction()
+        if (value) return {name: 'assignment', value}}
+
+    // variable = '<-' '(' identifier expr ')'.
+    function parseVariable() :VariableNode|void {
+        const revert = scanner.checkpoint()
+        if (!scanner.one('leftArrow')) return revert()
+        if (!scanner.one('leftParen')) return revert()
+        const identifier = parseIdentifier()
+        if (!identifier) return revert()
+        const expr = parseExpr()
+        if (!expr) return revert()
+        if (!scanner.one('rightParen')) return revert()
+        return {
+            name: 'variable',
+            value: {identifier, expr}}}
+
+    // function = '=>' '(' identifier identifier* expr ')'.
+    function parseFunction() :FunctionNode|void {
+        const revert = scanner.checkpoint()
+        if (!scanner.one('rightFatArrow')) return revert()
+        if (!scanner.one('leftParen')) return revert()
+        const identifier = parseIdentifier()
+        if (!identifier) return revert()
+        const params :IdentifierNode[] = []
+        let symRevert :ReturnType<typeof scanner.checkpoint>|undefined
+        let nextRevert = scanner.checkpoint()
+        while (true) {
+            const param = parseIdentifier()
+            if (!param) break
+            symRevert = nextRevert
+            nextRevert = scanner.checkpoint()
+            params.push(param)}
+        let expr :ExprNode|void
+        if (scanner.peek('rightParen')) {
+            if (symRevert) {
+                symRevert()
+                params.pop()
+                expr = parseExpr()}}
+        else expr = parseExpr()
+        if (!expr) return revert()
+        if (!scanner.one('rightParen')) return revert()
+        return {
+            name: 'function',
+            value: {identifier, params, expr}}}
+
+
+    // operator = (op-comp|op-math) "(" args ")".
+    function parseOperator() :OperatorNode|void {
+        const revert = scanner.checkpoint()
+        const op = parseOpComp() || parseOpMath()
+        if (!op) return revert()
+        if (!scanner.one('leftParen')) return revert()
+        const args = parseArgs()
+        if (!scanner.one('rightParen')) return revert()
+        return {
+            name: 'operator',
+            value: {op, args}}}
+
+    // op-comp = '='|'<'|'>'
+    function parseOpComp() :OpCompNode|void {
+        const op = scanner.one('equal') ||
+            scanner.one('leftAngle') ||
+            scanner.one('rightAngle')
+        if (op) return {
+            name: 'op-comp',
+            value: op.text as '='|'<'|'>'}}
+
+    // op-math = '+'|'-'|'*'|'/'
+    function parseOpMath() :OpMathNode|void {
+        const op = scanner.one('plus') || scanner.one('minus') ||
+            scanner.one('star') || scanner.one('slash')
+        if (op) return {
+            name: 'op-math',
+            value: op.text as '+'|'-'|'*'|'/'}}
+
+    // flow = flow-if|flow-for.
+    function parseFlow() :FlowNode|void {
+        const value = parseFlowIf() || parseFlowFor()
+        if (value)
+            return {name: 'flow', value}}
+
+    // flow-if = '?' '(' expr expr expr? ')'.
+    function parseFlowIf() :FlowIfNode|void {
+        const revert = scanner.checkpoint()
+        if (!scanner.one('question')) return revert()
+        if (!scanner.one('leftParen')) return revert()
+        const cond = parseExpr()
+        if (!cond) return revert()
+        const yay = parseExpr()
+        if (!yay) return revert()
+        const nay = parseExpr()
+        if (!scanner.one('rightParen')) return revert()
+        return {
+            name: 'flow-if',
+            value: { cond, yay, nay }}}
+
+    // flow-for = '#' '(' identifier expr expr expr ')'.
+    function parseFlowFor() :FlowForNode|void {
+        const revert = scanner.checkpoint()
+        if (!scanner.one('pound')) return revert()
+        if (!scanner.one('leftParen')) return revert()
+        const identifier = parseIdentifier()
+        if (!identifier) return revert()
+        const start = parseExpr()
+        if (!start) return revert()
+        const end = parseExpr()
+        if (!end) return revert()
+        const body = parseExpr()
+        if (!body) return revert()
+        if (!scanner.one('rightParen')) return revert()
+        return {
+            name: 'flow-for',
+            value: { identifier, start, end, body }}}
+
+    // args = expr*.
+    function parseArgs() :ArgsNode {
+        const value:ExprNode[] = []
+        while (true) {
+            const expr = parseExpr()
+            if (!expr) break
+            value.push(expr)}
+        return {name: 'args', value}}
+
+    // scalar = identifier|digits.
+    function parseScalar() :ScalarNode|void {
+        const value = parseIdentifier() || parseDigits()
+        if (value)
+            return {name: 'scalar', value}}
+
+    // digits = /^\d+/.
+    function parseDigits() :DigitsNode|void {
+        const value = scanner.one('digits')
+        if (value)
+            return {name: 'digits', value:value.text}}
+
+    // identifier = /^\w[\w\d]*/.
+    function parseIdentifier() :IdentifierNode|void {
+        const value = scanner.one('identifier')
+        if (value)
+            return {name: 'identifier', value:value.text}}}

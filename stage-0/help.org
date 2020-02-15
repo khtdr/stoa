@@ -1,57 +1,63 @@
 #+TITLE: stage-0
 
-Move the parentheses inward..
+Start with a Lisp language...
 #+BEGIN_SRC elisp
 (defun factorial (n)
    (if (= n 0) 1
        (* n (factorial (- n 1)))))
 #+END_SRC
 
-Becomes:
+Moving the parens inwards gives:
 #+BEGIN_SRC
-def(factorial n
-   if(=(n 0) 1
-       *(n factorial(-(n 1)))))
+defun(factorial n
+ if( =(n 0) 1
+    *(n factorial( -(n 1) ))))
 #+END_SRC
 
-And:
+And removing the keywords gives:
+#+BEGIN_SRC
+=>( factorial n
+ ?( =(n 0) 1
+    *(n factorial( -(n 1) ))))
+#+END_SRC
+
+And so:
 #+BEGIN_SRC elisp
 (defun factorial (n)
    (loop for i from 1 to n
-         for fac = 1 then (* fac i)
-         finally (return fac)))
+         for value = 1 then (* value i)
+         finally (return value)))
 #+END_SRC
 
 Becomes:
 #+BEGIN_SRC
-def(factorial [n]
-    <-(1 fac).
-    for(i 1 +(n 1)
-        ->(fac *(fac i))))
+=>(factorial n :
+    <-(value 1),
+    #(i 1 +(n 1)
+        <-(value *(value i))))
 #+END_SRC
 
-
 #+BEGIN_SRC ebnf
-program = expressions.
-expressions = expression ("." expressions)*.
-expression = value|variable|fn-call.
-value = number.
-number = digit+.
-variable = letter (letter|digit)*.
-fn-call = (builtin|variable) "(" args ")"
-builtin = math-ops|comp-op|assign-ops|control-flow
-math-ops = "+"|"-"|"*"|"/"
-comp-ops = "="|"<"|">"
-assign-ops = "->"|"<-"|"def"
-control-flow = "if"|"for"
-args = expression*
-digit  = '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'.
-letter = 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|
-         'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|
-         'U'|'V'|'W'|'X'|'Y'|'Z'|'a'|'b'|'c'|'d'|
-         'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|
-         'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|
-         'y'|'z'.
+program    = expr END
+expr       = term|term-list
+term-list  = ':' expr+ ('.'|END))?.
+term       = callable|scalar.
+callable   = call|assignment|flow|operator.
+call       = symbol '(' args ')'.
+assignment = variable|function.
+variable   = '<-' '(' symbol expr ')'.
+function   = '=>' '(' symbol symbol* expr ')'.
+operator   = (op-comp|op-math) "(" args ")".
+op-comp    = '='|'<'|'>'
+op-math    = '+'|'-'|'*'|'/'
+flow       = flow-if|flow-for.
+flow-if    = '?' '(' expr expr expr? ')'.
+flow-for   = '#' '(' symbol expr expr expr ')'.
+args       = expr*.
+scalar     = symbol|digits.
+digits     = /^\d+/.
+symbol     = /^\w[\w\d]*/.
+END        = (* End Of Input *)
 #+END_SRC
 
 ** Basic Types
