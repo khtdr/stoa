@@ -43,13 +43,14 @@ export const lexicon = {
     invalid:       {name: 'invalid',       text: '', regex: /^./             } as invalid,}
 
 
-export function lookup<K extends keyof typeof lexicon>(name :K, text? :string) {
+type Regex = identifier|digits|space
+export type Lexeme = ReturnType<typeof make>
+
+
+export function make<K extends keyof typeof lexicon>(name :K, text? :string) {
     const lexeme = {...lexicon[name]}
     if (text) lexeme.text = text
     return lexeme}
-
-export type Lexeme = ReturnType<typeof lookup>
-type Regex = identifier|digits|space
 
 
 function isRegex(lexeme :Lexeme) :lexeme is Regex {
@@ -62,7 +63,6 @@ function isRegex(lexeme :Lexeme) :lexeme is Regex {
 
 
 export function lex(text :string) {
-
     const lexemes :Lexeme[] = []
     let idx = 0
     lex()
@@ -70,11 +70,16 @@ export function lex(text :string) {
 
     function lex() {
         while (idx < text.length) {
-            let lexeme = longest(possible())
+            const lexeme = longest(possible())
             lexemes.push(lexeme)
-            if (lexeme.name == 'endOfInput') break
+            if (lexeme.name == 'endOfInput') {
+                break}
             idx += lexeme.text.length}
-        return lexemes.push(lookup('endOfInput'))}
+        return lexemes.push(make('endOfInput'))}
+
+    function longest(lexemes :Lexeme[]) {
+        return lexemes.reduce((longest, current) =>
+            current.text!.length > longest.text!.length ? current : longest)}
 
     function possible() :Lexeme[] {
         const names = Object.keys(lexicon) as (keyof typeof lexicon)[]
@@ -84,11 +89,7 @@ export function lex(text :string) {
             if (isRegex(lexeme)) {
                 const match = text.substr(idx).match(lexeme.regex)
                 if (match) {
-                    return lexemes.push(lookup(name, match[0]))}}
+                    return lexemes.push(make(name, match[0]))}}
             else if (text.substr(idx, lexeme.text.length) == lexeme.text) {
-                return lexemes.push(lookup(name))}})
-        return lexemes}
-
-    function longest(lexemes :Lexeme[]) {
-        return lexemes.reduce((longest, current) =>
-            current.text!.length > longest.text!.length ? current : longest)}}
+                return lexemes.push(make(name))}})
+        return lexemes}}

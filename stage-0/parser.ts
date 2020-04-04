@@ -110,7 +110,7 @@ export function parse (scanner :Scanner) :Node|void {
     //program = expr END
     function parseProgram() :ProgramNode|void {
         const value = parseExpr()
-        if (scanner.one('endOfInput') && value)
+        if (scanner.take('endOfInput') && value)
             return {name:'program', value}}
 
     // expr  = term-list|term
@@ -123,7 +123,7 @@ export function parse (scanner :Scanner) :Node|void {
     function parseTermList() :TermListNode|void {
         const revert = scanner.checkpoint()
         const value :ExprNode[] = []
-        if (!scanner.one('colon')) return revert()
+        if (!scanner.take('colon')) return revert()
         let expr = parseExpr()
         if (!expr) return revert()
         value.push(expr)
@@ -131,7 +131,7 @@ export function parse (scanner :Scanner) :Node|void {
             expr = parseExpr()
             if (!expr) return revert()
             value.push(expr)}
-        if (scanner.one('dot') || scanner.peek('endOfInput') || scanner.peek('rightParen')) {
+        if (scanner.take('dot') || scanner.peek('endOfInput') || scanner.peek('rightParen')) {
             return {name: 'term-list', value}}}
 
     // term = callable|scalar.
@@ -151,9 +151,9 @@ export function parse (scanner :Scanner) :Node|void {
         const revert = scanner.checkpoint()
         const identifier = parseIdentifier()
         if (!identifier) return revert()
-        if (!scanner.one('leftParen')) return revert()
+        if (!scanner.take('leftParen')) return revert()
         const args = parseArgs()
-        if (!scanner.one('rightParen')) return revert()
+        if (!scanner.take('rightParen')) return revert()
         return {
             name: 'call',
             value: {identifier, args}}}
@@ -166,13 +166,13 @@ export function parse (scanner :Scanner) :Node|void {
     // variable = '<-' '(' identifier expr ')'.
     function parseVariable() :VariableNode|void {
         const revert = scanner.checkpoint()
-        if (!scanner.one('leftArrow')) return revert()
-        if (!scanner.one('leftParen')) return revert()
+        if (!scanner.take('leftArrow')) return revert()
+        if (!scanner.take('leftParen')) return revert()
         const identifier = parseIdentifier()
         if (!identifier) return revert()
         const expr = parseExpr()
         if (!expr) return revert()
-        if (!scanner.one('rightParen')) return revert()
+        if (!scanner.take('rightParen')) return revert()
         return {
             name: 'variable',
             value: {identifier, expr}}}
@@ -180,8 +180,8 @@ export function parse (scanner :Scanner) :Node|void {
     // function = '=>' '(' identifier identifier* expr ')'.
     function parseFunction() :FunctionNode|void {
         const revert = scanner.checkpoint()
-        if (!scanner.one('rightFatArrow')) return revert()
-        if (!scanner.one('leftParen')) return revert()
+        if (!scanner.take('rightFatArrow')) return revert()
+        if (!scanner.take('leftParen')) return revert()
         const identifier = parseIdentifier()
         if (!identifier) return revert()
         const params :IdentifierNode[] = []
@@ -201,7 +201,7 @@ export function parse (scanner :Scanner) :Node|void {
                 expr = parseExpr()}}
         else expr = parseExpr()
         if (!expr) return revert()
-        if (!scanner.one('rightParen')) return revert()
+        if (!scanner.take('rightParen')) return revert()
         return {
             name: 'function',
             value: {identifier, params, expr}}}
@@ -212,26 +212,26 @@ export function parse (scanner :Scanner) :Node|void {
         const revert = scanner.checkpoint()
         const op = parseOpComp() || parseOpMath()
         if (!op) return revert()
-        if (!scanner.one('leftParen')) return revert()
+        if (!scanner.take('leftParen')) return revert()
         const args = parseArgs()
-        if (!scanner.one('rightParen')) return revert()
+        if (!scanner.take('rightParen')) return revert()
         return {
             name: 'operator',
             value: {op, args}}}
 
     // op-comp = '='|'<'|'>'
     function parseOpComp() :OpCompNode|void {
-        const op = scanner.one('equal') ||
-            scanner.one('leftAngle') ||
-            scanner.one('rightAngle')
+        const op = scanner.take('equal') ||
+            scanner.take('leftAngle') ||
+            scanner.take('rightAngle')
         if (op) return {
             name: 'op-comp',
             value: op.text as '='|'<'|'>'}}
 
     // op-math = '+'|'-'|'*'|'/'
     function parseOpMath() :OpMathNode|void {
-        const op = scanner.one('plus') || scanner.one('minus') ||
-            scanner.one('star') || scanner.one('slash')
+        const op = scanner.take('plus') || scanner.take('minus') ||
+            scanner.take('star') || scanner.take('slash')
         if (op) return {
             name: 'op-math',
             value: op.text as '+'|'-'|'*'|'/'}}
@@ -245,14 +245,14 @@ export function parse (scanner :Scanner) :Node|void {
     // flow-if = '?' '(' expr expr expr? ')'.
     function parseFlowIf() :FlowIfNode|void {
         const revert = scanner.checkpoint()
-        if (!scanner.one('question')) return revert()
-        if (!scanner.one('leftParen')) return revert()
+        if (!scanner.take('question')) return revert()
+        if (!scanner.take('leftParen')) return revert()
         const cond = parseExpr()
         if (!cond) return revert()
         const yay = parseExpr()
         if (!yay) return revert()
         const nay = parseExpr()
-        if (!scanner.one('rightParen')) return revert()
+        if (!scanner.take('rightParen')) return revert()
         return {
             name: 'flow-if',
             value: { cond, yay, nay }}}
@@ -260,8 +260,8 @@ export function parse (scanner :Scanner) :Node|void {
     // flow-for = '#' '(' identifier expr expr expr ')'.
     function parseFlowFor() :FlowForNode|void {
         const revert = scanner.checkpoint()
-        if (!scanner.one('pound')) return revert()
-        if (!scanner.one('leftParen')) return revert()
+        if (!scanner.take('pound')) return revert()
+        if (!scanner.take('leftParen')) return revert()
         const identifier = parseIdentifier()
         if (!identifier) return revert()
         const start = parseExpr()
@@ -270,7 +270,7 @@ export function parse (scanner :Scanner) :Node|void {
         if (!end) return revert()
         const body = parseExpr()
         if (!body) return revert()
-        if (!scanner.one('rightParen')) return revert()
+        if (!scanner.take('rightParen')) return revert()
         return {
             name: 'flow-for',
             value: { identifier, start, end, body }}}
@@ -292,12 +292,12 @@ export function parse (scanner :Scanner) :Node|void {
 
     // digits = /^\d+/.
     function parseDigits() :DigitsNode|void {
-        const value = scanner.one('digits')
+        const value = scanner.take('digits')
         if (value)
             return {name: 'digits', value:value.text}}
 
     // identifier = /^\w[\w\d]*/.
     function parseIdentifier() :IdentifierNode|void {
-        const value = scanner.one('identifier')
+        const value = scanner.take('identifier')
         if (value)
             return {name: 'identifier', value:value.text}}}

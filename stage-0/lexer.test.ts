@@ -1,70 +1,70 @@
-import { lex, lookup } from './lexer'
+import { lex, make } from './lexer'
 
 test('empty input', () => {
-    expect(lex('')).toEqual([lookup('endOfInput')])})
+    expect(lex('')).toEqual([make('endOfInput')])})
 
 test('fixed-length tokens', () => {
     expect(lex('<-=>=:.<>()+-*/?#')).toEqual(
-        [lookup('leftArrow'),
-         lookup('rightFatArrow'),
-         lookup('equal'),
-         lookup('colon'),
-         lookup('dot'),
-         lookup('leftAngle'),
-         lookup('rightAngle'),
-         lookup('leftParen'),
-         lookup('rightParen'),
-         lookup('plus'),
-         lookup('minus'),
-         lookup('star'),
-         lookup('slash'),
-         lookup('question'),
-         lookup('pound'),
-         lookup('endOfInput')])})
+        [make('leftArrow'),
+         make('rightFatArrow'),
+         make('equal'),
+         make('colon'),
+         make('dot'),
+         make('leftAngle'),
+         make('rightAngle'),
+         make('leftParen'),
+         make('rightParen'),
+         make('plus'),
+         make('minus'),
+         make('star'),
+         make('slash'),
+         make('question'),
+         make('pound'),
+         make('endOfInput')])})
 
 test('varying length tokens', () => {
     expect(lex('123   joey 32m')).toEqual(
-        [lookup('digits', '123'),
-         lookup('space', '   '),
-         lookup('identifier', 'joey'),
-         lookup('space', ' '),
-         lookup('digits', '32'),
-         lookup('identifier', 'm'),
-         lookup('endOfInput')])})
+        [make('digits', '123'),
+         make('space', '   '),
+         make('identifier', 'joey'),
+         make('space', ' '),
+         make('digits', '32'),
+         make('identifier', 'm'),
+         make('endOfInput')])})
 
 test('1-digit number', () => {
     expect(lex('0')).toEqual([
-        lookup('digits', '0'),
-        lookup('endOfInput')])})
+        make('digits', '0'),
+        make('endOfInput')])})
 
 test('2-digit number', () => {
     expect(lex('13')).toEqual([
-        lookup('digits', '13'),
-        lookup('endOfInput')])})
+        make('digits', '13'),
+        make('endOfInput')])})
 
 test('10-digit number', () => {
     expect(lex('0123456789')).toEqual([
-        lookup('digits', '0123456789'),
-        lookup('endOfInput')])})
+        make('digits', '0123456789'),
+        make('endOfInput')])})
 
 test('identifier', () => {
     expect(lex('joey')).toEqual([
-        lookup('identifier', 'joey'),
-        lookup('endOfInput')])})
+        make('identifier', 'joey'),
+        make('endOfInput')])})
 
 test('numbers with spaces', () => {
     const lexemes = lex('1 2 3 4')
     expect(lexemes.length).toBe(8)
-    expect(lexemes[4]).toEqual(lookup('digits', '3'))})
+    expect(lexemes[4]).toEqual(make('digits', '3'))})
 
 test('bad input', () => {
     const lexemes = lex('j@1')
     expect(lexemes.length).toBe(4)
     expect(lexemes).toEqual([
-        lookup('identifier', 'j'),
-        lookup('invalid', '@'),
-        lookup('digits', '1'),
-        lookup('endOfInput')])})
+        make('identifier', 'j'),
+        make('invalid', '@'),
+        make('digits', '1'),
+        make('endOfInput')])})
 
 const program = `
     =>(factorial n :
@@ -74,4 +74,4 @@ const program = `
 test('factorial', () => {
     const tokens = lex(program)
     expect(tokens.length).toBe(43)
-    expect(tokens[35]).toEqual(lookup('identifier', 'value'))})
+    expect(tokens[35]).toEqual(make('identifier', 'value'))})

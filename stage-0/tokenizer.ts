@@ -1,7 +1,7 @@
 import { Lexeme } from './lexer'
 
 export type Position = {line :number, column :number}
-export type Token = Lexeme & Position
+export type Token <T extends Lexeme = Lexeme> = T & Position
 
 export function tokenize(lexemes :Lexeme[], omit :Lexeme['name'][] = ['space']) {
     const tokens :Token[] = []
