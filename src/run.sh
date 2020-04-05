@@ -8,4 +8,4 @@ if [ ! -t 0 ]; then
     done
 fi
 
-echo "$lines" | node bin/stoa.d/cli.js "$@"
+echo "$lines" | node bin/stoa.d/app.js "$@"
