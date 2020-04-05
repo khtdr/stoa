@@ -2,7 +2,7 @@ import { lex } from '../src/lexer'
 import { tokenize } from '../src/tokenizer'
 import { scan } from '../src/scanner'
 import { parse } from '../src/parser'
-import { evaluate } from '../src/runtime'
+import { evaluate } from '../src/interpreter'
 
 
 test('program: 5', () => {

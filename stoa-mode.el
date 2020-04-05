@@ -7,16 +7,15 @@
 
 (define-generic-mode 'stoa-mode
   '(";;" "\n")
-  '("0" "1" "2" "3" "4" "5" "6" "7" "8" "9")
+  '()
   '(
-    ("?"           . font-lock-reference-face)
-    ("#"           . font-lock-reference-face)
-    ("=>"          . font-lock-reference-face)
-    ("<-"          . font-lock-reference-face)
-    ("~~"          . font-lock-reference-face)
-    ("[:.]"        . font-lock-preprocessor-face)
+    ("[:.]"        . font-lock-reference-face)
     ("[()]"        . font-lock-reference-face)
-    ("[= +-/*]"    . font-lock-function-name-face)
+    ("=>"          . font-lock-function-name-face)
+    ("<-"          . font-lock-function-name-face)
+    ("~~"          . font-lock-function-name-face)
+    ("[?#= +-/*]"  . font-lock-function-name-face)
+    ("[0-9]+"      . font-lock-constant-face)
     ("[^ \t\n]"    . font-lock-type-face)
     )
   '("\\.stoa\\'")

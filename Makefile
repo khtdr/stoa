@@ -1,32 +1,32 @@
-BUILD: bin/stoa
+build: Makefile yarn.lock bin/stoa.d/cli.js bin/stoa
 
-CLEAN:
+clean:
 	rm -rf bin
 
-DEV:
-	make BUILD WATCH="--watch"
+dev:
+	make -B build WATCH="--watch"
 
-TEST:
+run: build
+	bin/stoa --repl
+
+test:
 	jest
 
-XRAY:
+watch:
 	jest --watchAll
 
-bin/stoa: Makefile yarn.lock bin/stoa.d/index.js
-	echo "#!/usr/bin/env bash" > $@
-	echo 'cd "$$(dirname "$$0")/.."' >> $@
-	echo "cat - | node bin/stoa.d/index.js" >> $@
-	chmod +x $@
+.PHONY: build clean dev test watch
 
-#SRC_FILES=$(shell find src | grep \.ts\$)
-#bin/stoa.d/index.js: bin/stoa.d $(SRC_FILES)
-bin/stoa.d/index.js: bin/stoa.d src/*.ts
-	tsc src/index.ts --outDir bin/stoa.d --noEmitOnError $(WATCH)
+bin/stoa: src/run.sh
+	cp src/run.sh bin/stoa
+	chmod +x bin/stoa
+
+bin/stoa.d/cli.js: bin/stoa.d src/*.ts
+	tsc src/cli.ts --outDir bin/stoa.d --noEmitOnError $(WATCH)
 
 bin/stoa.d:
-	mkdir -p bin/stoad.d
+	mkdir -p bin/stoa.d
 
 yarn.lock: package.json
 	yarn install
-
-.PHONY: BUILD DEV CLEAN TEST WATCH
+	touch yarn.lock
