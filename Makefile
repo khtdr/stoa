@@ -1,38 +1,32 @@
-BIN_DIR=bin
+BUILD: bin/stoa
 
-TSC_0=stage-0/index.ts
-SRC_0=$(shell find stage-0 | grep \.ts\$)
-DIR_0=$(BIN_DIR)/stage-0.d
-LIB_0=$(DIR_0)/index.js
-BIN_0=$(BIN_DIR)/stage-0
-
-$(BIN_0): Makefile bin $(LIB_0)
-	echo "#!/usr/bin/env bash" > $@
-	echo 'cd $$(dirname $$0)/..' >> $@
-	echo "cat - | node $(LIB_0)" >> $@
-	chmod +x $@
-
-$(LIB_0): $(DIR_0) $(SRC_0)
-	tsc $(TSC_0) --outDir $(DIR_0) --noEmitOnError
-
-$(DIR_0): bin
-	mkdir $(DIR_0)
-
-bin:
-	mkdir bin
-
-yarn.lock:
-	yarn install
-
-deps: yarn.lock
-
-test:
-	jest
-
-ci:
-	jest --watchAll
-
-clean:
+CLEAN:
 	rm -rf bin
 
-.PHONY: clean deps test ci
+DEV:
+	make BUILD WATCH="--watch"
+
+TEST:
+	jest
+
+XRAY:
+	jest --watchAll
+
+bin/stoa: Makefile yarn.lock bin/stoa.d/index.js
+	echo "#!/usr/bin/env bash" > $@
+	echo 'cd "$$(dirname "$$0")/.."' >> $@
+	echo "cat - | node bin/stoa.d/index.js" >> $@
+	chmod +x $@
+
+#SRC_FILES=$(shell find src | grep \.ts\$)
+#bin/stoa.d/index.js: bin/stoa.d $(SRC_FILES)
+bin/stoa.d/index.js: bin/stoa.d src/*.ts
+	tsc src/index.ts --outDir bin/stoa.d --noEmitOnError $(WATCH)
+
+bin/stoa.d:
+	mkdir -p bin/stoad.d
+
+yarn.lock: package.json
+	yarn install
+
+.PHONY: BUILD DEV CLEAN TEST WATCH

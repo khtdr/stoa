@@ -2,7 +2,8 @@ import {
     ArgsNode,       AssignmentNode, CallNode,   CallableNode, DigitsNode,
     ExprNode,       FlowForNode,    FlowIfNode, FlowNode,     FunctionNode,
     IdentifierNode, OpCompNode,     OpMathNode, OperatorNode, ProgramNode,
-    ScalarNode,     TermListNode,   TermNode,   VariableNode, parse
+    ScalarNode,     TermListNode,   TermNode,   VariableNode, parse,
+    OpBuiltinNode
 } from './parser'
 
 
@@ -56,7 +57,9 @@ class Frame {
         return this.parent ? this.parent : this}}
 
 function evaluateProgram(node :ProgramNode, frame :Frame = new Frame()) {
-    return evaluateExpr(node.value, frame)}
+    const exprs = node.value.map(expr => evaluateExpr(expr, frame))
+    if (exprs.length > 0) return exprs!.pop() || frame
+    return frame}
 
 function evaluateExpr(node :ExprNode, frame :Frame) {
     if (node.value.name == 'term') return evaluateTerm(node.value, frame)
@@ -117,6 +120,8 @@ function evaluateOperator(node :OperatorNode, frame :Frame) {
     frame = evaluateArgs(node.value.args, frame)
     if (node.value.op.name == 'op-comp') {
         return evaluateOpComp(node.value.op, frame)}
+    else if (node.value.op.name == 'op-builtin') {
+        return evaluateOpBuiltin(node.value.op, frame)}
     return evaluateOpMath(node.value.op, frame)}
 
 function evaluateOpComp(node :OpCompNode, frame :Frame) {
@@ -129,6 +134,13 @@ function evaluateOpComp(node :OpCompNode, frame :Frame) {
         case '>': result = b <= a; break
         case '=': result = b == a; break}
     return frame.r1Set({name:'number', value:result?1:0})}
+
+function evaluateOpBuiltin (node :OpBuiltinNode, frame :Frame) {
+    const [arg1] = frame.a1Get()
+    const result = parseInt(`${arg1.value}`, 10)
+    switch(node.value) {
+        case '~~': console.log(result) ; break}
+    return frame.r1Set({name:'number', value:result})}
 
 function evaluateOpMath (node :OpMathNode, frame :Frame) {
     const [arg1, arg2] = frame.a1Get()
@@ -173,13 +185,19 @@ function evaluateFlowFor(node :FlowForNode, frame :Frame) {
     return frame}
 
 function evaluateScalar(node :ScalarNode, frame :Frame) {
-    let scalar = node.value
-    while (scalar && scalar.name == 'identifier') {
-        frame = evaluateIdentifier(scalar, frame)
-        const name = frame.r1Get<TSymbol>().value
-        scalar = frame.fetch(name)}
-    if (scalar && scalar.name == 'digits') return evaluateDigits(scalar as DigitsNode, frame)
-    return frame.r1Set({name:'undefined', value:null})}
+    if (node.value.name == 'digits') {
+        return evaluateDigits(node.value, frame)}
+    else {
+        frame = evaluateIdentifier(node.value, frame)
+        let deref :TTypes
+        let name = frame.r1Get<TSymbol>().value
+        while (true) {
+            deref = frame.fetch(name)
+            if (deref && deref.name == 'symbol') {name = deref.value}
+            else {break}}
+        if (deref && deref.name == 'number') {
+            return frame.r1Set({name:deref.name, value:deref.value})}
+        return frame.r1Set({name:'undefined', value:undefined})}}
 
 function evaluateDigits(node :DigitsNode, frame :Frame) {
     return frame.r1Set({name:'number', value:parseInt(node.value, 10)})}

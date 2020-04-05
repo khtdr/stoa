@@ -1,11 +1,12 @@
-import { lex, make } from './lexer'
+import { lex, make } from '../src/lexer'
 
 test('empty input', () => {
     expect(lex('')).toEqual([make('endOfInput')])})
 
 test('fixed-length tokens', () => {
-    expect(lex('<-=>=:.<>()+-*/?#')).toEqual(
+    expect(lex('<-~~=>=:.<>()+-*/?#;; with a comment')).toEqual(
         [make('leftArrow'),
+         make('doubleSquirt'),
          make('rightFatArrow'),
          make('equal'),
          make('colon'),
@@ -20,6 +21,7 @@ test('fixed-length tokens', () => {
          make('slash'),
          make('question'),
          make('pound'),
+         make('comment', ';; with a comment'),
          make('endOfInput')])})
 
 test('varying length tokens', () => {
@@ -67,11 +69,25 @@ test('bad input', () => {
         make('endOfInput')])})
 
 const program = `
+    ;; iterative version
     =>(factorial n :
         <-(value 1)
         #(i 1 +(n 1)
             <-(value *(value i))))`
 test('factorial', () => {
-    const tokens = lex(program)
-    expect(tokens.length).toBe(43)
-    expect(tokens[35]).toEqual(make('identifier', 'value'))})
+    const lexemes = lex(program)
+    expect(lexemes.length).toBe(45)
+    expect(lexemes[1]).toEqual(make('comment', ';; iterative version'))
+    expect(lexemes[37]).toEqual(make('identifier', 'value'))})
+
+test('comments', () => {
+    const lexemes = lex(
+        `1 ;; a comment
+         ;; another comment
+         42`)
+    expect(lexemes.filter(l => l.name != 'space')).toEqual([
+        make('digits', '1'),
+        make('comment', ';; a comment'),
+        make('comment', ';; another comment'),
+        make('digits', '42'),
+        make('endOfInput')])})

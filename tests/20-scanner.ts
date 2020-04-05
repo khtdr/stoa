@@ -1,7 +1,7 @@
-import { lex, make } from './lexer'
-import { tokenize } from './tokenizer'
-import { scan } from './scanner'
-import { UnrecognizedInput } from './errors'
+import { lex, make } from '../src/lexer'
+import { tokenize } from '../src/tokenizer'
+import { scan } from '../src/scanner'
+import { UnrecognizedInput } from '../src/errors'
 
 test('peek nothing', () => {
     const scanner = scan(tokenize(lex('')))
@@ -47,6 +47,11 @@ test('take invalid throws', () => {
     const scanner = scan(tokenize(lex('ψ')))
     expect(() => scanner.take('pound'))
         .toThrow(UnrecognizedInput)})
+
+test('comments', () => {
+    const scanner = scan(tokenize(lex(";;comment \n 42")))
+    expect(scanner.take('digits'))
+        .toEqual({...make('digits', '42'), line:2, column:2})})
 
 test('checkpoints', () => {
     const scanner = scan(tokenize(lex('==><*><--')))

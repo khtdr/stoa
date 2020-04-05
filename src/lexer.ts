@@ -1,5 +1,6 @@
 type leftArrow =     {name :'leftArrow',     text :'<-'}
 type rightFatArrow = {name :'rightFatArrow', text :'=>'}
+type doubleSquirt =  {name :'doubleSquirt',  text :'~~'}
 type colon =         {name :'colon',         text :':' }
 type dot =           {name :'dot',           text :'.' }
 type equal =         {name :'equal',         text :'=' }
@@ -14,15 +15,17 @@ type rightParen =    {name :'rightParen',    text :')' }
 type slash =         {name :'slash',         text :'/' }
 type star =          {name :'star',          text :'*' }
 type endOfInput =    {name :'endOfInput',    text :''  }
-type identifier =    {name :'identifier',    text :string, regex:RegExp}
-type digits =        {name :'digits',        text :string, regex:RegExp}
-type space =         {name :'space',         text :string, regex:RegExp}
-type invalid =       {name :'invalid',       text :string, regex:RegExp}
+type identifier =    {name :'identifier',    text :string, regex :RegExp}
+type digits =        {name :'digits',        text :string, regex :RegExp}
+type comment =       {name :'comment',       text :string, regex :RegExp}
+type space =         {name :'space',         text :string, regex :RegExp}
+type invalid =       {name :'invalid',       text :string, regex :RegExp}
 
 
 export const lexicon = {
     leftArrow:     {name: 'leftArrow',     text: '<-'} as leftArrow,
     rightFatArrow: {name: 'rightFatArrow', text: '=>'} as rightFatArrow,
+    doubleSquirt:  {name: 'doubleSquirt',  text: '~~'} as doubleSquirt,
     colon:         {name: 'colon',         text: ':' } as colon,
     dot:           {name: 'dot',           text: '.' } as dot,
     equal:         {name: 'equal',         text: '=' } as equal,
@@ -40,10 +43,11 @@ export const lexicon = {
     identifier:    {name: 'identifier',    text: '', regex: /^[a-z][a-z\d]*/i} as identifier,
     digits:        {name: 'digits',        text: '', regex: /^\d+/           } as digits,
     space:         {name: 'space',         text: '', regex: /^\s+/           } as space,
+    comment:       {name: 'comment',       text: '', regex: /^;;.*/         } as comment,
     invalid:       {name: 'invalid',       text: '', regex: /^./             } as invalid,}
 
 
-type Regex = identifier|digits|space
+type Regex = identifier|digits|space|comment
 export type Lexeme = ReturnType<typeof make>
 
 
@@ -58,6 +62,7 @@ function isRegex(lexeme :Lexeme) :lexeme is Regex {
         case 'identifier':
         case 'digits':
         case 'space':
+        case 'comment':
         case 'invalid': return true
         default: return false}}
 

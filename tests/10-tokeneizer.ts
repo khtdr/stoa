@@ -1,5 +1,5 @@
-import { lex, make } from './lexer'
-import { tokenize } from './tokenizer'
+import { lex, make } from '../src/lexer'
+import { tokenize } from '../src/tokenizer'
 
 test('empty input', () => {
 	expect(tokenize(lex(''))).toEqual([{

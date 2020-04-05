@@ -1,0 +1,42 @@
++(1 2)
+;; 3
+
++(1 +(2 +(+(3 4) 5)))
+;; 15
+
+#(n 1 11 :~~(n))
+;; > 1
+;; > 2
+;; > 3
+;; > 4
+;; > 5
+;; > 6
+;; > 7
+;; > 8
+;; > 9
+;; > 10
+
+;; The recursive version of factorial
+;; - inputs n Number to calculate factorial of
+;; - returns factorial of n
+=>(recFact n :
+   ?(=(n 0) 1 ;; how big is the stack? hmmm
+     *(n recFact( -(n 1) ))))
+;; rectFact
+
+~~(recFact( 3 ))
+;; > 6
+
+
+;; A iterative version
+=>(iterFact n :
+     <-(value 1) ;; no stack overflow here
+     #(i 1 +(n 1)
+         <-(value *(value i))))
+;; iterFact
+
+~~(iterFact(4))
+;; > 24
+
+iterFact(40)
+;; 59280

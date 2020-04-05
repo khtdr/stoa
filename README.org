@@ -8,61 +8,63 @@ Start with a Lisp language...
 #+END_SRC
 
 Moving the parens inwards gives:
-#+BEGIN_SRC
+#+BEGIN_SRC text
 defun(factorial n
  if( =(n 0) 1
     *(n factorial( -(n 1) ))))
 #+END_SRC
 
-And removing the keywords gives:
-#+BEGIN_SRC
+And replaceing the keywords with symbols gives:
+#+BEGIN_SRC stoa
 =>( factorial n
  ?( =(n 0) 1
     *(n factorial( -(n 1) ))))
 #+END_SRC
 
-And so:
+Likewise, the iterative version:
 #+BEGIN_SRC elisp
-(defun factorial (n)
+(do
+ (defun factorial (n)
    (loop for i from 1 to n
          for value = 1 then (* value i)
          finally (return value)))
+ (factorial 3))
 #+END_SRC
 
 Becomes:
-#+BEGIN_SRC
-=>(factorial n :
-    <-(value 1),
-    #(i 1 +(n 1)
-        <-(value *(value i))))
+#+BEGIN_SRC stoa
+:=> (factorial n :
+    <- (value 1)
+    # (i 1 +(n 1)
+        <- (value *(value i))))
+factorial(3)
 #+END_SRC
 
 #+BEGIN_SRC ebnf
-program    = expr END
-expr       = term|term-list
-term-list  = ':' expr+ ('.'|END))?.
-term       = callable|scalar.
-callable   = call|assignment|flow|operator.
-call       = symbol '(' args ')'.
-assignment = variable|function.
-variable   = '<-' '(' symbol expr ')'.
-function   = '=>' '(' symbol symbol* expr ')'.
-operator   = (op-comp|op-math) "(" args ")".
+program    = expr* END
+expr       = term-list|term
+term-list  = ':' expr+ ('.'|')'|END))?
+term       = callable|scalar
+callable   = call|assignment|flow|operator
+call       = identifier '(' args ')'
+assignment = variable|function
+variable   = '<-' '(' identifier expr ')'
+function   = '=>' '(' identifier identifier* expr ')'
+operator   = (op-comp|op-math|op-builtin) "(" args ")"
 op-comp    = '='|'<'|'>'
 op-math    = '+'|'-'|'*'|'/'
-flow       = flow-if|flow-for.
-flow-if    = '?' '(' expr expr expr? ')'.
-flow-for   = '#' '(' symbol expr expr expr ')'.
-args       = expr*.
-scalar     = symbol|digits.
-digits     = /^\d+/.
-symbol     = /^\w[\w\d]*/.
+op-builtin = '~~'
+flow       = flow-if|flow-for
+flow-if    = '?' '(' expr expr expr? ')'
+flow-for   = '#' '(' identifier expr expr expr ')'
+args       = expr*
+scalar     = identifier|digits
+digits     = /^\d+/
+identifier = /^\w[\w\d]*/
 END        = (* End Of Input *)
-
-
-
 #+END_SRC
 
+* potentially more
 ** Basic Types
 - true false       =boolean=
 - 1 2 3 4 12,345   =integer=
