@@ -1,4 +1,4 @@
-build: Makefile yarn.lock bin/stoa.d/app.js bin/stoa
+build: Makefile yarn.lock bin/stoa.d/src/app.js bin/stoa
 
 clean:
 	rm -rf bin
@@ -21,8 +21,8 @@ bin/stoa: src/run.sh
 	cp src/run.sh bin/stoa
 	chmod +x bin/stoa
 
-bin/stoa.d/app.js: bin/stoa.d src/*.ts
-	tsc src/app.ts --outDir bin/stoa.d --noEmitOnError $(WATCH)
+bin/stoa.d/src/app.js: bin/stoa.d src/*.ts
+	tsc src/app.ts --outDir bin/stoa.d --resolveJsonModule --noEmitOnError $(WATCH)
 
 bin/stoa.d:
 	mkdir -p bin/stoa.d

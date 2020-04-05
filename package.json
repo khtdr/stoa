@@ -4,6 +4,7 @@
   "main": "index.js",
   "repository": "https://github.com/khtdr/stoa",
   "author": "Kay Oh <khtdr.com@gmail.com>",
+  "main": "src/app.js",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.9.0",
