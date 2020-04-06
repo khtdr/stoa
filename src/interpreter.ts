@@ -2,20 +2,23 @@ import {
     ArgsNode,       AssignmentNode, CallNode,   CallableNode, DigitsNode,
     ExprNode,       FlowForNode,    FlowIfNode, FlowNode,     FunctionNode,
     IdentifierNode, OpCompNode,     OpMathNode, OperatorNode, ProgramNode,
-    ScalarNode,     TermListNode,   TermNode,   VariableNode, parse,
-    OpBuiltinNode
+    ScalarNode,     TermListNode,   TermNode,   VariableNode, OpBuiltinNode,
+    Node
 } from './parser'
 
 
-export function evaluate(node :ReturnType<typeof parse>) {
-    if (!node) return
+export function evaluate(node :Node|void, frame? :Frame) :[RegR1['value'], Frame] {
+    frame = frame || new Frame()
+    if (!node) return [undefined, frame]
     switch(node.name) {
-        case 'program': return evaluateProgram(node).r1Get().value}}
+        case 'program':
+            frame = evaluateProgram(node, frame); break}
+    return [frame.r1Get().value, frame]}
 
 
 type TSymbol = { name:'symbol', value:string }
 type TNumber = { name:'number', value:number }
-type TUndef  = { name:'undefined', value:null }
+type TUndef  = { name:'undefined', value:undefined }
 type TBlock  = { name:'block', value:{params:string[],node:ExprNode}}
 
 type TTypes = TSymbol|TNumber|TUndef|TBlock
@@ -23,13 +26,14 @@ type TTypes = TSymbol|TNumber|TUndef|TBlock
 type RegA1 = TTypes[]
 type RegR1 = TTypes
 
-class Frame {
+export class Frame {
     private parent? :Frame
     private userSymbols :Map<string, TTypes> = new Map()
     private registers :{
-        r1 :RegR1
-        a1 :RegA1}
-        = { r1: {name:'undefined', value:null}, a1: [] }
+        a1 :RegA1
+        r1 :RegR1}
+        = {a1: [],
+           r1: {name:'undefined', value:undefined}}
     a1Set(val :RegA1) {
       this.registers.a1 = val
       return this}
@@ -56,7 +60,7 @@ class Frame {
     leave() {
         return this.parent ? this.parent : this}}
 
-function evaluateProgram(node :ProgramNode, frame :Frame = new Frame()) {
+function evaluateProgram(node :ProgramNode, frame :Frame) {
     const exprs = node.value.map(expr => evaluateExpr(expr, frame))
     if (exprs.length > 0) return exprs!.pop() || frame
     return frame}

@@ -97,6 +97,7 @@ export type IdentifierNode= {
     value :string}
 
 export type Node = {
+    name    :string
     text?   :string
     line?   :number
     column? :number

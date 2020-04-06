@@ -22,7 +22,7 @@ bin/stoa: src/run.sh
 	chmod +x bin/stoa
 
 bin/stoa.d/src/app.js: bin/stoa.d src/*.ts
-	tsc src/app.ts --outDir bin/stoa.d --resolveJsonModule --noEmitOnError $(WATCH)
+	tsc src/app.ts --outDir bin/stoa.d --esModuleInterop --resolveJsonModule --noEmitOnError $(WATCH)
 
 bin/stoa.d:
 	mkdir -p bin/stoa.d

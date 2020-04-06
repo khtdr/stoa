@@ -1,10 +1,9 @@
 {
   "name": "stoa",
   "version": "1.0.1",
-  "main": "index.js",
+  "main": "src/app.js",
   "repository": "https://github.com/khtdr/stoa",
   "author": "Kay Oh <khtdr.com@gmail.com>",
-  "main": "src/app.js",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.9.0",
@@ -12,10 +11,11 @@
     "@babel/preset-typescript": "^7.9.0",
     "@types/jest": "^25.2.1",
     "@types/node": "^13.11.0",
-    "chalk": "^4.0.0",
     "babel-jest": "^25.2.6",
+    "chalk": "^4.0.0",
     "jest": "^25.2.7",
     "opts": "^1.2.7",
+    "readline-ui": "^2.2.3",
     "ts-node": "^8.8.2",
     "typescript": "^3.8.3"
   }
