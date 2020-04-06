@@ -12,9 +12,12 @@ import { evaluate, Frame } from './interpreter'
 
 
 opts.parse([
-    { long: 'version' },
-    { long: 'tokenize'},
-    { long: 'parse'   },
+    { long: 'version', short: 'v',
+      description: 'Displays the version and exits'},
+    { long: 'tokenize', short: 't',
+      description: 'Emits the list of tokens (JSON)'},
+    { long: 'parse', short: 'p',
+      description: 'Emits the parse tree (CST/JSON)'},
 ], [
     { name: 'file'    },
 ], true)
@@ -50,11 +53,12 @@ function runText(program :string, frame? :Frame) :[any, Frame|undefined] {
 
 
 function runRepl() {
-    console.log(chalk`welcome to the {gray ┬─┐┌─┐┌─┐┬}`)
-    console.log(chalk` {red ╔═╗╔╦╗╔═╗╔═╗}  {gray │ │├┤ │ ││}`)
-    console.log(chalk` {red ╚═╗ ║ ║ ║╠═╣}  {gray ├┬┘│  ├─┘│}`)
-    console.log(chalk` {red ╚═╝ ╩ ╚═╝╩ ╩}  {gray ┴└─└─┘┴  ┴─┘}`)
-    console.log(chalk`⫶⫶⫶⫶⫶⫶⫶⫶⫶⫶{gray version:} ${version} ⫶⫶`)
+    console.log(chalk`{red ╔═╗╔╦╗╔═╗╔═╗}  {gray ┬─┐┌─┐┌─┐┬}`)
+    console.log(chalk`{red ╚═╗ ║ ║ ║╠═╣}  {gray │ │├┤ │ ││}`)
+    console.log(chalk`{red ╚═╝ ╩ ╚═╝╩ ╩}  {gray ├┬┘│  ├─┘│}`)
+    console.log(chalk`─────────── - {gray ┴└─└─┘┴  ┴─┘}`)
+    console.log(chalk`{gray version:} v${version}`)
+    console.log(chalk`{gray to exit:} ctrl+d`)
     const ui = new UI()
     const prompt = chalk`{blue ?>} `
     ui.render(prompt);
@@ -67,9 +71,14 @@ function runRepl() {
         ui.render(prompt + line)
         ui.end()
         ui.rl.pause()
-        const result = runText(line, frame)
-        frame = result[1]
-        console.log(chalk`{gray >>} ${JSON.stringify(result[0], null, 3)}`)
+        try {
+            if (line == ';; > quit') {
+                process.exit()}
+            const result = runText(line, frame)
+            frame = result[1]
+            console.log(chalk`{gray >>} ${JSON.stringify(result[0], null, 3)}`)}
+        catch (e) {
+            console.log(e) }
         ui.rl.resume()
         ui.render(prompt)
     })

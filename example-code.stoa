@@ -23,10 +23,13 @@
    ?(=(n 0) 1 ;; how big is the stack? hmmm
      *(n recFact( -(n 1) ))))
 ;; rectFact
+;;
 
 ~~(recFact( 3 ))
 ;; > 6
 
+=>(dub n :*(2 n))
+dub(34)
 
 ;; A iterative version
 =>(iterFact n :
