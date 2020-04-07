@@ -18,12 +18,14 @@ opts.parse([
       description: 'Emits the list of tokens (JSON)'},
     { long: 'parse', short: 'p',
       description: 'Emits the parse tree (CST/JSON)'},
+    { long: 'repl', short: 'r',
+      description: 'Launch a colorful REPL'},
 ], [
     { name: 'file'    },
 ], true)
 
 
-if (opts.arg('version')) {
+if (opts.get('version')) {
     console.log('stoa', version)
     process.exit()}
 
@@ -31,7 +33,10 @@ if (opts.arg('file')) {
     runFile(`${opts.arg('file')}`)
     process.exit()}
 
-else {runRepl()}
+if (opts.get('repl')) {
+    runRepl()}
+
+else {runPipe()}
 
 function runFile(fileName :string) {
     const program = readFileSync(fileName).toString()
@@ -53,10 +58,10 @@ function runText(program :string, frame? :Frame) :[any, Frame|undefined] {
 
 
 function runRepl() {
-    console.log(chalk`{red ╔═╗╔╦╗╔═╗╔═╗}  {gray ┬─┐┌─┐┌─┐┬}`)
-    console.log(chalk`{red ╚═╗ ║ ║ ║╠═╣}  {gray │ │├┤ │ ││}`)
-    console.log(chalk`{red ╚═╝ ╩ ╚═╝╩ ╩}  {gray ├┬┘│  ├─┘│}`)
-    console.log(chalk`─────────── - {gray ┴└─└─┘┴  ┴─┘}`)
+    console.log(chalk`{red ╔═╗╔╦╗╔═╗╔═╗}  {gray ┬─┐┌─┐┌─┐┬  }`)
+    console.log(chalk`{red ╚═╗ ║ ║ ║╠═╣}  {gray │ │├┤ │ ││  }`)
+    console.log(chalk`{red ╚═╝ ╩ ╚═╝╩ ╩}  {gray ├┬┘│  ├─┘│  }`)
+    console.log(chalk      `─────────── - {gray ┴└─└─┘┴  ┴─┘}`)
     console.log(chalk`{gray version:} v${version}`)
     console.log(chalk`{gray to exit:} ctrl+d`)
     const ui = new UI()
@@ -82,4 +87,15 @@ function runRepl() {
         ui.rl.resume()
         ui.render(prompt)
     })
+}
+
+
+function runPipe() {
+    const program = readFileSync('/dev/stdin').toString()
+    const lexemes = lex(program)
+    const tokens  = tokenize(lexemes)
+    const scanner = scan(tokens)
+    const ast     = parse(scanner)
+    const output  = evaluate(ast)
+    console.log(JSON.stringify(output[0]))
 }

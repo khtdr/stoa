@@ -14,7 +14,7 @@ defun(factorial n
     *(n factorial( -(n 1) ))))
 #+END_SRC
 
-And replaceing the keywords with symbols gives:
+And replacing the keywords with symbols gives:
 #+BEGIN_SRC stoa
 =>( factorial n
  ?( =(n 0) 1
