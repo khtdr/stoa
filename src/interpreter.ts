@@ -182,7 +182,7 @@ function evaluateFlowFor(node :FlowForNode, frame :Frame) {
     let curr = frame.r1Get<TNumber>().value
     frame = evaluateExpr(node.value.end, frame)
     const last = frame.r1Get<TNumber>().value
-    while (curr < last) {
+    while (curr <= last) {
         frame.update(name, {name:'number', value:curr})
         frame = evaluateExpr(node.value.body, frame)
         curr++}

@@ -51,7 +51,7 @@ test(`if statement #2`, () => {
 
 test(`simple loop`, () => {
     const ast = parse(scan(tokenize(lex('#(n 1 3 n)'))))
-    expect(evaluate(ast)[0]).toBe(2)})
+    expect(evaluate(ast)[0]).toBe(3)})
 
 test(`vars of vars : 2`, () => {
     const ast = parse(scan(tokenize(lex(': <-(n 10) <-(b n) <-(x b) b'))))
@@ -73,7 +73,7 @@ test(`vars of vars : 6`, () => {
     const ast = parse(scan(tokenize(lex(': <-(n b) <-(b n) <-(n 13) b'))))
     expect(evaluate(ast)[0]).toBeUndefined()})
 
-test(`vars of vars : 6`, () => {
+test(`vars of vars : 7`, () => {
     const ast = parse(scan(tokenize(lex(': <-(n b) <-(b n) <-(n 13) n'))))
     expect(evaluate(ast)[0]).toEqual(13)})
 
@@ -93,7 +93,7 @@ test(`subsequent evals`, () => {
 const fact_for_loop = `::::
 : <-(n 3)
   <-(value 1)
-  #(i 1 +(n 1)
+  #(i 1 n
     <-(value *(value i)))
 `
 test(`factorial for loop`, () => {
@@ -115,7 +115,7 @@ test(`simple function 3`, () => {
 const fact_loop = `:
 =>(factorial n :
     <-(value 1)
-    #(i 1 +(n 1)
+    #(i 1 n
         <-(value *(value i))))
 factorial(5)
 `
@@ -138,7 +138,7 @@ const itr_fact_with_spaces = `:
 ;; the iterative version
 => (factorial n :
     <- (value 1)
-    # (i 1 +(n 1)
+    # (i 1 n
         <- (value *(value i))))
 factorial(4)
 `
@@ -166,7 +166,7 @@ test('lots of printing', () => {
     const clog = console.log
     const log = console.log = jest.fn()
     const ast = parse(scan(tokenize(lex(
-        `~~(1) #(n 2 10 ~~(n)) ~~(10)`
+        `~~(1) #(n 2 9 ~~(n)) ~~(10)`
     ))))
     expect(evaluate(ast)[0]).toBe(10)
     expect(log.mock.calls.length).toBe(10)
