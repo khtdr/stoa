@@ -23,6 +23,7 @@ bin/stoa: src/run.sh
 	chmod +x bin/stoa
 
 bin/stoa.d/src/app.js: src/*.ts
+	mkdir -p bin/stoa.d
 	node_modules/.bin/tsc src/app.ts --outDir bin/stoa.d --esModuleInterop --resolveJsonModule --noEmitOnError $(WATCH)
 
 yarn.lock: package.json
