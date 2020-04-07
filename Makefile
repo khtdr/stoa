@@ -1,7 +1,7 @@
-build: Makefile yarn.lock bin/stoa.d/src/app.js bin/stoa
+build: Makefile yarn.lock src/app.js bin/stoa
 
 clean:
-	rm -rf bin
+	rm -rf src/*.js
 
 dev:
 	make -B build WATCH="--watch"
@@ -17,14 +17,17 @@ watch:
 
 .PHONY: build clean dev test watch
 
-bin/stoa: src/run.sh
+bin/stoa: bin/stoa.js src/run.sh
 	mkdir -p bin
 	cp src/run.sh bin/stoa
 	chmod +x bin/stoa
 
-bin/stoa.d/src/app.js: src/*.ts
-	mkdir -p bin/stoa.d
-	node_modules/.bin/tsc src/app.ts --outDir bin/stoa.d --esModuleInterop --resolveJsonModule --noEmitOnError $(WATCH)
+bin/stoa.js: src/app.js
+	node_modules/.bin/rollup src/app.js --file bin/stoa.js
+
+src/app.js: src/*.ts
+	node_modules/.bin/tsc src/app.ts $(WATCH) \
+		--esModuleInterop --resolveJsonModule --noEmitOnError
 
 yarn.lock: package.json
 	yarn install

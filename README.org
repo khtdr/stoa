@@ -85,6 +85,8 @@ Moving the parens inwards, and replacing the keywords with symbols gives:
     *(n factorial( -(n 1) ))))
 #+END_SRC
 
+#+RESULTS:
+
 Likewise, the iterative version:
 
 
