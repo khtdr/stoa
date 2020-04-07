@@ -17,7 +17,7 @@
   "Execute a block of Stoa SOURCE-CODE with org-babel.
 This function is called by `org-babel-execute-src-block'"
   (message "executing Stoa source code block")
-  (org-babel-eval "/Users/jdm/projects/khtdr.com/stoa/bin/stoa" source-code))
+  (org-babel-eval "stoa" source-code))
 
 (provide 'ob-stoa)
 ;;; ob-stoa.el ends here
