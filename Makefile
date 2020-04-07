@@ -10,22 +10,20 @@ run: build
 	bin/stoa --repl
 
 test:
-	jest
+	node_modules/.bin/jest
 
 watch:
-	jest --watchAll
+	node_modules/.bin/jest --watchAll
 
 .PHONY: build clean dev test watch
 
 bin/stoa: src/run.sh
+	mkdir -p bin
 	cp src/run.sh bin/stoa
 	chmod +x bin/stoa
 
-bin/stoa.d/src/app.js: bin/stoa.d src/*.ts
-	tsc src/app.ts --outDir bin/stoa.d --esModuleInterop --resolveJsonModule --noEmitOnError $(WATCH)
-
-bin/stoa.d:
-	mkdir -p bin/stoa.d
+bin/stoa.d/src/app.js: src/*.ts
+	node_modules/.bin/tsc src/app.ts --outDir bin/stoa.d --esModuleInterop --resolveJsonModule --noEmitOnError $(WATCH)
 
 yarn.lock: package.json
 	yarn install

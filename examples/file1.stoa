@@ -4,7 +4,10 @@
 +(1 +(2 +(+(3 4) 5)))
 ;; 15
 
-#(n 1 11 :~~(n))
+~~(1234567890987)
+;; > 1234567890987
+
+#(n 1 10 :~~(n))
 ;; > 1
 ;; > 2
 ;; > 3
@@ -15,6 +18,7 @@
 ;; > 8
 ;; > 9
 ;; > 10
+;; 10
 
 ;; The recursive version of factorial
 ;; - inputs n Number to calculate factorial of
@@ -34,15 +38,12 @@ dub(34)
 ;; A iterative version
 =>(iterFact n :
      <-(value 1) ;; no stack overflow here
-     #(i 1 +(n 1)
+     #(i 1 n
          <-(value *(value i))))
 ;; iterFact
 
 ~~(iterFact(4))
 ;; > 24
-
-~~(1234567890987)
-;; > 1234567890987
 
 iterFact(40)
 ;; 59280
