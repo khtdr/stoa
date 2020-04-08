@@ -1,4 +1,4 @@
-bin/stoa.js: deps src/*.ts
+bin/stoa.js: src/*.ts Makefile node_modules
 	node_modules/.bin/parcel build ./src/app.ts \
 		--no-source-maps --no-autoinstall --bundle-node-modules \
 		--target node --out-dir bin --out-file stoa.js
@@ -27,10 +27,7 @@ install: bin/stoa.js
 	chmod +x ~/bin/stoa
 	stoa --version
 
-deps: Makefile yarn.lock
-
-yarn.lock: package.json
+node_modules:
 	yarn install
-	touch yarn.lock
 
-.PHONY: bin/stoa.js-watch watch test test-watch run-repl install deps
+.PHONY: bin/stoa.js-watch watch test test-watch run-repl install
