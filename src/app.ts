@@ -38,11 +38,6 @@ if (opts.get('repl')) {
 
 else {runPipe()}
 
-function runFile(fileName :string) {
-    const program = readFileSync(fileName).toString()
-    const output = runText(program)[0]
-    console.log(JSON.stringify(output, null, 3))
-}
 
 function runText(program :string, frame? :Frame) :[any, Frame|undefined] {
     const lexemes = lex(program)
@@ -56,6 +51,16 @@ function runText(program :string, frame? :Frame) :[any, Frame|undefined] {
     return evaluate(ast, frame)
 }
 
+function runFile(fileName :string) {
+    const program = readFileSync(fileName).toString()
+    const output = runText(program)[0]
+    console.log(JSON.stringify(output, null, 3))
+}
+
+function runPipe() {
+    const program = readFileSync('/dev/stdin').toString()
+    console.log(runText(program)[0])
+}
 
 function runRepl() {
     console.log(chalk`{red ╔═╗╔╦╗╔═╗╔═╗}  {gray ┬─┐┌─┐┌─┐┬  }`)
@@ -87,15 +92,4 @@ function runRepl() {
         ui.rl.resume()
         ui.render(prompt)
     })
-}
-
-
-function runPipe() {
-    const program = readFileSync('/dev/stdin').toString()
-    const lexemes = lex(program)
-    const tokens  = tokenize(lexemes)
-    const scanner = scan(tokens)
-    const ast     = parse(scanner)
-    const output  = evaluate(ast)
-    console.log(JSON.stringify(output[0]))
 }

@@ -1,34 +1,36 @@
-build: Makefile yarn.lock src/app.js bin/stoa
+bin/stoa.js: deps src/*.ts
+	node_modules/.bin/parcel build ./src/app.ts \
+		--no-source-maps --no-autoinstall --bundle-node-modules \
+		--target node --out-dir bin --out-file stoa.js
 
-clean:
-	rm -rf src/*.js
+bin/stoa.js-watch: deps src/*.ts
+	node_modules/.bin/parcel watch ./src/app.ts \
+		--no-source-maps --bundle-node-modules \
+		--target node --out-dir bin --out-file stoa.js
 
-dev:
-	make -B build WATCH="--watch"
-
-run: build
-	bin/stoa --repl
+watch:
+	node_modules/.bin/concurrently "make test-watch" "make-stoa.js-watch"
 
 test:
 	node_modules/.bin/jest
 
-watch:
+test-watch:
 	node_modules/.bin/jest --watchAll
 
-.PHONY: build clean dev test watch
+run-repl: build
+	bin/stoa --repl
 
-bin/stoa: bin/stoa.js src/run.sh
-	mkdir -p bin
-	cp src/run.sh bin/stoa
-	chmod +x bin/stoa
+install: bin/stoa.js
+	mkdir -p ~/bin
+	cp bin/stoa.js ~/bin
+	cp bin/stoa ~/bin
+	chmod +x ~/bin/stoa
+	stoa --version
 
-bin/stoa.js: src/app.js
-	node_modules/.bin/rollup src/app.js --file bin/stoa.js
-
-src/app.js: src/*.ts
-	node_modules/.bin/tsc src/app.ts $(WATCH) \
-		--esModuleInterop --resolveJsonModule --noEmitOnError
+deps: Makefile yarn.lock
 
 yarn.lock: package.json
 	yarn install
 	touch yarn.lock
+
+.PHONY: bin/stoa.js-watch watch test test-watch run-repl install deps
