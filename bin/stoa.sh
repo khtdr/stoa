@@ -2,4 +2,4 @@
 
 cd "$(dirname "$0")/.." || exit
 
-node bin/stoa.d "$@"
+node stoa "$@"
