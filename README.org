@@ -10,7 +10,7 @@
 *** [X] interpreter
 ** [X] language tools
 *** [X] command line interface
-**** [X] tokenizng and parsing options
+**** [X] tokenizing and parsing options
 **** [X] basic colorful repl
 **** [X] read from piped stdin 
 *** [X] emacs integration
@@ -30,12 +30,12 @@ a starting point. And that starting point is obviously Lisp.
 
 And not some fancy lisp, just =(operator ...operands)=
 
-I know I can make that work, I'll just spice it up a bit. Add in some
-conventions, remove a lot of flexibility. Remove as many features as
+I know I can make that work, I'll just spice it up a bit. I'll add in some
+conventions, remove a lot of flexibility. Basically, remove as many features as
 needed to get through the goals of Stage 0.
 
-*TLDR; .elisp -> .stoa**
-An interative factorial function written in elisp:
+*TLDR; .elisp -> .stoa*
+An iterative factorial function written in elisp:
 #+BEGIN_SRC elisp
 (defun factorial (num)
   (setq idx 1)
@@ -49,9 +49,9 @@ An interative factorial function written in elisp:
 
 With some shake-up becomes stoa code:
 #+BEGIN_SRC stoa
-=>(factorial num :
+=>(factorial num:
   <-(product 1)
-  # (idx 1 num
+  #(idx 1 num
       <-(product *(product idx))))
 factorial(3)
 #+END_SRC
@@ -63,13 +63,13 @@ There are only numbers.
 No strings, no booleans, no lists, no maps, no floats, just integers.
 
 (But technically...)
-- *integers* ~... -1 0 1 2 ... 99 100 101 ...~
+- *integers* =... -1 0 1 2 ... 99 100 101 ...=
   Whole numbers, no decimals
   
-- *function names*  ~"factorial"~
+- *function names*  ="factorial"=
   Displayed as a name in double quotes 
   
-- *undefined*  ~undefined~
+- *undefined*  =undefined=
   Everything else?
 
 #+BEGIN_SRC elisp
@@ -84,6 +84,10 @@ Moving the parens inwards, and replacing the keywords with symbols gives:
  ?(=(n 0) 1
     *(n factorial( -(n 1) ))))
 #+END_SRC
+
+#+RESULTS:
+: factorial
+
 
 
 Likewise, the iterative version:

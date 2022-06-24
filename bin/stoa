@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# This file is not generated, it is committed.
+
 cd "$(dirname "$0")" || exit
 
 node ./stoa.js "$@"

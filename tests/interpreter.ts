@@ -4,7 +4,6 @@ import { scan } from '../src/scanner'
 import { parse } from '../src/parser'
 import { evaluate, Frame } from '../src/interpreter'
 
-
 test('program: 5', () => {
     const ast = parse(scan(tokenize(lex('5'))))
     expect(evaluate(ast)[0]).toBe(5)})
