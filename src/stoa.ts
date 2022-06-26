@@ -1,114 +1,54 @@
-import UI from "readline-ui";
-import chalk from "chalk";
-import * as opts from "opts";
-import { readFileSync } from "fs";
-import { version } from "../package.json";
-import { lex } from "./lexer";
-import { tokenize } from "./tokenizer";
-import { scan } from "./scanner";
-import { parse } from "./parser";
-import { evaluate, Frame } from "./interpreter";
+import { Cli, LanguageFactory, TokenizerClassFactory } from './lib'
+import { version } from '../package.json'
 
-opts.parse([
-     {
-          long: "version",
-          short: "v",
-          description: "Displays the version and exits"
-     },
-     {
-          long: "tokenize",
-          short: "t",
-          description: "Emits the list of tokens (JSON)",
-     },
-     {
-          long: "parse",
-          short: "p",
-          description: "Emits the parse tree (CST/JSON)",
-     },
-     {
-          long: "repl",
-          short: "r",
-          description: "Launch a colorful REPL",
-     },
-],
-     [{ name: "file" }],
-     true
-);
+const APP = { name: 'stoa', version }
 
-if (opts.get("version")) {
-     console.log("stoa", version);
-     process.exit();
+const StringTokenizer = TokenizerClassFactory.build({
+    SINGLE: "'",
+    DOUBLE: '"',
+    ESCAPED_CHAR: /\\./,
+    CHAR: /./,
+} as const)
+
+function isString(value: string) {
+    const tokenizer = new StringTokenizer(value)
+    const [first] = tokenizer.tokens
+    if (!["SINGLE", "DOUBLE"].includes(first?.name)) return undefined
+
+    let text = first.text, i = 1
+    while (true) {
+        const next = tokenizer.tokens[i++]
+        if (!next) return undefined
+
+        text += next.text
+        if (next.name == first.name) return text
+    }
 }
 
-if (opts.arg("file")) {
-     runFile(`${opts.arg("file")}`);
-     process.exit();
-}
+const STOA = LanguageFactory.build({
+    TokenizerClass: TokenizerClassFactory.build({
+        LEFT_ARROW: '<-',
+        RIGHT_FAT_ARROW: '=>',
+        DOUBLE_SQUIRT: '~~',
+        COLON: ':',
+        DOT: '.',
+        EQUAL: '=',
+        LEFT_ANGLE: '<',
+        LEFT_PAREN: '(',
+        MINUS: '-',
+        PLUS: '+',
+        POUND: '#',
+        QUESTION: '?',
+        RIGHT_ANGLE: '>',
+        RIGHT_PAREN: ')',
+        SLASH: '/',
+        STAR: '*',
+        IDENTIFIER: /[a-z][a-z\d]*/i,
+        DIGITS: [/\d+/, (text: string) => parseInt(text, 10)],
+        SPACE: /\s+/,
+        COMMENT: [/;;.*/, (text: string) => text.substring(2).trim()],
+        STRING: [isString, (text: string) => text.substring(1, text.length - 1)],
+    })
+})
 
-if (opts.get("repl")) {
-     runRepl();
-} else {
-     runPipe();
-}
-
-function runText(
-     program: string,
-     frame: Frame = new Frame()
-):
-     | [ReturnType<typeof tokenize> | ReturnType<typeof parse>, Frame]
-     | ReturnType<typeof evaluate> {
-     const lexemes = lex(program);
-     const tokens = tokenize(lexemes);
-     if (opts.get("tokenize")) return [tokens, frame];
-
-     const scanner = scan(tokens);
-     const ast = parse(scanner);
-     if (opts.get("parse")) return [ast, frame];
-
-     return evaluate(ast, frame);
-}
-
-function runFile(fileName: string) {
-     const program = readFileSync(fileName).toString();
-     const output = runText(program)[0];
-     console.log(JSON.stringify(output, null, 3));
-}
-
-function runPipe() {
-     const program = readFileSync("/dev/stdin").toString();
-     console.log(runText(program)[0]);
-}
-
-function runRepl() {
-     console.log(chalk`{red ╔═╗╔╦╗╔═╗╔═╗}  {gray ┬─┐┌─┐┌─┐┬  }`);
-     console.log(chalk`{red ╚═╗ ║ ║ ║╠═╣}  {gray │ │├┤ │ ││  }`);
-     console.log(chalk`{red ╚═╝ ╩ ╚═╝╩ ╩}  {gray ├┬┘│  ├─┘│  }`);
-     console.log(chalk`─────────── - {gray ┴└─└─┘┴  ┴─┘}`);
-     console.log(chalk`{gray version:} v${version}`);
-     console.log(chalk`{gray to exit:} ctrl+d`);
-     const ui = new UI();
-     const prompt = chalk`{blue ?>} `;
-     ui.render(prompt);
-
-     let frame = new Frame();
-     ui.on("keypress", () => {
-          ui.render(prompt + ui.rl.line);
-     });
-     ui.on("line", (line: string) => {
-          ui.render(prompt + line);
-          ui.end();
-          ui.rl.pause();
-          try {
-               if (line == ";; > quit") {
-                    process.exit();
-               }
-               const [value, ...result] = runText(line, frame);
-               frame = result[0];
-               console.log(chalk`{gray >>} ${JSON.stringify(value, null, 3)}`);
-          } catch (e) {
-               console.log(e);
-          }
-          ui.rl.resume();
-          ui.render(prompt);
-     });
-}
+new Cli(APP).run(STOA.driver)
