@@ -1,6 +1,8 @@
 export type Lexeme = string | RegExp | ((text: string) => undefined | string)
 export type Lexer = Lexeme | [Lexeme, (text: string) => unknown]
-export type Dict = Record<string, Lexer>
+export type Lexicon = Record<string, Lexer>
+const ERROR_TOKEN = '::error'
+
 
 export class Token<Name = string> {
     constructor(
@@ -9,96 +11,118 @@ export class Token<Name = string> {
         readonly value: unknown,
         readonly pos: { line: number; column: number },
     ) { }
-    toString() { return JSON.stringify(this) }
+    toString() {
+        const value = this.text === this.value ? "" : `(${this.value})`
+        return `${this.name}${value}`
+    }
 }
 
-export class Tokenizer<T extends Dict = {}> {
 
-    constructor(
-        private readonly dict: T,
-        private readonly source: string,
-    ) { }
-
-    private _tokens: Token<keyof T>[] = []
-    get tokens(): typeof this._tokens {
-        if (!this._tokens.length) this.scan()
-        return this._tokens;
+export class TokenStream<T extends Lexicon = {}> {
+    private generator: Generator<Token<keyof T>>
+    constructor(source: string, lexicon: T = {} as T) {
+        this.generator = tokenGenerator(source, lexicon)
     }
 
-    private idx = 0
-    private line = 1
-    private column = 1
-    private scan() {
-        this.idx = 0;
-        this.line = 1
-        this.column = 1
-        while (this.idx < this.source.length) {
-            const [name, text = this.source[this.idx], value] = this.longest(this.possible())
-            if (!name) this._tokens.push(this.error(text))
-            else this._tokens.push(new Token(name, text, value, this.pos()))
+    private buffer: Token<keyof T>[] = []
+    take() {
+        if (this.buffer.length) return this.buffer.shift()
+        return this.next()
+    }
+    peek() {
+        if (!this.buffer.length) this.buffer.push(this.next())
+        return this.buffer[0]
+    }
+    drain(): Token<keyof T>[] {
+        let token, tokens = []
+        while (token = this.take()) tokens.push(token)
+        return tokens
+    }
 
-            const lines = text.split("\n").length
-            if (lines > 1) {
-                this.line += lines - 1
-                this.column = text.length - text.lastIndexOf("\n")
+    private next() {
+        while (true) {
+            const token = this.generator.next().value
+            if (!token) break
+
+            if (token.name.toString().startsWith('_')) continue
+            if (token.name == ERROR_TOKEN) {
+                this.error(token)
+                continue
             }
-            else this.column += text.length
-            this.idx += text.length
+            return token
         }
     }
 
-    public errors?: Token[]
-    private error(text: string) {
+    public errors?: { char: string; line: number; column: number }[]
+    private error(token: Token<keyof T>) {
         this.errors = this.errors || []
-        const token = new Token('_stoa_::error', text, undefined, this.pos())
-        this.errors.push(token)
-        return token
+        this.errors.push({ char: token.text, ...token.pos })
+    }
+}
+
+export class TokenStreamClassFactory {
+    static build<T extends Lexicon>(lexicon: T): [typeof TokenStream<T>, Record<keyof T, keyof T>] {
+        class TokenStreamClassFactoryClass extends TokenStream<T> {
+            constructor(source: string) {
+                super(source, lexicon)
+            }
+        }
+        return [
+            TokenStreamClassFactoryClass,
+            Object.keys(lexicon).reduce((a, c: keyof T) => (a[c] = c, a), {} as Record<keyof T, keyof T>) as Record<keyof T, keyof T>
+        ]
+    }
+}
+
+
+function* tokenGenerator<T extends Lexicon>(
+    source: string,
+    lexicon: T
+): Generator<Token<keyof T>> {
+    let idx = 0, line = 1, column = 1
+    while (idx < source.length) {
+        const [
+            name = ERROR_TOKEN,
+            text = source[idx],
+            value
+        ] = longest(possible())
+        const token = new Token(name, text, value, pos())
+
+        const lines = text.split("\n").length
+        if (lines > 1) {
+            line += lines - 1
+            column = text.length - text.lastIndexOf("\n")
+        }
+        else column += text.length
+        idx += text.length
+        yield token
     }
 
-    private pos() {
-        return { line: this.line, column: this.column }
+    function pos() {
+        return { line: line, column: column }
     }
-
-    private longest(candidates: Array<[keyof T, string, unknown]>) {
+    function longest(candidates: Array<[keyof T, string, unknown]>) {
         if (!candidates.length) return []
         return candidates.reduce((longest, current) =>
             current[1]!.length > longest[1]!.length ? current : longest)
     }
-
-    private possible() {
+    function possible() {
         const candidates: Array<[keyof T, string, unknown]> = [];
-        Object.entries(this.dict).map(([name, rule]) => {
+        Object.entries(lexicon).map(([name, rule]) => {
             const [lexeme, valueFn = (val: string) => val] = Array.isArray(rule) ? rule : [rule]
             if (typeof lexeme == 'function') {
-                const text = lexeme(this.source.substring(this.idx))
+                const text = lexeme(source.substring(idx))
                 if (text) candidates.push([name, text, valueFn(text)])
 
             } else if (typeof lexeme != 'string') {
                 const regex = new RegExp(`^${lexeme.source}`, lexeme.flags)
-                const match = regex.exec(this.source.substring(this.idx))
+                const match = regex.exec(source.substring(idx))
                 if (match) return candidates.push([name, match[0], valueFn(match[0])])
 
-            } else if (this.source.substring(this.idx, this.idx + lexeme.length) == rule) {
+            } else if (source.substring(idx, idx + lexeme.length) == rule) {
                 return candidates.push([name, lexeme, valueFn(lexeme)])
             }
         })
         return candidates
-    }
-}
-
-
-class BaseTokenizerClass<T extends Dict = {}> extends Tokenizer<T> {
-    constructor(source: string) { super({} as T, source) }
-}
-export type TokenizerClass<T extends Dict = {}> = typeof BaseTokenizerClass<T>
-
-export class TokenizerClassFactory {
-    static build<T extends Dict>(dict: T): TokenizerClass<T> {
-        class TokenizerClassFactoryClass extends Tokenizer<T> {
-            constructor(source: string) {
-                super(dict, source)
-            }
-        }
-        return TokenizerClassFactoryClass
     }
 }

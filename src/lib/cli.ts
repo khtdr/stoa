@@ -1,16 +1,42 @@
 import { readFileSync } from "fs"
 import * as opts from "opts"
 import { resolve } from 'path'
-import { LanguageDriver } from "./language"
-import { Token } from "./tokenizer"
+import { Language } from "./language"
 
-export class Cli {
+export class Launcher {
     public output: 'tokenize' | 'parse' | 'evaluate' = 'evaluate'
     public runFile: string | false = false
     public runRepl: boolean = false
     public runPipe: boolean = false
-    public showVersion: boolean
-    constructor(private readonly config: { name: string; version: string }) {
+    constructor(
+        private readonly config: {
+            name: string
+            version: string
+            Formatters: Partial<typeof Formatters>
+        }
+    ) { }
+
+    drive(runner: Language['driver']) {
+        this.configure()
+        runner.target = this.output
+        let result
+        if (this.runFile)
+            result = runner.run(readFileSync(resolve(this.runFile)).toString())
+        if (this.runPipe)
+            result = runner.run(readFileSync("/dev/stdin").toString())
+        // if (this.runRepl)
+        //     output = new Repl(runner).run()
+        const FormatFns = this.config.Formatters || Formatters
+        const format = FormatFns[this.output] || Formatters[this.output]
+        console.log(format(result))
+        process.exit(runner.status)
+    }
+
+    configured = false
+    private configure() {
+        if (this.configured) return
+
+        this.configured = true
         opts.parse([
             {
                 long: "version", short: "v",
@@ -40,35 +66,22 @@ export class Cli {
         if (opts.get('tokenize')) this.output = 'tokenize'
         if (opts.get('parse')) this.output = 'parse'
 
-        this.showVersion = !!opts.get("version")
-    }
-
-    run(runner: LanguageDriver) {
-        if (this.showVersion) {
+        if (opts.get("version")) {
             console.log(`${this.config.name}-${this.config.version}`)
             process.exit(0)
         }
-        runner.output = this.output
-        runner.formatter = Formatters[this.output]
-        if (this.runFile)
-            runner.run(readFileSync(resolve(this.runFile)).toString())
-        // if (this.runRepl)
-        //     runner.run(readFileSync("/dev/stdin").toString())
-        if (this.runPipe)
-            runner.run(readFileSync("/dev/stdin").toString())
-        process.exit(runner.status)
     }
 }
 
-class Formatters {
-    static tokenize(tokens: Token[]) {
-        console.log(tokens.map(t => t.toString()))
-    }
-    static parse(out: any) {
-        console.log(out)
-    }
-    static evaluate(out: any) {
-        console.log(out)
+const Formatters = {
+    tokenize(stream: ReturnType<Language['engine']['tokenize']>) {
+        return stream.drain().map(t => t.toString()).join('\n')
+    },
+    parse(ast: ReturnType<Language['engine']['parse']>) {
+        return JSON.stringify(ast)
+    },
+    evaluate(value: ReturnType<Language['engine']['evaluate']>) {
+        return value
     }
 }
 

@@ -1,45 +1,50 @@
-import * as Tokenizer from './tokenizer'
+import { Parser } from "./parser"
+import { Lexicon, TokenStream } from "./tokenizer"
 
-export type Language = {
-    engine: LanguageEngine;
-    driver: LanguageDriver;
-}
+export class Language<T extends Lexicon = {}, K = any, O = string> {
+    readonly engine: Engine<T, K, O>
+    readonly driver: Driver
 
-export class LanguageFactory {
-    static build(args: { TokenizerClass: any }): Language {
-        const engine = new LanguageEngine(args.TokenizerClass)
-        const driver = new LanguageDriver(engine)
-        return { engine, driver }
+    constructor(
+        TokenizerClass: typeof TokenStream<T>,
+        ParserClass: typeof Parser<T, K>,
+        EvaluatorClass: new () => O
+    ) {
+        this.engine = new Engine(TokenizerClass, ParserClass, EvaluatorClass)
+        this.driver = new Driver(this.engine)
     }
 }
 
-export class LanguageDriver<T extends LanguageEngine = LanguageEngine> {
-
+class Driver {
     constructor(
-        private readonly lang: T,
+        private readonly engine: Engine<any, any, any>
     ) { }
 
     public status = 0
-    public output: 'tokenize' | 'parse' | 'evaluate' = 'evaluate'
-    public formatter: (output: any) => void = () => { }
+    public target: 'tokenize' | 'parse' | 'evaluate' = 'evaluate'
 
-    run(program: string): void {
-        const value = this.lang[this.output](program)
-        this.formatter(value)
+    run(program: string) {
+        return this.engine[this.target](program)
     }
 }
 
-export class LanguageEngine {
+class Engine<T extends Lexicon, K, O> {
     constructor(
-        private readonly TokenizerClass: Tokenizer.TokenizerClass
+        private readonly TokenizerClass: typeof TokenStream<T>,
+        private readonly ParserClass: typeof Parser<T, K>,
+        private readonly EvaluatorClass: new () => O
     ) { }
-    tokenize(source: string): Tokenizer.Token[] {
-        return new this.TokenizerClass(source).tokens
+    tokenize(source: string): TokenStream<T> {
+        return new this.TokenizerClass(source)
     }
-    parse(source: string) {
-        return this.tokenize(source)
+    parse(source: string): K {
+        const stream = this.tokenize(source)
+        return new this.ParserClass(stream).parse()
     }
     evaluate(source: string) {
-        return this.tokenize(source)
+        const ast = this.parse(source)
+        const evaluator = new this.EvaluatorClass()
+        // @ts-expect-error
+        return ast.accept(evaluator)
     }
 }
