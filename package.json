@@ -9,8 +9,10 @@
   "private": "true",
   "devDependencies": {
     "@types/node": "14",
+    "chalk": "4",
     "opts": "2",
+    "readline-ui": "2",
     "tsup": "6",
-    "typescript": "3"
+    "typescript": "4"
   }
 }

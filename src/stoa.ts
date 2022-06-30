@@ -18,7 +18,7 @@ function stringScanner(value: string) {
     }
 }
 
-const [LoxScanner, Lx] = TokenStreamClassFactory.build({
+const LoxScanner = TokenStreamClassFactory.build({
     NIL: 'nil', TRUE: 'true', FALSE: 'false',
     PLUS: '+', DASH: '-', STAR: '*', SLASH: '/', EQUAL: '=',
     AND: /and/i, OR: /or/i, NOT: /not/i, VAR: /var/i,
@@ -35,15 +35,17 @@ const [LoxScanner, Lx] = TokenStreamClassFactory.build({
     _SPACE: /\s+/,
 })
 
-class LoxParser<T extends Lexicon> extends Parser<T, Expression> {
+const Lx = LoxScanner.TOKENS
+
+class LoxParser<T extends Lexicon, K = Expression> extends Parser<T, K> {
     constructor(stream: TokenStream<T>) {
         super(stream)
     }
 
     private _parsed?: Expression
-    parse() {
+    parse(): K {
         if (!this._parsed) this._parsed = this.Expression()
-        return this._parsed
+        return this._parsed as unknown as K
     }
 
     // expression -> equality
@@ -119,7 +121,7 @@ class LoxParser<T extends Lexicon> extends Parser<T, Expression> {
 
 
 abstract class Expression {
-    abstract accept(visitor: LoxVisitor): any
+    abstract accept(visit: LoxVisitor): any
 }
 class Literal implements Expression {
     constructor(
@@ -191,6 +193,15 @@ new Launcher({
     name: 'lox',
     version,
     Formatters: {
-        parse(ast: Expression) { return ast.accept(new LoxPrettyPrinter) }
+        tokenize(stream: TokenStream) {
+            if (!stream) return
+            const tokens = stream.drain()
+            console.log(tokens.map((token) => token.toString()).join("\n"))
+        },
+        parse(ast: Expression) {
+            if (!ast) return
+            const str = ast.accept(new LoxPrettyPrinter)
+            console.log(str)
+        }
     }
 }).drive(Lox.driver)

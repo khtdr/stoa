@@ -1,9 +1,12 @@
-import { readFileSync } from "fs"
+/// <reference path="./deps.d.ts" />
+import { readFileSync } from 'fs'
+import UI from 'readline-ui'
+import chalk from 'chalk'
 import * as opts from "opts"
 import { resolve } from 'path'
 import { Language } from "./language"
 
-export class Launcher {
+export class Launcher<L5n = unknown, K = unknown> {
     public output: 'tokenize' | 'parse' | 'evaluate' = 'evaluate'
     public runFile: string | false = false
     public runRepl: boolean = false
@@ -12,24 +15,34 @@ export class Launcher {
         private readonly config: {
             name: string
             version: string
-            Formatters: Partial<typeof Formatters>
+            Formatters: Partial<{
+                tokenize(stream: keyof L5n): void
+                parse(ast: K): void
+                evaluate(value: unknown): void
+            }>
         }
     ) { }
 
-    drive(runner: Language['driver']) {
+    drive(runner: Language<any, any>['driver']) {
         this.configure()
         runner.target = this.output
+        const FormatFns = this.config.Formatters
+        const format = FormatFns[this.output] || console.log.bind(console)
+
         let result
         if (this.runFile)
             result = runner.run(readFileSync(resolve(this.runFile)).toString())
         if (this.runPipe)
             result = runner.run(readFileSync("/dev/stdin").toString())
-        // if (this.runRepl)
-        //     output = new Repl(runner).run()
-        const FormatFns = this.config.Formatters || Formatters
-        const format = FormatFns[this.output] || Formatters[this.output]
-        console.log(format(result))
-        process.exit(runner.status)
+
+        format(result)
+        if (!this.runRepl) {
+            process.exit(runner.status)
+
+        } else new Repl(runner).run(format).then(() => {
+            console.log('good bye!')
+            process.exit(runner.status)
+        })
     }
 
     configured = false
@@ -73,40 +86,34 @@ export class Launcher {
     }
 }
 
-const Formatters = {
-    tokenize(stream: ReturnType<Language['engine']['tokenize']>) {
-        return stream.drain().map(t => t.toString()).join('\n')
-    },
-    parse(ast: ReturnType<Language['engine']['parse']>) {
-        return JSON.stringify(ast)
-    },
-    evaluate(value: ReturnType<Language['engine']['evaluate']>) {
-        return value
+class Repl {
+    constructor(
+        readonly runner: Language<any, any>['driver']
+    ) { }
+
+    async run(format: (data: unknown) => void) {
+        return new Promise(resolve => {
+            const ui = new UI()
+            const prompt = chalk`{blue ?>} `
+            ui.render(prompt)
+            ui.on("keypress", () => ui.render(prompt + ui.rl.line))
+            ui.on("line", (line: string) => {
+                ui.render(prompt + line);
+                ui.end();
+                ui.rl.pause();
+                try {
+                    console.log(line)
+                    if (line == ".quit.") {
+                        return resolve()
+                    }
+                    const value = this.runner.run(line);
+                    console.log(chalk`{gray >>} ${format(value)}`);
+                } catch (e) {
+                    console.log(e);
+                }
+                ui.rl.resume();
+                ui.render(prompt);
+            });
+        })
     }
 }
-
-        // const ui = new UI();
-        // const prompt = chalk`{blue ?>} `;
-        // ui.render(prompt);
-
-        // let frame = new Frame();
-        // ui.on("keypress", () => {
-        //      ui.render(prompt + ui.rl.line);
-        // });
-        // ui.on("line", (line: string) => {
-        //      ui.render(prompt + line);
-        //      ui.end();
-        //      ui.rl.pause();
-        //      try {
-        //           if (line == ";; > quit") {
-        //                process.exit();
-        //           }
-        //           const [value, ...result] = runText(line, frame);
-        //           frame = result[0];
-        //           console.log(chalk`{gray >>} ${JSON.stringify(value, null, 3)}`);
-        //      } catch (e) {
-        //           console.log(e);
-        //      }
-        //      ui.rl.resume();
-        //      ui.render(prompt);
-        // });

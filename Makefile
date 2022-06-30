@@ -30,6 +30,9 @@ install: build
 	chmod +x ~/bin/stoa
 	stoa --version
 
+lint:
+	npx tsc --noEmit
+
 deps: Makefile node_modules
 
 node_modules: package.json
