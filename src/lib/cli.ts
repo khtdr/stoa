@@ -1,119 +1,64 @@
-/// <reference path="./deps.d.ts" />
+import * as opts from 'opts'
 import { readFileSync } from 'fs'
-import UI from 'readline-ui'
-import chalk from 'chalk'
-import * as opts from "opts"
 import { resolve } from 'path'
-import { Language } from "./language"
+import { Driver, Language, Lexicon, Repl, Visitable } from "."
 
-export class Launcher<L5n = unknown, K = unknown> {
-    public output: 'tokenize' | 'parse' | 'evaluate' = 'evaluate'
-    public runFile: string | false = false
-    public runRepl: boolean = false
-    public runPipe: boolean = false
+export class CliRunner<Lx extends Lexicon, Ast extends Visitable> {
     constructor(
-        private readonly config: {
-            name: string
-            version: string
-            Formatters: Partial<{
-                tokenize(stream: keyof L5n): void
-                parse(ast: K): void
-                evaluate(value: unknown): void
-            }>
-        }
+        readonly lang: Language<Lx, Ast>
     ) { }
 
-    drive(runner: Language<any, any>['driver']) {
-        this.configure()
-        runner.target = this.output
-        const FormatFns = this.config.Formatters
-        const format = FormatFns[this.output] || console.log.bind(console)
+    run() {
+        const [driver, { runFile, runPipe, runRepl }] = this.configure()
 
         let result
-        if (this.runFile)
-            result = runner.run(readFileSync(resolve(this.runFile)).toString())
-        if (this.runPipe)
-            result = runner.run(readFileSync("/dev/stdin").toString())
+        if (runFile)
+            result = driver.run(readFileSync(resolve(runFile)).toString())
+        if (runPipe)
+            result = driver.run(readFileSync("/dev/stdin").toString())
 
-        format(result)
-        if (!this.runRepl) {
-            process.exit(runner.status)
+        if (!runRepl) {
+            console.log(result)
+            process.exit(driver.status)
 
-        } else new Repl(runner).run(format).then(() => {
-            console.log('good bye!')
-            process.exit(runner.status)
+        } else new Repl(driver).run().then(() => {
+            process.exit(driver.status)
         })
     }
 
-    configured = false
+    private _configuration?: [
+        Driver<Lx, Ast>,
+        { runFile: false | string; runPipe: boolean; runRepl: boolean; }
+    ]
     private configure() {
-        if (this.configured) return
+        if (!this._configuration) {
+            opts.parse([
+                { description: "Displays the version and exits", short: "v", long: "version" },
+                { description: "Emits the list of tokens (JSON)", short: "t", long: "tokenize" },
+                { description: "Emits the parse tree (CST/JSON)", short: "p", long: "parse" },
+                { description: "Launch a colorful REPL", short: "r", long: "repl" },
+            ], [{ name: "file" }], true)
 
-        this.configured = true
-        opts.parse([
-            {
-                long: "version", short: "v",
-                description: "Displays the version and exits"
-            },
-            {
-                long: "tokenize", short: "t",
-                description: "Emits the list of tokens (JSON)",
-            },
-            {
-                long: "parse", short: "p",
-                description: "Emits the parse tree (CST/JSON)",
-            },
-            {
-                long: "repl", short: "r",
-                description: "Launch a colorful REPL",
-            },
-        ], [{ name: "file" }], true)
+            this._configuration = [
+                new Driver(
+                    this.lang,
+                    opts.get('tokenize') ? 'Tokens' : opts.get('parse') ? 'ParseTree' : 'Evaluate'
+                ),
+                { runFile: false, runPipe: false, runRepl: false }
+            ]
 
-        const file = opts.arg("file")
-        if (file) this.runFile = file
+            const file = opts.arg("file")
+            if (file) this._configuration[1].runFile = file
 
-        if (opts.get("repl")) this.runRepl = true
-        else if (!file) this.runPipe = true
+            if (opts.get("repl")) this._configuration[1].runRepl = true
+            else if (!file) this._configuration[1].runPipe = true
 
-        this.output = 'evaluate'
-        if (opts.get('tokenize')) this.output = 'tokenize'
-        if (opts.get('parse')) this.output = 'parse'
-
-        if (opts.get("version")) {
-            console.log(`${this.config.name}-${this.config.version}`)
-            process.exit(0)
+            if (opts.get("version")) {
+                const { name, version, ...details } = this.lang.details
+                console.log(`${name}-${version}`, details)
+                process.exit(0)
+            }
         }
-    }
-}
-
-class Repl {
-    constructor(
-        readonly runner: Language<any, any>['driver']
-    ) { }
-
-    async run(format: (data: unknown) => void) {
-        return new Promise(resolve => {
-            const ui = new UI()
-            const prompt = chalk`{blue ?>} `
-            ui.render(prompt)
-            ui.on("keypress", () => ui.render(prompt + ui.rl.line))
-            ui.on("line", (line: string) => {
-                ui.render(prompt + line);
-                ui.end();
-                ui.rl.pause();
-                try {
-                    console.log(line)
-                    if (line == ".quit.") {
-                        return resolve()
-                    }
-                    const value = this.runner.run(line);
-                    console.log(chalk`{gray >>} ${format(value)}`);
-                } catch (e) {
-                    console.log(e);
-                }
-                ui.rl.resume();
-                ui.render(prompt);
-            });
-        })
+        return this._configuration
     }
 }

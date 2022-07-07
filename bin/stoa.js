@@ -19,6 +19,199 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target, mod));
 
+// node_modules/.pnpm/opts@2.0.2/node_modules/opts/src/opts.js
+var require_opts = __commonJS({
+  "node_modules/.pnpm/opts@2.0.2/node_modules/opts/src/opts.js"(exports) {
+    var puts = console.log;
+    var values = {};
+    var args = {};
+    var argv = [];
+    var errors = [];
+    var descriptors = { opts: [], args: [] };
+    exports.version = "2.0.2";
+    exports.add = function(options, namespace) {
+      for (var i = 0; i < options.length; i++) {
+        options[i].namespace = namespace;
+        descriptors.opts.push(options[i]);
+      }
+    };
+    exports.parse = function(options, params, help) {
+      if (params === true) {
+        help = true;
+        params = [];
+      } else if (!params) {
+        params = [];
+      } else {
+        for (var i = 0; i < params.length; i++) {
+          descriptors.args.push(params[i]);
+        }
+      }
+      if (help) {
+        options.push({
+          long: "help",
+          description: "Show this help message",
+          callback: exports.help
+        });
+      }
+      for (var i = 0; i < options.length; i++) {
+        descriptors.opts.unshift(options[i]);
+      }
+      options = descriptors.opts;
+      var checkDup = /* @__PURE__ */ __name(function(opt2, type) {
+        var prefix = type == "short" ? "-" : "--";
+        var name2 = opt2[type];
+        if (!opts2[prefix + name2]) {
+          opts2[prefix + name2] = opt2;
+        } else {
+          if (opt2.namespace && !opts2[prefix + opt2.namespace + "." + name2]) {
+            opts2[prefix + opt2.namespace + "." + name2] = opt2;
+            for (var i2 = 0; i2 < descriptors.opts.length; i2++) {
+              var desc = descriptors.opts[i2];
+              if (desc.namespace == opt2.namespace) {
+                if (type == "long" && desc.long == opt2.long) {
+                  descriptors.opts[i2].long = opt2.namespace + "." + opt2.long;
+                } else if (type == "short") {
+                  delete descriptors.opts[i2].short;
+                }
+              }
+            }
+          } else {
+            puts("Conflicting flags: " + prefix + name2 + "\n");
+            puts(helpString());
+            process.exit(1);
+          }
+        }
+      }, "checkDup");
+      var opts2 = {};
+      for (var i = 0; i < options.length; i++) {
+        if (options[i].short)
+          checkDup(options[i], "short");
+        if (options[i].long)
+          checkDup(options[i], "long");
+      }
+      for (var i = 2; i < process.argv.length; i++) {
+        var inp = process.argv[i];
+        if (opts2[inp]) {
+          var opt = opts2[inp];
+          if (!opt.value) {
+            if (opt.callback)
+              opt.callback(true);
+            if (opt.short)
+              values[opt.short] = true;
+            if (opt.long)
+              values[opt.long] = true;
+          } else {
+            var next = process.argv[i + 1];
+            if (!next || opts2[next]) {
+              var flag = opt.short || opt.long;
+              errors.push("Missing value for option: " + flag);
+              if (opt.short)
+                values[opt.short] = true;
+              if (opt.long)
+                values[opt.long] = true;
+            } else {
+              if (opt.callback)
+                opt.callback(next);
+              if (opt.short)
+                values[opt.short] = next;
+              if (opt.long)
+                values[opt.long] = next;
+              i++;
+            }
+          }
+        } else {
+          if (inp[0] == "-") {
+            puts("Unknown option: " + inp);
+            if (opts2["--help"])
+              puts("Try --help");
+            process.exit(1);
+          } else {
+            argv.push(inp);
+            var arg2 = params.shift();
+            if (arg2) {
+              args[arg2.name] = inp;
+              if (arg2.callback)
+                arg2.callback(inp);
+            }
+          }
+        }
+      }
+      for (var i = 0; i < options.length; i++) {
+        var flag = options[i].short || options[i].long;
+        if (options[i].required && !exports.get(flag)) {
+          errors.push("Missing required option: " + flag);
+        }
+      }
+      for (var i = 0; i < params.length; i++) {
+        if (params[i].required && !args[params[i].name]) {
+          errors.push("Missing required argument: " + params[i].name);
+        }
+      }
+      if (errors.length) {
+        for (var i = 0; i < errors.length; i++)
+          puts(errors[i]);
+        puts("\n" + helpString());
+        process.exit(1);
+      }
+    };
+    exports.get = function(opt) {
+      return values[opt] || values["-" + opt] || values["--" + opt];
+    };
+    exports.values = function() {
+      return Object.keys(values).reduce(function(dict, name2) {
+        name2 = name2.replace("/^-+/", "");
+        dict[name2] = exports.get(name2);
+        return dict;
+      }, {});
+    };
+    exports.args = function() {
+      return argv;
+    };
+    exports.arg = function(name2) {
+      return args[name2];
+    };
+    exports.help = function() {
+      puts(helpString());
+      process.exit(0);
+    };
+    var helpString = /* @__PURE__ */ __name(function() {
+      var exe = process.argv[0].split(require("path").sep).pop();
+      var file = process.argv[1].replace(process.cwd(), ".");
+      var str = "Usage: " + exe + " " + file;
+      if (descriptors.opts.length)
+        str += " [options]";
+      if (descriptors.args.length) {
+        for (var i = 0; i < descriptors.args.length; i++) {
+          if (descriptors.args[i].required) {
+            str += " " + descriptors.args[i].name;
+          } else {
+            str += " [" + descriptors.args[i].name + "]";
+          }
+        }
+      }
+      str += "\n";
+      for (var i = 0; i < descriptors.opts.length; i++) {
+        var opt = descriptors.opts[i];
+        if (opt.description)
+          str += opt.description + "\n";
+        var line = "";
+        if (opt.short && !opt.long)
+          line += "-" + opt.short;
+        else if (opt.long && !opt.short)
+          line += "--" + opt.long;
+        else
+          line += "-" + opt.short + ", --" + opt.long;
+        if (opt.value)
+          line += " <value>";
+        if (opt.required)
+          line += " (required)";
+        str += "    " + line + "\n";
+      }
+      return str;
+    }, "helpString");
+  }
+});
+
 // node_modules/.pnpm/ms@2.0.0/node_modules/ms/index.js
 var require_ms = __commonJS({
   "node_modules/.pnpm/ms@2.0.0/node_modules/ms/index.js"(exports, module2) {
@@ -108,14 +301,14 @@ var require_ms = __commonJS({
       return plural(ms, d, "day") || plural(ms, h, "hour") || plural(ms, m, "minute") || plural(ms, s, "second") || ms + " ms";
     }
     __name(fmtLong, "fmtLong");
-    function plural(ms, n, name) {
+    function plural(ms, n, name2) {
       if (ms < n) {
         return;
       }
       if (ms < n * 1.5) {
-        return Math.floor(ms / n) + " " + name;
+        return Math.floor(ms / n) + " " + name2;
       }
-      return Math.ceil(ms / n) + " " + name + "s";
+      return Math.ceil(ms / n) + " " + name2 + "s";
     }
     __name(plural, "plural");
   }
@@ -213,15 +406,15 @@ var require_debug = __commonJS({
       exports.enable("");
     }
     __name(disable, "disable");
-    function enabled(name) {
+    function enabled(name2) {
       var i, len;
       for (i = 0, len = exports.skips.length; i < len; i++) {
-        if (exports.skips[i].test(name)) {
+        if (exports.skips[i].test(name2)) {
           return false;
         }
       }
       for (i = 0, len = exports.names.length; i < len; i++) {
-        if (exports.names[i].test(name)) {
+        if (exports.names[i].test(name2)) {
           return true;
         }
       }
@@ -379,15 +572,15 @@ var require_node = __commonJS({
       return util.inspect(v, this.inspectOpts);
     };
     function formatArgs(args) {
-      var name = this.namespace;
+      var name2 = this.namespace;
       var useColors2 = this.useColors;
       if (useColors2) {
         var c = this.color;
-        var prefix = "  \x1B[3" + c + ";1m" + name + " \x1B[0m";
+        var prefix = "  \x1B[3" + c + ";1m" + name2 + " \x1B[0m";
         args[0] = prefix + args[0].split("\n").join("\n" + prefix);
         args.push("\x1B[3" + c + "m+" + exports.humanize(this.diff) + "\x1B[0m");
       } else {
-        args[0] = new Date().toUTCString() + " " + name + " " + args[0];
+        args[0] = new Date().toUTCString() + " " + name2 + " " + args[0];
       }
     }
     __name(formatArgs, "formatArgs");
@@ -885,8 +1078,8 @@ var require_kind_of2 = __commonJS({
       return typeof val.flags === "string" && typeof val.ignoreCase === "boolean" && typeof val.multiline === "boolean" && typeof val.global === "boolean";
     }
     __name(isRegexp, "isRegexp");
-    function isGeneratorFn(name, val) {
-      return ctorName(name) === "GeneratorFunction";
+    function isGeneratorFn(name2, val) {
+      return ctorName(name2) === "GeneratorFunction";
     }
     __name(isGeneratorFn, "isGeneratorFn");
     function isGeneratorObj(val) {
@@ -1061,8 +1254,8 @@ var require_utils = __commonJS({
       return streamSize(options, "stdout") || streamSize(options, "stderr") || envSize() || ttySize(options);
     }
     __name(windowSize, "windowSize");
-    function streamSize(options, name) {
-      var stream = process && process[name] || options[name];
+    function streamSize(options, name2) {
+      var stream = process && process[name2] || options[name2];
       var size;
       if (!stream)
         return;
@@ -1072,7 +1265,7 @@ var require_utils = __commonJS({
           return {
             width: size[0],
             height: size[1],
-            type: name
+            type: name2
           };
         }
       }
@@ -1081,7 +1274,7 @@ var require_utils = __commonJS({
         return {
           width: Number(size[0]),
           height: Number(size[1]),
-          type: name
+          type: name2
         };
       }
     }
@@ -3147,11 +3340,11 @@ var require_ansi_styles = __commonJS({
       const offset = isBackground ? 10 : 0;
       const styles = {};
       for (const [sourceSpace, suite] of Object.entries(colorConvert)) {
-        const name = sourceSpace === "ansi16" ? "ansi" : sourceSpace;
+        const name2 = sourceSpace === "ansi16" ? "ansi" : sourceSpace;
         if (sourceSpace === targetSpace) {
-          styles[name] = wrap(identity, offset);
+          styles[name2] = wrap(identity, offset);
         } else if (typeof suite === "object") {
-          styles[name] = wrap(suite[targetSpace], offset);
+          styles[name2] = wrap(suite[targetSpace], offset);
         }
       }
       return styles;
@@ -3435,7 +3628,7 @@ var require_templates = __commonJS({
       return ESCAPES.get(c) || c;
     }
     __name(unescape, "unescape");
-    function parseArguments(name, arguments_) {
+    function parseArguments(name2, arguments_) {
       const results = [];
       const chunks = arguments_.trim().split(/\s*,\s*/g);
       let matches;
@@ -3446,7 +3639,7 @@ var require_templates = __commonJS({
         } else if (matches = chunk.match(STRING_REGEX)) {
           results.push(matches[2].replace(ESCAPE_REGEX, (m, escape, character) => escape ? unescape(escape) : character));
         } else {
-          throw new Error(`Invalid Chalk template style argument: ${chunk} (in style '${name}')`);
+          throw new Error(`Invalid Chalk template style argument: ${chunk} (in style '${name2}')`);
         }
       }
       return results;
@@ -3457,12 +3650,12 @@ var require_templates = __commonJS({
       const results = [];
       let matches;
       while ((matches = STYLE_REGEX.exec(style)) !== null) {
-        const name = matches[1];
+        const name2 = matches[1];
         if (matches[2]) {
-          const args = parseArguments(name, matches[2]);
-          results.push([name].concat(args));
+          const args = parseArguments(name2, matches[2]);
+          results.push([name2].concat(args));
         } else {
-          results.push([name]);
+          results.push([name2]);
         }
       }
       return results;
@@ -3698,355 +3891,118 @@ var require_source = __commonJS({
   }
 });
 
-// node_modules/.pnpm/opts@2.0.2/node_modules/opts/src/opts.js
-var require_opts = __commonJS({
-  "node_modules/.pnpm/opts@2.0.2/node_modules/opts/src/opts.js"(exports) {
-    var puts = console.log;
-    var values = {};
-    var args = {};
-    var argv = [];
-    var errors = [];
-    var descriptors = { opts: [], args: [] };
-    exports.version = "2.0.2";
-    exports.add = function(options, namespace) {
-      for (var i = 0; i < options.length; i++) {
-        options[i].namespace = namespace;
-        descriptors.opts.push(options[i]);
-      }
-    };
-    exports.parse = function(options, params, help) {
-      if (params === true) {
-        help = true;
-        params = [];
-      } else if (!params) {
-        params = [];
-      } else {
-        for (var i = 0; i < params.length; i++) {
-          descriptors.args.push(params[i]);
-        }
-      }
-      if (help) {
-        options.push({
-          long: "help",
-          description: "Show this help message",
-          callback: exports.help
-        });
-      }
-      for (var i = 0; i < options.length; i++) {
-        descriptors.opts.unshift(options[i]);
-      }
-      options = descriptors.opts;
-      var checkDup = /* @__PURE__ */ __name(function(opt2, type) {
-        var prefix = type == "short" ? "-" : "--";
-        var name = opt2[type];
-        if (!opts2[prefix + name]) {
-          opts2[prefix + name] = opt2;
-        } else {
-          if (opt2.namespace && !opts2[prefix + opt2.namespace + "." + name]) {
-            opts2[prefix + opt2.namespace + "." + name] = opt2;
-            for (var i2 = 0; i2 < descriptors.opts.length; i2++) {
-              var desc = descriptors.opts[i2];
-              if (desc.namespace == opt2.namespace) {
-                if (type == "long" && desc.long == opt2.long) {
-                  descriptors.opts[i2].long = opt2.namespace + "." + opt2.long;
-                } else if (type == "short") {
-                  delete descriptors.opts[i2].short;
-                }
-              }
-            }
-          } else {
-            puts("Conflicting flags: " + prefix + name + "\n");
-            puts(helpString());
-            process.exit(1);
-          }
-        }
-      }, "checkDup");
-      var opts2 = {};
-      for (var i = 0; i < options.length; i++) {
-        if (options[i].short)
-          checkDup(options[i], "short");
-        if (options[i].long)
-          checkDup(options[i], "long");
-      }
-      for (var i = 2; i < process.argv.length; i++) {
-        var inp = process.argv[i];
-        if (opts2[inp]) {
-          var opt = opts2[inp];
-          if (!opt.value) {
-            if (opt.callback)
-              opt.callback(true);
-            if (opt.short)
-              values[opt.short] = true;
-            if (opt.long)
-              values[opt.long] = true;
-          } else {
-            var next = process.argv[i + 1];
-            if (!next || opts2[next]) {
-              var flag = opt.short || opt.long;
-              errors.push("Missing value for option: " + flag);
-              if (opt.short)
-                values[opt.short] = true;
-              if (opt.long)
-                values[opt.long] = true;
-            } else {
-              if (opt.callback)
-                opt.callback(next);
-              if (opt.short)
-                values[opt.short] = next;
-              if (opt.long)
-                values[opt.long] = next;
-              i++;
-            }
-          }
-        } else {
-          if (inp[0] == "-") {
-            puts("Unknown option: " + inp);
-            if (opts2["--help"])
-              puts("Try --help");
-            process.exit(1);
-          } else {
-            argv.push(inp);
-            var arg2 = params.shift();
-            if (arg2) {
-              args[arg2.name] = inp;
-              if (arg2.callback)
-                arg2.callback(inp);
-            }
-          }
-        }
-      }
-      for (var i = 0; i < options.length; i++) {
-        var flag = options[i].short || options[i].long;
-        if (options[i].required && !exports.get(flag)) {
-          errors.push("Missing required option: " + flag);
-        }
-      }
-      for (var i = 0; i < params.length; i++) {
-        if (params[i].required && !args[params[i].name]) {
-          errors.push("Missing required argument: " + params[i].name);
-        }
-      }
-      if (errors.length) {
-        for (var i = 0; i < errors.length; i++)
-          puts(errors[i]);
-        puts("\n" + helpString());
-        process.exit(1);
-      }
-    };
-    exports.get = function(opt) {
-      return values[opt] || values["-" + opt] || values["--" + opt];
-    };
-    exports.values = function() {
-      return Object.keys(values).reduce(function(dict, name) {
-        name = name.replace("/^-+/", "");
-        dict[name] = exports.get(name);
-        return dict;
-      }, {});
-    };
-    exports.args = function() {
-      return argv;
-    };
-    exports.arg = function(name) {
-      return args[name];
-    };
-    exports.help = function() {
-      puts(helpString());
-      process.exit(0);
-    };
-    var helpString = /* @__PURE__ */ __name(function() {
-      var exe = process.argv[0].split(require("path").sep).pop();
-      var file = process.argv[1].replace(process.cwd(), ".");
-      var str = "Usage: " + exe + " " + file;
-      if (descriptors.opts.length)
-        str += " [options]";
-      if (descriptors.args.length) {
-        for (var i = 0; i < descriptors.args.length; i++) {
-          if (descriptors.args[i].required) {
-            str += " " + descriptors.args[i].name;
-          } else {
-            str += " [" + descriptors.args[i].name + "]";
-          }
-        }
-      }
-      str += "\n";
-      for (var i = 0; i < descriptors.opts.length; i++) {
-        var opt = descriptors.opts[i];
-        if (opt.description)
-          str += opt.description + "\n";
-        var line = "";
-        if (opt.short && !opt.long)
-          line += "-" + opt.short;
-        else if (opt.long && !opt.short)
-          line += "--" + opt.long;
-        else
-          line += "-" + opt.short + ", --" + opt.long;
-        if (opt.value)
-          line += " <value>";
-        if (opt.required)
-          line += " (required)";
-        str += "    " + line + "\n";
-      }
-      return str;
-    }, "helpString");
-  }
-});
-
 // src/lib/cli.ts
-var import_fs = require("fs");
-var import_readline_ui = __toESM(require_readline_ui());
-var import_chalk = __toESM(require_source());
 var opts = __toESM(require_opts());
+var import_fs = require("fs");
 var import_path = require("path");
-var Launcher = class {
-  constructor(config) {
-    this.config = config;
-    this.output = "evaluate";
-    this.runFile = false;
-    this.runRepl = false;
-    this.runPipe = false;
-    this.configured = false;
+var CliRunner = class {
+  constructor(lang) {
+    this.lang = lang;
   }
-  drive(runner) {
-    this.configure();
-    runner.target = this.output;
-    const FormatFns = this.config.Formatters;
-    const format = FormatFns[this.output] || console.log.bind(console);
+  run() {
+    const [driver, { runFile, runPipe, runRepl }] = this.configure();
     let result;
-    if (this.runFile)
-      result = runner.run((0, import_fs.readFileSync)((0, import_path.resolve)(this.runFile)).toString());
-    if (this.runPipe)
-      result = runner.run((0, import_fs.readFileSync)("/dev/stdin").toString());
-    format(result);
-    if (!this.runRepl) {
-      process.exit(runner.status);
+    if (runFile)
+      result = driver.run((0, import_fs.readFileSync)((0, import_path.resolve)(runFile)).toString());
+    if (runPipe)
+      result = driver.run((0, import_fs.readFileSync)("/dev/stdin").toString());
+    if (!runRepl) {
+      console.log(result);
+      process.exit(driver.status);
     } else
-      new Repl(runner).run(format).then(() => {
-        console.log("good bye!");
-        process.exit(runner.status);
+      new Repl(driver).run().then(() => {
+        process.exit(driver.status);
       });
   }
   configure() {
-    if (this.configured)
-      return;
-    this.configured = true;
-    opts.parse([
-      {
-        long: "version",
-        short: "v",
-        description: "Displays the version and exits"
-      },
-      {
-        long: "tokenize",
-        short: "t",
-        description: "Emits the list of tokens (JSON)"
-      },
-      {
-        long: "parse",
-        short: "p",
-        description: "Emits the parse tree (CST/JSON)"
-      },
-      {
-        long: "repl",
-        short: "r",
-        description: "Launch a colorful REPL"
+    if (!this._configuration) {
+      opts.parse([
+        { description: "Displays the version and exits", short: "v", long: "version" },
+        { description: "Emits the list of tokens (JSON)", short: "t", long: "tokenize" },
+        { description: "Emits the parse tree (CST/JSON)", short: "p", long: "parse" },
+        { description: "Launch a colorful REPL", short: "r", long: "repl" }
+      ], [{ name: "file" }], true);
+      this._configuration = [
+        new Driver(this.lang, opts.get("tokenize") ? "Tokens" : opts.get("parse") ? "ParseTree" : "Evaluate"),
+        { runFile: false, runPipe: false, runRepl: false }
+      ];
+      const file = opts.arg("file");
+      if (file)
+        this._configuration[1].runFile = file;
+      if (opts.get("repl"))
+        this._configuration[1].runRepl = true;
+      else if (!file)
+        this._configuration[1].runPipe = true;
+      if (opts.get("version")) {
+        const { name: name2, version: version2, ...details } = this.lang.details;
+        console.log(`${name2}-${version2}`, details);
+        process.exit(0);
       }
-    ], [{ name: "file" }], true);
-    const file = opts.arg("file");
-    if (file)
-      this.runFile = file;
-    if (opts.get("repl"))
-      this.runRepl = true;
-    else if (!file)
-      this.runPipe = true;
-    this.output = "evaluate";
-    if (opts.get("tokenize"))
-      this.output = "tokenize";
-    if (opts.get("parse"))
-      this.output = "parse";
-    if (opts.get("version")) {
-      console.log(`${this.config.name}-${this.config.version}`);
-      process.exit(0);
     }
+    return this._configuration;
   }
 };
-__name(Launcher, "Launcher");
-var Repl = class {
-  constructor(runner) {
-    this.runner = runner;
-  }
-  async run(format) {
-    return new Promise((resolve2) => {
-      const ui = new import_readline_ui.default();
-      const prompt = import_chalk.default`{blue ?>} `;
-      ui.render(prompt);
-      ui.on("keypress", () => ui.render(prompt + ui.rl.line));
-      ui.on("line", (line) => {
-        ui.render(prompt + line);
-        ui.end();
-        ui.rl.pause();
-        try {
-          console.log(line);
-          if (line == ".quit.") {
-            return resolve2();
-          }
-          const value = this.runner.run(line);
-          console.log(import_chalk.default`{gray >>} ${format(value)}`);
-        } catch (e) {
-          console.log(e);
-        }
-        ui.rl.resume();
-        ui.render(prompt);
-      });
-    });
-  }
-};
-__name(Repl, "Repl");
+__name(CliRunner, "CliRunner");
 
-// src/lib/language.ts
-var Language = class {
-  constructor(TokenizerClass, ParserClass, EvaluatorClass) {
-    this.engine = new Engine(TokenizerClass, ParserClass, EvaluatorClass);
-    this.driver = new Driver(this.engine);
-  }
+// src/lib/driver.ts
+var STAGE = {
+  Tokens: "Tokens",
+  ParseTree: "ParseTree",
+  Evaluate: "Evaluate"
 };
-__name(Language, "Language");
-var Engine = class {
-  constructor(TokenizerClass, ParserClass, EvaluatorClass) {
-    this.TokenizerClass = TokenizerClass;
-    this.ParserClass = ParserClass;
-    this.EvaluatorClass = EvaluatorClass;
-  }
-  tokenize(source) {
-    return new this.TokenizerClass(source);
-  }
-  parse(source) {
-    const stream = this.tokenize(source);
-    return new this.ParserClass(stream).parse();
-  }
-  evaluate(source) {
-    const ast = this.parse(source);
-    const evaluator = new this.EvaluatorClass();
-    return ast.accept(evaluator);
-  }
-};
-__name(Engine, "Engine");
 var Driver = class {
-  constructor(engine) {
-    this.engine = engine;
+  constructor(lang, stage = "Evaluate") {
+    this.lang = lang;
+    this.stage = stage;
     this.status = 0;
-    this.target = "evaluate";
   }
-  run(program) {
-    return this.engine[this.target](program);
+  run(source) {
+    const stream = this.lang.scan(source);
+    if (this.stage == STAGE.Tokens)
+      return this.lang.tokenize(stream);
+    const ast = this.lang.parse(stream);
+    if (this.stage == STAGE.ParseTree)
+      return this.lang.print(ast);
+    return this.lang.evaluate(ast);
   }
 };
 __name(Driver, "Driver");
 
+// src/lib/language.ts
+var Language2 = class {
+  constructor(details, Classes) {
+    this.details = details;
+    this.Classes = Classes;
+  }
+  scan(source) {
+    return new this.Classes.Tokenizer(source);
+  }
+  tokenize(stream) {
+    return stream.drain().map((t) => `${t}`).join("\n");
+  }
+  parse(stream) {
+    return new this.Classes.Parser(stream).parse();
+  }
+  print(ast) {
+    if (!ast)
+      return "";
+    const printer = new this.Classes.PrettyPrinter();
+    return ast.accept(printer);
+  }
+  evaluate(ast) {
+    if (!ast)
+      return void 0;
+    const evaluator = new this.Classes.Evaluator();
+    return ast.accept(evaluator);
+  }
+};
+__name(Language2, "Language");
+
 // src/lib/tokenizer.ts
 var ERROR_TOKEN = "::error";
 var Token = class {
-  constructor(name, text, value, pos) {
-    this.name = name;
+  constructor(name2, text, value, pos) {
+    this.name = name2;
     this.text = text;
     this.value = value;
     this.pos = pos;
@@ -4117,11 +4073,11 @@ function* tokenGenerator(source, lexicon) {
   let idx = 0, line = 1, column = 1;
   while (idx < source.length) {
     const [
-      name = ERROR_TOKEN,
+      name2 = ERROR_TOKEN,
       text = source[idx],
       value
     ] = longest(possible());
-    const token = new Token(name, text, value, pos());
+    const token = new Token(name2, text, value, pos());
     const lines = text.split("\n").length;
     if (lines > 1) {
       line += lines - 1;
@@ -4143,19 +4099,19 @@ function* tokenGenerator(source, lexicon) {
   __name(longest, "longest");
   function possible() {
     const candidates = [];
-    Object.entries(lexicon).map(([name, rule]) => {
+    Object.entries(lexicon).map(([name2, rule]) => {
       const [lexeme, valueFn = /* @__PURE__ */ __name((val) => val, "valueFn")] = Array.isArray(rule) ? rule : [rule];
       if (typeof lexeme == "function") {
         const text = lexeme(source.substring(idx));
         if (text)
-          candidates.push([name, text, valueFn(text)]);
+          candidates.push([name2, text, valueFn(text)]);
       } else if (typeof lexeme != "string") {
         const regex = new RegExp(`^${lexeme.source}`, lexeme.flags);
         const match = regex.exec(source.substring(idx));
         if (match)
-          return candidates.push([name, match[0], valueFn(match[0])]);
+          return candidates.push([name2, match[0], valueFn(match[0])]);
       } else if (source.substring(idx, idx + lexeme.length) == rule) {
-        return candidates.push([name, lexeme, valueFn(lexeme)]);
+        return candidates.push([name2, lexeme, valueFn(lexeme)]);
       }
     });
     return candidates;
@@ -4171,20 +4127,20 @@ var Parser = class {
     this.tokens = stream.drain();
   }
   parse() {
-    return this.tokens;
+    return void 0;
   }
   match(...names) {
-    for (const name of names) {
-      if (this.check(name)) {
+    for (const name2 of names) {
+      if (this.check(name2)) {
         this.advance();
         return true;
       }
     }
     return false;
   }
-  check(name) {
+  check(name2) {
     var _a;
-    return ((_a = this.peek()) == null ? void 0 : _a.name) == name;
+    return ((_a = this.peek()) == null ? void 0 : _a.name) == name2;
   }
   atEnd() {
     return !this.peek().name;
@@ -4200,8 +4156,8 @@ var Parser = class {
   previous() {
     return this.tokens[this.current - 1];
   }
-  consume(name, message) {
-    if (this.check(name))
+  consume(name2, message) {
+    if (this.check(name2))
       this.advance();
     else
       throw `Error: ${this.peek()} ${message}`;
@@ -4209,10 +4165,37 @@ var Parser = class {
 };
 __name(Parser, "Parser");
 
-// package.json
-var version = "2022.06.23";
+// src/lib/repl.ts
+var import_readline_ui = __toESM(require_readline_ui());
+var import_chalk = __toESM(require_source());
+var Repl = class {
+  constructor(driver) {
+    this.driver = driver;
+  }
+  async run() {
+    return new Promise((resolve2) => {
+      const ui = new import_readline_ui.default();
+      const prompt = import_chalk.default`{blue ?>} `;
+      ui.render(prompt);
+      ui.on("keypress", () => ui.render(prompt + ui.rl.line));
+      ui.on("line", (line) => {
+        ui.render(prompt + line);
+        ui.end();
+        ui.rl.pause();
+        console.log(line);
+        if (line == ".quit.")
+          return resolve2(void 0);
+        const value = this.driver.run(line);
+        console.log(import_chalk.default`{gray >>} ${value}`);
+        ui.rl.resume();
+        ui.render(prompt);
+      });
+    });
+  }
+};
+__name(Repl, "Repl");
 
-// src/stoa.ts
+// src/ast-builder.ts
 function stringScanner(value) {
   const tokenizer = new TokenStream(value, {
     SINGLE: "'",
@@ -4383,21 +4366,8 @@ var Grouping = class {
   }
 };
 __name(Grouping, "Grouping");
-var LoxPrettyPrinter = class {
-  Literal(expr) {
-    return JSON.stringify(expr.value);
-  }
-  Unary(expr) {
-    return `(${expr.operator.text} ${expr.right.accept(this)})`;
-  }
-  Binary(expr) {
-    return `(${expr.operator.text} ${expr.left.accept(this)} ${expr.right.accept(this)})`;
-  }
-  Grouping(expr) {
-    return `${expr.inner.accept(this)}`;
-  }
-};
-__name(LoxPrettyPrinter, "LoxPrettyPrinter");
+
+// src/runtime.ts
 var LoxEvaluator = class {
   Literal(expr) {
     return JSON.parse(JSON.stringify(expr.value));
@@ -4428,25 +4398,40 @@ var LoxEvaluator = class {
   }
 };
 __name(LoxEvaluator, "LoxEvaluator");
-var Lox = new Language(LoxScanner, LoxParser, LoxEvaluator);
-new Launcher({
-  name: "lox",
-  version,
-  Formatters: {
-    tokenize(stream) {
-      if (!stream)
-        return;
-      const tokens = stream.drain();
-      console.log(tokens.map((token) => token.toString()).join("\n"));
-    },
-    parse(ast) {
-      if (!ast)
-        return;
-      const str = ast.accept(new LoxPrettyPrinter());
-      console.log(str);
-    }
+
+// src/pretty-print.ts
+var LoxPrettyPrinter = class {
+  Literal(expr) {
+    return JSON.stringify(expr.value);
   }
-}).drive(Lox.driver);
+  Unary(expr) {
+    return `(${expr.operator.text} ${expr.right.accept(this)})`;
+  }
+  Binary(expr) {
+    return `(${expr.operator.text} ${expr.left.accept(this)} ${expr.right.accept(this)})`;
+  }
+  Grouping(expr) {
+    return `${expr.inner.accept(this)}`;
+  }
+};
+__name(LoxPrettyPrinter, "LoxPrettyPrinter");
+
+// package.json
+var name = "stoa";
+var description = "language framework";
+var version = "2022.06.23";
+var repository = "https://github.com/khtdr/stoa";
+var author = "Kay Oh <khtdr.com@gmail.com>";
+var license = "UNLICENSED";
+
+// src/stoa.ts
+var Lox = new Language2({ name, version, author, description, repository, license }, {
+  Tokenizer: LoxScanner,
+  Parser: LoxParser,
+  PrettyPrinter: LoxPrettyPrinter,
+  Evaluator: LoxEvaluator
+});
+new CliRunner(Lox).run();
 /*!
  * Determine if an object is a Buffer
  *

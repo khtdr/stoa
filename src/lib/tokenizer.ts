@@ -19,13 +19,13 @@ export class Token<Name = string> {
 }
 
 
-export class TokenStream<L5n extends Lexicon = {}> {
-    private generator: Generator<Token<keyof L5n>>
-    constructor(source: string, lexicon: L5n = {} as L5n) {
+export class TokenStream<Lx extends Lexicon> {
+    private generator: Generator<Token<keyof Lx>>
+    constructor(source: string, lexicon: Lx = {} as Lx) {
         this.generator = tokenGenerator(source, lexicon)
     }
 
-    private buffer: Token<keyof L5n>[] = []
+    private buffer: Token<keyof Lx>[] = []
     take() {
         if (this.buffer.length) return this.buffer.shift()
         return this.next()
@@ -34,7 +34,7 @@ export class TokenStream<L5n extends Lexicon = {}> {
         if (!this.buffer.length) this.buffer.push(this.next())
         return this.buffer[0]
     }
-    drain(): Token<keyof L5n>[] {
+    drain(): Token<keyof Lx>[] {
         let token, tokens = []
         while (token = this.take()) tokens.push(token)
         return tokens
@@ -55,18 +55,18 @@ export class TokenStream<L5n extends Lexicon = {}> {
     }
 
     public errors?: { char: string; line: number; column: number }[]
-    private error(token: Token<keyof L5n>) {
+    private error(token: Token<keyof Lx>) {
         this.errors = this.errors || []
         this.errors.push({ char: token.text, ...token.pos })
     }
 }
 
 export class TokenStreamClassFactory {
-    static build<L5n extends Lexicon>(lexicon: L5n)
-        : typeof TokenStream & { TOKENS: Record<keyof L5n, keyof L5n> } {
+    static build<Lx extends Lexicon>(lexicon: Lx)
+        : typeof TokenStream & { TOKENS: Record<keyof Lx, keyof Lx> } {
         const TOKENS = Object.keys(lexicon)
-            .reduce((a, c) => (a[c as keyof L5n] = c, a), {} as Record<keyof L5n, keyof L5n>)
-        class TokenStreamClassFactoryClass extends TokenStream {
+            .reduce((a, c) => (a[c as keyof Lx] = c, a), {} as Record<keyof Lx, keyof Lx>)
+        class TokenStreamClassFactoryClass extends TokenStream<{}> {
             constructor(source: string) {
                 super(source, lexicon)
             }
@@ -77,10 +77,10 @@ export class TokenStreamClassFactory {
 }
 
 
-function* tokenGenerator<L5n extends Lexicon>(
+function* tokenGenerator<Lx extends Lexicon>(
     source: string,
-    lexicon: L5n
-): Generator<Token<keyof L5n>> {
+    lexicon: Lx
+): Generator<Token<keyof Lx>> {
     let idx = 0, line = 1, column = 1
     while (idx < source.length) {
         const [
@@ -103,13 +103,13 @@ function* tokenGenerator<L5n extends Lexicon>(
     function pos() {
         return { line: line, column: column }
     }
-    function longest(candidates: Array<[keyof L5n, string, unknown]>) {
+    function longest(candidates: [keyof Lx, string, unknown][]) {
         if (!candidates.length) return []
         return candidates.reduce((longest, current) =>
             current[1]!.length > longest[1]!.length ? current : longest)
     }
     function possible() {
-        const candidates: Array<[keyof L5n, string, unknown]> = [];
+        const candidates: [keyof Lx, string, unknown][] = [];
         Object.entries(lexicon).map(([name, rule]) => {
             const [lexeme, valueFn = (val: string) => val] = Array.isArray(rule) ? rule : [rule]
             if (typeof lexeme == 'function') {

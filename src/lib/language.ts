@@ -1,52 +1,38 @@
-import { Parser } from "./parser"
-import { Lexicon, TokenStream } from "./tokenizer"
+import { Lexicon, Parser, TokenStream, Visitable } from "."
 
-export class Language<
-    T extends Lexicon,
-    K extends { accept(treewalker: any): any }
-    > {
-    readonly engine: Engine<T, K>
-    readonly driver: Driver<T, K>
+export class Language<Lx extends Lexicon, Ast extends Visitable> {
 
     constructor(
-        TokenizerClass: typeof TokenStream,
-        ParserClass: typeof Parser,
-        EvaluatorClass: new () => void,
-    ) {
-        this.engine = new Engine(TokenizerClass, ParserClass, EvaluatorClass)
-        this.driver = new Driver(this.engine)
-    }
-}
-
-class Engine<T extends Lexicon, K extends { accept(treewalker: any): any }> {
-    constructor(
-        private readonly TokenizerClass: typeof TokenStream,
-        private readonly ParserClass: typeof Parser,
-        private readonly EvaluatorClass: new () => void
+        readonly details: { [key: string]: string; name: string; version: string },
+        readonly Classes: {
+            Tokenizer: typeof TokenStream
+            Parser: new (stream: TokenStream<Lx>) => Parser<Lx, Ast>;
+            PrettyPrinter: new () => void
+            Evaluator: new () => void
+        }
     ) { }
-    tokenize(source: string): TokenStream<T> {
-        return new this.TokenizerClass<T>(source)
+
+    scan(source: string): TokenStream<Lx> {
+        return new this.Classes.Tokenizer(source)
     }
-    parse(source: string): K {
-        const stream = this.tokenize(source)
-        return new this.ParserClass<T, K>(stream).parse()
+
+    tokenize(stream: TokenStream<Lx>): string {
+        return stream.drain().map(t => `${t}`).join('\n')
     }
-    evaluate(source: string) {
-        const ast = this.parse(source)
-        const evaluator = new this.EvaluatorClass()
+
+    parse(stream: TokenStream<Lx>): Ast | undefined {
+        return new this.Classes.Parser(stream).parse()
+    }
+
+    print(ast?: Ast): string {
+        if (!ast) return ''
+        const printer = new this.Classes.PrettyPrinter()
+        return ast.accept(printer)
+    }
+
+    evaluate(ast?: Ast): string | number | boolean | object | undefined {
+        if (!ast) return undefined
+        const evaluator = new this.Classes.Evaluator()
         return ast.accept(evaluator)
-    }
-}
-
-class Driver<T extends Lexicon, K extends { accept(treewalker: any): any }> {
-    constructor(
-        private readonly engine: Engine<T, K>
-    ) { }
-
-    public status = 0
-    public target: 'tokenize' | 'parse' | 'evaluate' = 'evaluate'
-
-    run(program: string) {
-        return this.engine[this.target](program)
     }
 }

@@ -1,14 +1,20 @@
-import { Lexicon, Token, TokenStream } from "./tokenizer"
+import { Lexicon, Token, TokenStream } from "."
 
-export class Parser<T extends Lexicon, K> {
-    tokens: Token<keyof T>[]
-    current = 0
-    constructor(stream: TokenStream<T>) {
+export type Visitable<Ast = any> = {
+    accept(visitor: Ast): any
+}
+
+export class Parser<Lx extends Lexicon, Ast extends Visitable> {
+    constructor(stream: TokenStream<Lx>) {
         this.tokens = stream.drain()
     }
-    parse(): K { return this.tokens as unknown as K }
 
-    match(...names: string[]): boolean {
+    parse(): Ast | undefined { return undefined }
+
+    private tokens: Token<keyof Lx>[]
+    private current = 0
+
+    protected match(...names: string[]): boolean {
         for (const name of names) {
             if (this.check(name)) {
                 this.advance()
@@ -18,28 +24,28 @@ export class Parser<T extends Lexicon, K> {
         return false
     }
 
-    check(name: string): boolean {
+    protected check(name: string): boolean {
         return this.peek()?.name == name
     }
 
-    atEnd(): boolean {
+    protected atEnd(): boolean {
         return !this.peek().name
     }
 
-    advance(): Token<keyof T> {
+    protected advance(): Token<keyof Lx> {
         if (!this.atEnd()) this.current++
         return this.previous()
     }
 
-    peek(): Token<keyof T> {
+    protected peek(): Token<keyof Lx> {
         return this.tokens[this.current]
     }
 
-    previous(): Token<keyof T> {
+    protected previous(): Token<keyof Lx> {
         return this.tokens[this.current - 1]
     }
 
-    consume(name: string, message: string) {
+    protected consume(name: string, message: string) {
         if (this.check(name)) this.advance()
         else throw `Error: ${this.peek()} ${message}`
     }
