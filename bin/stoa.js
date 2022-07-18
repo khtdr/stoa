@@ -3633,9 +3633,9 @@ var require_templates = __commonJS({
       const chunks = arguments_.trim().split(/\s*,\s*/g);
       let matches;
       for (const chunk of chunks) {
-        const number = Number(chunk);
-        if (!Number.isNaN(number)) {
-          results.push(number);
+        const number2 = Number(chunk);
+        if (!Number.isNaN(number2)) {
+          results.push(number2);
         } else if (matches = chunk.match(STRING_REGEX)) {
           results.push(matches[2].replace(ESCAPE_REGEX, (m, escape, character) => escape ? unescape(escape) : character));
         } else {
@@ -3891,40 +3891,62 @@ var require_source = __commonJS({
   }
 });
 
+// package.json
+var name = "stoa";
+var description = "language framework";
+var version = "2022.06.23";
+var repository = "https://github.com/khtdr/stoa";
+var author = "Kay Oh <khtdr.com@gmail.com>";
+var license = "UNLICENSED";
+
 // src/lib/cli.ts
 var opts = __toESM(require_opts());
 var import_fs = require("fs");
 var import_path = require("path");
-var CliRunner = class {
-  constructor(lang) {
+var CliDriver = class {
+  constructor(lang, treewalkers = {}) {
     this.lang = lang;
+    this.treewalkers = treewalkers;
   }
   run() {
-    const [driver, { runFile, runPipe, runRepl }] = this.configure();
-    let result;
+    const [driver, { runFile, runPipe, runRepl, tokenize }] = this.configure();
+    let out = { result: void 0, tokens: [] };
     if (runFile)
-      result = driver.run((0, import_fs.readFileSync)((0, import_path.resolve)(runFile)).toString());
+      out = driver.run((0, import_fs.readFileSync)((0, import_path.resolve)(runFile)).toString());
     if (runPipe)
-      result = driver.run((0, import_fs.readFileSync)("/dev/stdin").toString());
-    if (!runRepl) {
-      console.log(result);
-      process.exit(driver.status);
-    } else
-      new Repl(driver).run().then(() => {
+      out = driver.run((0, import_fs.readFileSync)("/dev/stdin").toString());
+    if (runRepl) {
+      new Repl(driver).run(tokenize).then(() => {
         process.exit(driver.status);
       });
+    } else {
+      console.log(tokenize ? out.tokens.join("\n") : out.result);
+      process.exit(driver.status);
+    }
   }
   configure() {
     if (!this._configuration) {
       opts.parse([
-        { description: "Displays the version and exits", short: "v", long: "version" },
-        { description: "Emits the list of tokens (JSON)", short: "t", long: "tokenize" },
-        { description: "Emits the parse tree (CST/JSON)", short: "p", long: "parse" },
-        { description: "Launch a colorful REPL", short: "r", long: "repl" }
+        {
+          description: "Displays the version and exits",
+          short: "v",
+          long: "version"
+        },
+        {
+          description: "Emits the list of tokens (JSON)",
+          short: "t",
+          long: "tokenize"
+        },
+        {
+          description: "Emits the parse tree (CST/JSON)",
+          short: "p",
+          long: "parse"
+        },
+        { description: "Launches a colorful REPL", short: "r", long: "repl" }
       ], [{ name: "file" }], true);
       this._configuration = [
-        new Driver(this.lang, opts.get("tokenize") ? "Tokens" : opts.get("parse") ? "ParseTree" : "Evaluate"),
-        { runFile: false, runPipe: false, runRepl: false }
+        new Driver(this.lang, opts.get("parse") ? new this.treewalkers.Printer() : new this.treewalkers.Evaluator()),
+        { tokenize: !!opts.get("tokenize"), runFile: false, runPipe: false, runRepl: false }
       ];
       const file = opts.arg("file");
       if (file)
@@ -3942,64 +3964,52 @@ var CliRunner = class {
     return this._configuration;
   }
 };
-__name(CliRunner, "CliRunner");
+__name(CliDriver, "CliDriver");
 
 // src/lib/driver.ts
-var STAGE = {
-  Tokens: "Tokens",
-  ParseTree: "ParseTree",
-  Evaluate: "Evaluate"
-};
 var Driver = class {
-  constructor(lang, stage = "Evaluate") {
+  constructor(lang, treewalker) {
     this.lang = lang;
-    this.stage = stage;
+    this.treewalker = treewalker;
     this.status = 0;
   }
   run(source) {
-    const stream = this.lang.scan(source);
-    if (this.stage == STAGE.Tokens)
-      return this.lang.tokenize(stream);
-    const ast = this.lang.parse(stream);
-    if (this.stage == STAGE.ParseTree)
-      return this.lang.print(ast);
-    return this.lang.evaluate(ast);
+    const tokens = this.lang.scan(source);
+    if (!tokens)
+      throw new Error("failed to tokenize");
+    const ast = this.lang.parse(tokens);
+    if (!ast)
+      throw new Error("failed to parse");
+    const result = this.treewalker.visit(ast);
+    return { tokens, result };
   }
 };
 __name(Driver, "Driver");
 
 // src/lib/language.ts
 var Language2 = class {
-  constructor(details, Classes) {
-    this.details = details;
-    this.Classes = Classes;
+  constructor(details = {}, frontend = {}) {
+    this.details = {
+      ...details,
+      name: details.name ?? "nameless-lang",
+      version: details.version ?? "0.0.experimental"
+    };
+    this.frontend = {
+      Scanner: frontend.Scanner || TokenStreamClassFactory.buildTokenStreamClass({ CHAR: /./ }),
+      Parser: frontend.Parser || AnyTokenParser
+    };
   }
   scan(source) {
-    return new this.Classes.Tokenizer(source);
+    return new this.frontend.Scanner(source).drain();
   }
-  tokenize(stream) {
-    return stream.drain().map((t) => `${t}`).join("\n");
-  }
-  parse(stream) {
-    return new this.Classes.Parser(stream).parse();
-  }
-  print(ast) {
-    if (!ast)
-      return "";
-    const printer = new this.Classes.PrettyPrinter();
-    return ast.accept(printer);
-  }
-  evaluate(ast) {
-    if (!ast)
-      return void 0;
-    const evaluator = new this.Classes.Evaluator();
-    return ast.accept(evaluator);
+  parse(tokens) {
+    return new this.frontend.Parser(tokens).parse();
   }
 };
 __name(Language2, "Language");
 
 // src/lib/tokenizer.ts
-var ERROR_TOKEN = "::error";
+var ERROR_TOKEN = "__stoa__::error";
 var Token = class {
   constructor(name2, text, value, pos) {
     this.name = name2;
@@ -4015,14 +4025,16 @@ var Token = class {
 };
 __name(Token, "Token");
 var TokenStream = class {
-  constructor(source, lexicon = {}) {
+  constructor(source, lexicon = {}, reporter = new StdReporter()) {
+    this.reporter = reporter;
     this.buffer = [];
+    this.eof = false;
+    this.error = false;
     this.generator = tokenGenerator(source, lexicon);
   }
   take() {
-    if (this.buffer.length)
-      return this.buffer.shift();
-    return this.next();
+    this.peek();
+    return this.buffer.shift();
   }
   peek() {
     if (!this.buffer.length)
@@ -4036,27 +4048,32 @@ var TokenStream = class {
     return tokens;
   }
   next() {
+    if (this.eof)
+      return;
     while (true) {
       const token = this.generator.next().value;
-      if (!token)
+      if (!token) {
+        this.eof = true;
         break;
+      }
       if (token.name.toString().startsWith("_"))
         continue;
       if (token.name == ERROR_TOKEN) {
-        this.error(token);
+        this.err(token);
         continue;
       }
       return token;
     }
   }
-  error(token) {
-    this.errors = this.errors || [];
-    this.errors.push({ char: token.text, ...token.pos });
+  err(token) {
+    this.error = true;
+    const { text, pos: { line, column } } = token;
+    this.reporter.error(token, `Syntax error near ${text} at ${line}:${column}`);
   }
 };
 __name(TokenStream, "TokenStream");
 var TokenStreamClassFactory = class {
-  static build(lexicon) {
+  static buildTokenStreamClass(lexicon) {
     const TOKENS = Object.keys(lexicon).reduce((a, c) => (a[c] = c, a), {});
     class TokenStreamClassFactoryClass extends TokenStream {
       constructor(source) {
@@ -4072,11 +4089,7 @@ __name(TokenStreamClassFactory, "TokenStreamClassFactory");
 function* tokenGenerator(source, lexicon) {
   let idx = 0, line = 1, column = 1;
   while (idx < source.length) {
-    const [
-      name2 = ERROR_TOKEN,
-      text = source[idx],
-      value
-    ] = longest(possible());
+    const [name2 = ERROR_TOKEN, text = source[idx], value] = longest(possible());
     const token = new Token(name2, text, value, pos());
     const lines = text.split("\n").length;
     if (lines > 1) {
@@ -4122,9 +4135,10 @@ __name(tokenGenerator, "tokenGenerator");
 
 // src/lib/parser.ts
 var Parser = class {
-  constructor(stream) {
+  constructor(tokens, reporter = new StdReporter()) {
+    this.tokens = tokens;
+    this.reporter = reporter;
     this.current = 0;
-    this.tokens = stream.drain();
   }
   parse() {
     return void 0;
@@ -4137,6 +4151,12 @@ var Parser = class {
       }
     }
     return false;
+  }
+  consume(name2, message) {
+    if (this.check(name2))
+      this.advance();
+    else
+      throw `Error: ${this.peek()} ${message}`;
   }
   check(name2) {
     var _a;
@@ -4156,14 +4176,34 @@ var Parser = class {
   previous() {
     return this.tokens[this.current - 1];
   }
-  consume(name2, message) {
-    if (this.check(name2))
-      this.advance();
-    else
-      throw `Error: ${this.peek()} ${message}`;
+  error(token, message = "Unexpected token") {
+    this.reporter.error(token, message);
+    return new ParseError(message);
   }
 };
 __name(Parser, "Parser");
+var Visitor = class {
+  visit(node) {
+    const name2 = node.constructor.name;
+    const fn = this[name2];
+    if (typeof fn == "function")
+      return fn.bind(this)(node);
+    throw new ParseError(`Unvisitable node: ${name2}`);
+  }
+};
+__name(Visitor, "Visitor");
+var ParseError = class extends Error {
+};
+__name(ParseError, "ParseError");
+var AnyTokenParser = class extends Parser {
+  parse() {
+    const tokens = [];
+    while (!this.atEnd())
+      tokens.push(this.advance());
+    return tokens;
+  }
+};
+__name(AnyTokenParser, "AnyTokenParser");
 
 // src/lib/repl.ts
 var import_readline_ui = __toESM(require_readline_ui());
@@ -4172,7 +4212,7 @@ var Repl = class {
   constructor(driver) {
     this.driver = driver;
   }
-  async run() {
+  async run(tokenize = false) {
     return new Promise((resolve2) => {
       const ui = new import_readline_ui.default();
       const prompt = import_chalk.default`{blue ?>} `;
@@ -4182,10 +4222,10 @@ var Repl = class {
         ui.render(prompt + line);
         ui.end();
         ui.rl.pause();
-        console.log(line);
         if (line == ".quit.")
           return resolve2(void 0);
-        const value = this.driver.run(line);
+        const out = this.driver.run(line);
+        const value = tokenize ? out.tokens.join("\n") : out.result;
         console.log(import_chalk.default`{gray >>} ${value}`);
         ui.rl.resume();
         ui.render(prompt);
@@ -4195,58 +4235,54 @@ var Repl = class {
 };
 __name(Repl, "Repl");
 
-// src/ast-builder.ts
-function stringScanner(value) {
-  const tokenizer = new TokenStream(value, {
-    SINGLE: "'",
-    DOUBLE: '"',
-    ESCAPED_CHAR: /\\./,
-    CHAR: /./
-  });
-  const opener = tokenizer.take();
-  if (["SINGLE", "DOUBLE"].includes(opener == null ? void 0 : opener.name)) {
-    let closer, text = opener.text;
-    while (closer = tokenizer.take()) {
-      text += closer.text;
-      if (closer.name == opener.name)
-        return text;
-    }
+// src/lib/reporter.ts
+var StdReporter = class {
+  error(token, message) {
+    const str = message ?? token.toString();
+    console.error(str);
   }
-}
-__name(stringScanner, "stringScanner");
-var LoxScanner = TokenStreamClassFactory.build({
-  NIL: "nil",
-  TRUE: "true",
+};
+__name(StdReporter, "StdReporter");
+
+// src/scanner.ts
+var Scanner = TokenStreamClassFactory.buildTokenStreamClass({
   FALSE: "false",
-  PLUS: "+",
-  DASH: "-",
-  STAR: "*",
-  SLASH: "/",
-  EQUAL: "=",
-  AND: /and/i,
-  OR: /or/i,
-  NOT: /not/i,
-  VAR: /var/i,
-  SEMICOLON: ";",
-  LEFT_PAREN: "(",
-  RIGHT_PAREN: ")",
-  LEFT_CURL: "{",
-  RIGHT_CURL: "}",
-  SUPER: "super",
-  EQUAL_EQUAL: "==",
-  BANG_EQUAL: "!=",
-  BANG: "!",
-  COMMA: ",",
-  LESS: "<",
-  GREATER: ">",
-  LESS_EQUAL: "<=",
-  GREATER_EQUAL: ">=",
   IDENTIFIER: /[a-z][a-z\d]*/i,
-  THIS: "this",
+  NIL: "nil",
+  NUMBER: [/\d+(\.\d+)?/, (text) => parseFloat(text)],
+  STRING: [stringScanner, (text) => {
+    if (['"', "'"].includes(text.substring(text.length - 1)))
+      return text.replace(/^.(.*).$/, "$1");
+    return text.replace(/^.(.*)$/, "$1");
+  }],
+  TRUE: "true",
+  AND: /and/i,
+  BANG: "!",
+  BANG_EQUAL: "!=",
+  DASH: "-",
+  EQUAL: "=",
+  EQUAL_EQUAL: "==",
+  GREATER: ">",
+  GREATER_EQUAL: ">=",
+  LESS: "<",
+  LESS_EQUAL: "<=",
+  NOT: /not/i,
+  OR: /or/i,
+  PLUS: "+",
+  SLASH: "/",
+  STAR: "*",
+  COLON: ":",
+  COMMA: ",",
   DOT: ".",
-  NUMBER: [/\d+(\.\d*)?/, (text) => parseFloat(text)],
-  STRING: [stringScanner, (text) => text.substring(1, text.length - 1)],
-  PRINT: /print/i,
+  LEFT_CURL: "{",
+  LEFT_PAREN: "(",
+  QUESTION: "?",
+  RIGHT_CURL: "}",
+  RIGHT_PAREN: ")",
+  SEMICOLON: ";",
+  SUPER: /super/i,
+  VAR: /var/i,
+  THIS: /this/i,
   FOR: /for/i,
   WHILE: /while/i,
   CLASS: /class/i,
@@ -4254,95 +4290,69 @@ var LoxScanner = TokenStreamClassFactory.build({
   ELSE: /else/i,
   FUN: /fun/i,
   RETURN: /return/i,
-  _COMMENT: [/\/\/.*/, (text) => text.substring(2).trim()],
+  _MULTI_LINE_COMMENT: cStyleCommentScanner,
+  _SINGLE_LINE_COMMENT: [/\/\/.*/, (text) => text.substring(2).trim()],
   _SPACE: /\s+/
 });
-var Lx = LoxScanner.TOKENS;
-var LoxParser = class extends Parser {
-  constructor(stream) {
-    super(stream);
-  }
-  parse() {
-    if (!this._parsed)
-      this._parsed = this.Expression();
-    return this._parsed;
-  }
-  Expression() {
-    return this.Equality();
-  }
-  Equality() {
-    let expr = this.Comparison();
-    while (this.match(Lx.BANG_EQUAL, Lx.EQUAL_EQUAL)) {
-      const operator = this.previous();
-      const right = this.Comparison();
-      expr = new Binary(expr, operator, right);
+var TOKEN = Scanner.TOKENS;
+function stringScanner(value, reporter = new StdReporter()) {
+  const tokenizer = new TokenStream(value, {
+    SINGLE: "'",
+    DOUBLE: '"',
+    ESCAPED_CHAR: /\\./,
+    CHAR: /.|\s/
+  });
+  const opener = tokenizer.take();
+  if (opener && ["SINGLE", "DOUBLE"].includes(opener.name)) {
+    let { text } = opener, closer;
+    while (closer = tokenizer.take()) {
+      text += closer.text;
+      if (closer.name == opener.name)
+        return text;
     }
-    return expr;
+    reporter.error(opener, `Expected to find a closing ${opener.text} for the string at ${opener.pos.line}:${opener.pos.column}`);
+    return text;
   }
-  Comparison() {
-    let expr = this.Term();
-    while (this.match(Lx.LESS, Lx.GREATER, Lx.LESS_EQUAL, Lx.GREATER_EQUAL)) {
-      const operator = this.previous();
-      const right = this.Term();
-      expr = new Binary(expr, operator, right);
+}
+__name(stringScanner, "stringScanner");
+function cStyleCommentScanner(value, reporter = new StdReporter()) {
+  const tokenizer = new TokenStream(value, {
+    OPEN: "/*",
+    CLOSE: "*/",
+    ESCAPED_CHAR: /\\./,
+    CHAR: /.|\s/
+  });
+  const opener = tokenizer.take();
+  if (opener && opener.name == "OPEN") {
+    let stack = 0, closer, text = opener.text;
+    while (closer = tokenizer.take()) {
+      text += closer.text;
+      if (closer.name == "OPEN")
+        stack += 1;
+      else if (closer.name == "CLOSE") {
+        if (!stack)
+          return text;
+        else
+          stack -= 1;
+      }
     }
-    return expr;
+    reporter.error(opener, `Expected to find a closing ${opener.text} for the comment at ${opener.pos.line}:${opener.pos.column}`);
+    return text;
   }
-  Term() {
-    let expr = this.Factor();
-    while (this.match(Lx.PLUS, Lx.DASH)) {
-      const operator = this.previous();
-      const right = this.Factor();
-      expr = new Binary(expr, operator, right);
-    }
-    return expr;
-  }
-  Factor() {
-    let expr = this.Unary();
-    while (this.match(Lx.STAR, Lx.SLASH)) {
-      const operator = this.previous();
-      const right = this.Unary();
-      expr = new Binary(expr, operator, right);
-    }
-    return expr;
-  }
-  Unary() {
-    if (this.match(Lx.BANG, Lx.DASH)) {
-      const operator = this.previous();
-      const right = this.Unary();
-      return new Unary(operator, right);
-    }
-    return this.Primary();
-  }
-  Primary() {
-    if (this.match(Lx.NUMBER, Lx.STRING, Lx.TRUE, Lx.FALSE, Lx.NIL)) {
-      return new Literal(this.previous().value);
-    }
-    if (this.match(Lx.LEFT_PAREN)) {
-      const expr = this.Expression();
-      this.consume(Lx.RIGHT_PAREN, 'Expected ")" after expression');
-      return new Grouping(expr);
-    }
-    throw `Expected expression at ${this.peek()}`;
-  }
-};
-__name(LoxParser, "LoxParser");
+}
+__name(cStyleCommentScanner, "cStyleCommentScanner");
+
+// src/ast.ts
 var Literal = class {
   constructor(value) {
     this.value = value;
   }
-  accept(visit) {
-    return visit.Literal(this);
-  }
 };
 __name(Literal, "Literal");
 var Unary = class {
-  constructor(operator, right) {
+  constructor(operator, operand) {
     this.operator = operator;
-    this.right = right;
-  }
-  accept(visit) {
-    return visit.Unary(this);
+    this.operand = operand;
   }
 };
 __name(Unary, "Unary");
@@ -4352,86 +4362,253 @@ var Binary = class {
     this.operator = operator;
     this.right = right;
   }
-  accept(visit) {
-    return visit.Binary(this);
-  }
 };
 __name(Binary, "Binary");
+var Ternary = class {
+  constructor(left, op1, middle, op2, right) {
+    this.left = left;
+    this.op1 = op1;
+    this.middle = middle;
+    this.op2 = op2;
+    this.right = right;
+  }
+};
+__name(Ternary, "Ternary");
 var Grouping = class {
   constructor(inner) {
     this.inner = inner;
   }
-  accept(visit) {
-    return visit.Grouping(this);
-  }
 };
 __name(Grouping, "Grouping");
+var Visitor2 = class extends Visitor {
+};
+__name(Visitor2, "Visitor");
 
-// src/runtime.ts
-var LoxEvaluator = class {
-  Literal(expr) {
-    return JSON.parse(JSON.stringify(expr.value));
+// src/parser.ts
+var Parser2 = class extends Parser {
+  parse() {
+    if (!this._parsed)
+      this._parsed = this.Expression();
+    return this._parsed;
   }
-  Unary(expr) {
-    const value = expr.right.accept(this);
-    if (expr.operator.text == "!")
-      return !value;
-    if (expr.operator.text == "-")
-      return -value;
-    throw "Unexpected Unary Operator";
+  Expression() {
+    return this.Comma();
   }
-  Binary(expr) {
-    const left = expr.left.accept(this);
-    const right = expr.right.accept(this);
-    if (expr.operator.text == "+")
-      return left + right;
-    if (expr.operator.text == "-")
-      return left - right;
-    if (expr.operator.text == "*")
-      return left * right;
-    if (expr.operator.text == "/")
-      return left / right;
-    throw "Unexpected Binary Operator";
+  Comma() {
+    let expr = this.Conditional();
+    while (this.match(TOKEN.COMMA)) {
+      const comma = this.previous();
+      const right = this.Conditional();
+      expr = new Binary(expr, comma, right);
+    }
+    return expr;
   }
-  Grouping(expr) {
-    return expr.inner.accept(this);
+  Conditional() {
+    let expr = this.Equality();
+    while (this.match(TOKEN.QUESTION)) {
+      const question = this.previous();
+      const middle = this.Equality();
+      this.consume(TOKEN.COLON, "Expected :");
+      const colon = this.previous();
+      const right = this.Equality();
+      expr = new Ternary(expr, question, middle, colon, right);
+    }
+    return expr;
+  }
+  Equality() {
+    let expr = this.Comparison();
+    while (this.match(TOKEN.BANG_EQUAL, TOKEN.EQUAL_EQUAL)) {
+      const operator = this.previous();
+      const right = this.Comparison();
+      expr = new Binary(expr, operator, right);
+    }
+    return expr;
+  }
+  Comparison() {
+    let expr = this.Term();
+    while (this.match(TOKEN.LESS, TOKEN.GREATER, TOKEN.LESS_EQUAL, TOKEN.GREATER_EQUAL)) {
+      const operator = this.previous();
+      const right = this.Term();
+      expr = new Binary(expr, operator, right);
+    }
+    return expr;
+  }
+  Term() {
+    let expr = this.Factor();
+    while (this.match(TOKEN.PLUS, TOKEN.DASH)) {
+      const operator = this.previous();
+      const right = this.Factor();
+      expr = new Binary(expr, operator, right);
+    }
+    return expr;
+  }
+  Factor() {
+    let expr = this.Unary();
+    while (this.match(TOKEN.STAR, TOKEN.SLASH)) {
+      const operator = this.previous();
+      const right = this.Unary();
+      expr = new Binary(expr, operator, right);
+    }
+    return expr;
+  }
+  Unary() {
+    while (this._InvalidUnary()) {
+    }
+    return this._ValidUnary();
+  }
+  _InvalidUnary() {
+    if (this.match(TOKEN.PLUS, TOKEN.STAR, TOKEN.SLASH)) {
+      this.reporter.error(this.previous(), "Binary operator is missing the left operand");
+      this.previous();
+      return this.Unary();
+    }
+    return;
+  }
+  _ValidUnary() {
+    if (this.match(TOKEN.BANG, TOKEN.DASH)) {
+      const operator = this.previous();
+      const right = this.Unary();
+      return new Unary(operator, right);
+    }
+    return this.Primary();
+  }
+  Primary() {
+    if (this.match(TOKEN.NUMBER, TOKEN.STRING, TOKEN.TRUE, TOKEN.FALSE, TOKEN.NIL)) {
+      return new Literal(this.previous().value);
+    }
+    if (this.match(TOKEN.LEFT_PAREN)) {
+      const expr = this.Expression();
+      this.consume(TOKEN.RIGHT_PAREN, 'Expected ")" after expression');
+      return new Grouping(expr);
+    }
+    throw `Expected expression at ${this.peek()}`;
+  }
+  synchronize() {
+    this.advance();
+    while (!this.atEnd()) {
+      if (this.previous().name == "SEMICOLON")
+        return;
+      switch (this.peek().name) {
+        case "CLASS":
+        case "FOR":
+        case "FUN":
+        case "IF":
+        case "RETURN":
+        case "VAR":
+        case "WHILE":
+          return;
+      }
+      this.advance();
+    }
   }
 };
-__name(LoxEvaluator, "LoxEvaluator");
+__name(Parser2, "Parser");
 
-// src/pretty-print.ts
-var LoxPrettyPrinter = class {
+// src/printer.ts
+var Printer = class extends Visitor2 {
   Literal(expr) {
     return JSON.stringify(expr.value);
   }
   Unary(expr) {
-    return `(${expr.operator.text} ${expr.right.accept(this)})`;
+    const operator = expr.operator.text;
+    const operand = this.visit(expr.operand);
+    return `(${operator} ${operand})`;
   }
   Binary(expr) {
-    return `(${expr.operator.text} ${expr.left.accept(this)} ${expr.right.accept(this)})`;
+    const operator = expr.operator.text;
+    const left = this.visit(expr.left);
+    const right = this.visit(expr.right);
+    return `(${operator} ${left} ${right})`;
+  }
+  Ternary(expr) {
+    const left = this.visit(expr.left);
+    const middle = this.visit(expr.middle);
+    const right = this.visit(expr.right);
+    return `(if ${left} ${middle} ${right})`;
   }
   Grouping(expr) {
-    return `${expr.inner.accept(this)}`;
+    const operand = this.visit(expr.inner);
+    return `${operand}`;
   }
 };
-__name(LoxPrettyPrinter, "LoxPrettyPrinter");
+__name(Printer, "Printer");
 
-// package.json
-var name = "stoa";
-var description = "language framework";
-var version = "2022.06.23";
-var repository = "https://github.com/khtdr/stoa";
-var author = "Kay Oh <khtdr.com@gmail.com>";
-var license = "UNLICENSED";
+// src/runtime.ts
+var Evaluator = class extends Visitor2 {
+  Literal(expr) {
+    return JSON.parse(JSON.stringify(expr.value));
+  }
+  Unary(expr) {
+    const { operator: { name: op } } = expr;
+    const value = this.visit(expr.operand);
+    if (op == TOKEN.BANG)
+      return !truthy(value);
+    if (op == TOKEN.DASH)
+      return -number(value);
+    throw new RuntimeError("Unexpected unary expression");
+  }
+  Binary(expr) {
+    const { operator: { name: op } } = expr;
+    const left = this.visit(expr.left);
+    const right = this.visit(expr.right);
+    if (typeof left == "string" || typeof right == "string" && op == TOKEN.PLUS)
+      return `${left}${right}`;
+    if (op == TOKEN.COMMA)
+      return right;
+    if (op == TOKEN.PLUS)
+      return number(left) + number(right);
+    if (op == TOKEN.DASH)
+      return number(left) - number(right);
+    if (op == TOKEN.STAR)
+      return number(left) * number(right);
+    if (op == TOKEN.SLASH)
+      return number(left) / number(right);
+    if (op == TOKEN.GREATER)
+      return number(left) > number(right);
+    if (op == TOKEN.GREATER_EQUAL)
+      return number(left) >= number(right);
+    if (op == TOKEN.LESS)
+      return number(left) < number(right);
+    if (op == TOKEN.LESS_EQUAL)
+      return number(left) <= number(right);
+    if (op == TOKEN.AND)
+      return truthy(left) && truthy(right);
+    if (op == TOKEN.OR)
+      return truthy(left) || truthy(right);
+    throw new RuntimeError("Unexpected binary expression");
+  }
+  Ternary(expr) {
+    const { op1: { name: op1 }, op2: { name: op2 } } = expr;
+    if (op1 == TOKEN.QUESTION && op2 == TOKEN.COLON) {
+      const left = this.visit(expr.left);
+      if (truthy(left))
+        return this.visit(expr.middle);
+      return this.visit(expr.right);
+    }
+    throw new RuntimeError("Unexpected ternary expression");
+  }
+  Grouping(expr) {
+    return this.visit(expr.inner);
+  }
+};
+__name(Evaluator, "Evaluator");
+function truthy(val) {
+  return val !== void 0 && val !== false;
+}
+__name(truthy, "truthy");
+function number(val) {
+  if (typeof val == "number")
+    return val;
+  return parseFloat(`${val}`);
+}
+__name(number, "number");
+var RuntimeError = class extends Error {
+};
+__name(RuntimeError, "RuntimeError");
 
 // src/stoa.ts
-var Lox = new Language2({ name, version, author, description, repository, license }, {
-  Tokenizer: LoxScanner,
-  Parser: LoxParser,
-  PrettyPrinter: LoxPrettyPrinter,
-  Evaluator: LoxEvaluator
-});
-new CliRunner(Lox).run();
+var StoaLang = new Language2({ name, version, author, description, repository, license }, { Scanner, Parser: Parser2 });
+new CliDriver(StoaLang, { Printer, Evaluator }).run();
 /*!
  * Determine if an object is a Buffer
  *

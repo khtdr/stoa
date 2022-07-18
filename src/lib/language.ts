@@ -1,38 +1,44 @@
-import { Lexicon, Parser, TokenStream, Visitable } from "."
+import * as Lib from '.'
 
-export class Language<Lx extends Lexicon, Ast extends Visitable> {
+export class Language<Lex extends Lib.Lexicon, Ast extends object> {
+
+    details: Params<Lex, Ast>['details']
+    frontend: Params<Lex, Ast>['frontend']
 
     constructor(
-        readonly details: { [key: string]: string; name: string; version: string },
-        readonly Classes: {
-            Tokenizer: typeof TokenStream
-            Parser: new (stream: TokenStream<Lx>) => Parser<Lx, Ast>;
-            PrettyPrinter: new () => void
-            Evaluator: new () => void
+        details: Partial<Params<Lex, Ast>['details']> = {},
+        frontend: Partial<Params<Lex, Ast>['frontend']> = {},
+    ) {
+        this.details = {
+            ...details,
+            name: details.name ?? 'nameless-lang',
+            version: details.version ?? '0.0.experimental'
         }
-    ) { }
-
-    scan(source: string): TokenStream<Lx> {
-        return new this.Classes.Tokenizer(source)
+        this.frontend = {
+            Scanner: frontend.Scanner ||
+                Lib.TokenStreamClassFactory.buildTokenStreamClass({ CHAR: /./ }),
+            Parser: frontend.Parser || Lib.AnyTokenParser<Lex, Ast>,
+        }
     }
 
-    tokenize(stream: TokenStream<Lx>): string {
-        return stream.drain().map(t => `${t}`).join('\n')
+    scan(source: string): Lib.Token<keyof Lex>[] {
+        return new this.frontend.Scanner(source).drain()
     }
 
-    parse(stream: TokenStream<Lx>): Ast | undefined {
-        return new this.Classes.Parser(stream).parse()
+    parse(tokens: Lib.Token<keyof Lex>[]): Ast | undefined {
+        return new this.frontend.Parser(tokens).parse()
     }
+}
 
-    print(ast?: Ast): string {
-        if (!ast) return ''
-        const printer = new this.Classes.PrettyPrinter()
-        return ast.accept(printer)
+type Params<Lex extends Lib.Lexicon, Ast extends object> = {
+    details: {
+        name: string
+        version: string
+        [attr: string]: string
     }
-
-    evaluate(ast?: Ast): string | number | boolean | object | undefined {
-        if (!ast) return undefined
-        const evaluator = new this.Classes.Evaluator()
-        return ast.accept(evaluator)
+    frontend: {
+        Scanner: typeof Lib.TokenStream<Lex>
+        // Parser: new (tokens: Lib.Token<keyof Lex>[]) => Lib.Parser<Lex, Ast>
+        Parser: typeof Lib.Parser<Lex, Ast>
     }
 }

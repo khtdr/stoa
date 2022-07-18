@@ -1,29 +1,20 @@
-import { Language, Lexicon, Visitable } from '.'
+import * as Lib from ".";
 
-const STAGE = {
-    Tokens: 'Tokens',
-    ParseTree: 'ParseTree',
-    Evaluate: 'Evaluate',
-}
-
-type Stage = keyof typeof STAGE
-
-export class Driver<Lx extends Lexicon, Ast extends Visitable> {
-    status = 0
+export class Driver<Lx extends Lib.Lexicon, Ast extends object, Result> {
+    status = 0;
     constructor(
-        readonly lang: Language<Lx, Ast>,
-        readonly stage: Stage = 'Evaluate'
+        readonly lang: Lib.Language<Lx, Ast>,
+        readonly treewalker: Lib.Visitor<Ast, Result>
     ) { }
 
     run(source: string) {
-        const stream = this.lang.scan(source)
-        if (this.stage == STAGE.Tokens)
-            return this.lang.tokenize(stream)
+        const tokens = this.lang.scan(source);
+        if (!tokens) throw new Error('failed to tokenize')
 
-        const ast = this.lang.parse(stream)
-        if (this.stage == STAGE.ParseTree)
-            return this.lang.print(ast)
+        const ast = this.lang.parse(tokens);
+        if (!ast) throw new Error('failed to parse')
 
-        return this.lang.evaluate(ast)
+        const result = this.treewalker.visit(ast)
+        return { tokens, result }
     }
 }

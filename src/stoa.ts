@@ -1,17 +1,13 @@
-import { Language, CliRunner } from './lib'
-import { LoxScanner, LoxParser } from './ast-builder'
-import { LoxEvaluator } from './runtime'
-import { LoxPrettyPrinter } from './pretty-print'
 import { name, author, version, description, repository, license } from '../package.json'
+import { Language, CliDriver } from './lib'
+import { Scanner } from './scanner'
+import { Parser } from './parser'
+import { Printer } from './printer'
+import { Evaluator } from './runtime'
 
-const Lox = new Language(
+const StoaLang = new Language(
     { name, version, author, description, repository, license },
-    {
-        Tokenizer: LoxScanner,
-        Parser: LoxParser,
-        PrettyPrinter: LoxPrettyPrinter,
-        Evaluator: LoxEvaluator,
-    }
+    { Scanner, Parser }
 )
 
-new CliRunner(Lox).run()
+new CliDriver(StoaLang, { Printer, Evaluator }).run()

@@ -1,6 +1,8 @@
 NPM=pnpm
 
-all:
+all: build
+
+help:
 	@echo make "build     # Builds the STOA application"
 	@echo make "dev       # Build and test, watching for changes"
 	@echo make "repl      # Launch the REPL"

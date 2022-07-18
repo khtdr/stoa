@@ -1,52 +1,82 @@
-import { Lexicon, Token, TokenStream } from "."
+import * as Lib from ".";
 
-export type Visitable<Ast = any> = {
-    accept(visitor: Ast): any
-}
+export class Parser<Lx extends Lib.Lexicon, Ast extends object> {
+    constructor(
+        private readonly tokens: Lib.Token<keyof Lx>[],
+        protected reporter = new Lib.StdReporter()
+    ) { }
 
-export class Parser<Lx extends Lexicon, Ast extends Visitable> {
-    constructor(stream: TokenStream<Lx>) {
-        this.tokens = stream.drain()
+    parse(): Ast | undefined {
+        return undefined;
     }
 
-    parse(): Ast | undefined { return undefined }
-
-    private tokens: Token<keyof Lx>[]
-    private current = 0
+    private current = 0;
 
     protected match(...names: string[]): boolean {
         for (const name of names) {
             if (this.check(name)) {
-                this.advance()
-                return true
+                this.advance();
+                return true;
             }
         }
-        return false
-    }
-
-    protected check(name: string): boolean {
-        return this.peek()?.name == name
-    }
-
-    protected atEnd(): boolean {
-        return !this.peek().name
-    }
-
-    protected advance(): Token<keyof Lx> {
-        if (!this.atEnd()) this.current++
-        return this.previous()
-    }
-
-    protected peek(): Token<keyof Lx> {
-        return this.tokens[this.current]
-    }
-
-    protected previous(): Token<keyof Lx> {
-        return this.tokens[this.current - 1]
+        return false;
     }
 
     protected consume(name: string, message: string) {
-        if (this.check(name)) this.advance()
-        else throw `Error: ${this.peek()} ${message}`
+        if (this.check(name)) this.advance();
+        else throw `Error: ${this.peek()} ${message}`;
+    }
+
+    protected check(name: string): boolean {
+        return this.peek()?.name == name;
+    }
+
+    protected atEnd(): boolean {
+        return !this.peek().name;
+    }
+
+    protected advance(): Lib.Token<keyof Lx> {
+        if (!this.atEnd()) this.current++;
+        return this.previous();
+    }
+
+    protected peek(): Lib.Token<keyof Lx> {
+        return this.tokens[this.current];
+    }
+
+    protected previous(): Lib.Token<keyof Lx> {
+        return this.tokens[this.current - 1];
+    }
+
+    protected error(token: Lib.Token, message = "Unexpected token") {
+        this.reporter.error(token, message);
+        return new ParseError(message);
+    }
+}
+
+export class Visitor<Ast extends object, Result = Lib.Scalar> {
+    visit(node: Ast): Result {
+        const name = node.constructor.name
+        const fn = this[name as keyof this]
+        if (typeof fn == 'function') return fn.bind(this)(node)
+        throw new ParseError(`Unvisitable node: ${name}`)
+    }
+}
+
+class ParseError extends Error { }
+
+// Some stuff used as placeholders for the CLI, partially configured languages, etc.
+
+export class AnyTokenParser<Lex extends Lib.Lexicon, Ast extends object> extends Parser<Lex, Ast> {
+    parse() {
+        const tokens = []
+        while (!this.atEnd()) tokens.push(this.advance())
+        return tokens as unknown as Ast
+    }
+}
+
+export class AnyAstVisitor<Ast extends object = any, Result extends string = string> implements Visitor<Ast, Result> {
+    visit(node: Ast): Result {
+        return JSON.stringify(node) as Result
     }
 }

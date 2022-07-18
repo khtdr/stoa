@@ -6,10 +6,10 @@ import { Driver } from "."
 
 export class Repl {
     constructor(
-        readonly driver: Driver<any, any>
+        readonly driver: Driver<any, any, any>
     ) { }
 
-    async run() {
+    async run(tokenize = false) {
         return new Promise(resolve => {
             const ui = new UI()
             const prompt = chalk`{blue ?>} `
@@ -19,10 +19,10 @@ export class Repl {
                 ui.render(prompt + line);
                 ui.end();
                 ui.rl.pause();
-                console.log(line)
                 if (line == ".quit.") return resolve(undefined)
 
-                const value = this.driver.run(line);
+                const out = this.driver.run(line);
+                const value = tokenize ? out.tokens.join("\n") : out.result;
                 console.log(chalk`{gray >>} ${value}`);
                 ui.rl.resume();
                 ui.render(prompt);
