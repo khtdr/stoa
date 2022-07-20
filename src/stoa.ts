@@ -3,7 +3,7 @@ import { Language, CliDriver } from './lib'
 import { Scanner } from './scanner'
 import { Parser } from './parser'
 import { Printer } from './printer'
-import { Evaluator } from './runtime'
+import { Evaluator } from './evaluator'
 
 const StoaLang = new Language(
     { name, version, author, description, repository, license },

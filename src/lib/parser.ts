@@ -22,17 +22,17 @@ export class Parser<Lx extends Lib.Lexicon, Ast extends object> {
         return false;
     }
 
-    protected consume(name: string, message: string) {
-        if (this.check(name)) this.advance();
+    protected consume<Name extends keyof Lx>(name: Name, message: string): Lib.Token<Name> {
+        if (this.check(name)) return this.advance() as Lib.Token<typeof name>;
         else throw `Error: ${this.peek()} ${message}`;
     }
 
-    protected check(name: string): boolean {
+    protected check(name: keyof Lx): boolean {
         return this.peek()?.name == name;
     }
 
     protected atEnd(): boolean {
-        return !this.peek().name;
+        return !this.peek()?.name;
     }
 
     protected advance(): Lib.Token<keyof Lx> {
@@ -40,12 +40,12 @@ export class Parser<Lx extends Lib.Lexicon, Ast extends object> {
         return this.previous();
     }
 
-    protected peek(): Lib.Token<keyof Lx> {
+    protected peek(): Lib.Token<keyof Lx> | undefined {
         return this.tokens[this.current];
     }
 
-    protected previous(): Lib.Token<keyof Lx> {
-        return this.tokens[this.current - 1];
+    protected previous<Name extends keyof Lx = keyof Lx>(): Lib.Token<Name> {
+        return this.tokens[this.current - 1] as Lib.Token<Name>;
     }
 
     protected error(token: Lib.Token, message = "Unexpected token") {
@@ -63,7 +63,7 @@ export class Visitor<Ast extends object, Result = Lib.Scalar> {
     }
 }
 
-class ParseError extends Error { }
+export class ParseError extends Error { }
 
 // Some stuff used as placeholders for the CLI, partially configured languages, etc.
 

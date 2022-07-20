@@ -2,32 +2,154 @@ import * as Lib from "./lib";
 import * as Ast from "./ast";
 import { TOKEN } from "./scanner";
 
-export class Parser extends Lib.Parser<typeof TOKEN, Ast.Expression> {
-    private _parsed?: Ast.Expression;
+export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
+    private _parsed?: Ast.AstNode;
     parse() {
-        if (!this._parsed) this._parsed = this.Expression();
+        if (!this._parsed) this._parsed = this.Program();
         return this._parsed;
     }
 
+    // program -> declaration* EOF
+    Program() {
+        const declarations: Ast.Statement[] = []
+        while (!this.atEnd()) {
+            const decl = this.Declaration()
+            if (decl) declarations.push(decl)
+        }
+        return new Ast.Program(declarations)
+    }
+
+    // declaration -> var_declaration | statement
+    Declaration() {
+        try {
+            return this.VarDeclaration() || this.Statement()
+        } catch (err) {
+            if (err instanceof Lib.ParseError) {
+                this.synchronize()
+                return
+            } else throw err
+        }
+    }
+
+    // var_declaration -> "var" IDENTIFIER ("=" expression ";")
+    VarDeclaration() {
+        if (this.match(TOKEN.VAR)) {
+            const ident = this.consume("IDENTIFIER", "Expected identifier")
+            let expr: Ast.Expression | undefined
+            if (this.match(TOKEN.EQUAL)) {
+                expr = this.Expression()
+                this.consume(TOKEN.SEMICOLON, "Expected ;")
+            }
+            return new Ast.VarDeclaration(ident, expr)
+        }
+    }
+
+    // statement -> print_statement | expression_statement | if_statement | block
+    Statement(): Ast.Statement {
+        return this.PrintStatement() || this.Block() || this.IfStatement() || this.ExpressionStatement()
+    }
+
+    // block -> "{" declaration* "}"
+    Block(): Ast.Block | void {
+        if (this.match(TOKEN.LEFT_CURL)) {
+            const declarations: Ast.Declaration[] = []
+            while (!this.atEnd() && this.peek()?.name != TOKEN.RIGHT_CURL) {
+                const decl = this.Declaration()
+                if (decl) declarations.push(decl)
+            }
+            const block = new Ast.Block(declarations)
+            this.consume(TOKEN.RIGHT_CURL, 'Expected }')
+            return block
+        }
+    }
+
+    // if_statement -> "if" "(" expression ")" statement ("else" statement)?
+    IfStatement(): Ast.IfStatement | void {
+        if (this.match(TOKEN.IF)) {
+            this.consume(TOKEN.LEFT_PAREN, "Expected (")
+            const cond = this.Expression()
+            this.consume(TOKEN.RIGHT_PAREN, "Expected )")
+            const trueStatement = this.Statement()
+            if (this.match(TOKEN.ELSE)) {
+                const falseStatement = this.Statement()
+                return new Ast.IfStatement(cond, trueStatement, falseStatement)
+            } else {
+                return new Ast.IfStatement(cond, trueStatement)
+            }
+        }
+    }
+
+    // print_statement -> "print" expression ";"
+    PrintStatement(): Ast.PrintStatement | void {
+        if (this.match(TOKEN.PRINT)) {
+            const expr = this.Expression();
+            this.consume(TOKEN.SEMICOLON, "Expected ;")
+            return new Ast.PrintStatement(expr);
+        }
+    }
+
+    // expression_statement -> expression ";"
+    ExpressionStatement(): Ast.ExpressionStatement {
+        const expr = this.Expression();
+        this.consume(TOKEN.SEMICOLON, "Expected ;")
+        return new Ast.ExpressionStatement(expr);
+    }
+
     // expression -> comma
-    Expression() {
+    Expression(): ReturnType<typeof this.Comma> {
         return this.Comma();
     }
 
-    // comma      -> conditional ("," conditional)*
-    Comma() {
-        let expr = this.Conditional();
+    // comma -> assignment ("," assignment)*
+    Comma(): ReturnType<typeof this.Assignment> | Ast.Binary {
+        let expr = this.Assignment();
         while (this.match(TOKEN.COMMA)) {
             const comma = this.previous();
-            const right = this.Conditional();
+            const right = this.Assignment();
             expr = new Ast.Binary(expr, comma, right);
         }
         return expr;
     }
 
+    // assignment -> IDENTIFIER "=" assignment | logic_or
+    Assignment(): ReturnType<typeof this.LogicOr> | Ast.Assign {
+        const expr = this.LogicOr()
+        if (this.match(TOKEN.EQUAL)) {
+            const eq = this.previous()
+            const value = this.Assignment()
+            if (expr instanceof Ast.Variable) {
+                return new Ast.Assign(expr.name, value)
+            }
+            this.error(eq, "Invalid assignment target")
+        }
+        return expr
+    }
+
+    // logic_or -> logic_and ("or" logic_and)*
+    LogicOr(): ReturnType<typeof this.LogicAnd> | Ast.Logical {
+        let expr = this.LogicAnd();
+        while (this.match(TOKEN.OR)) {
+            const or = this.previous();
+            const right = this.LogicAnd();
+            expr = new Ast.Logical(expr, or, right);
+        }
+        return expr;
+    }
+
+    // logic_and -> conditional ("and" conditional)*
+    LogicAnd(): ReturnType<typeof this.Conditional> | Ast.Logical {
+        let expr = this.Conditional();
+        while (this.match(TOKEN.AND)) {
+            const and = this.previous();
+            const right = this.Conditional();
+            expr = new Ast.Logical(expr, and, right);
+        }
+        return expr;
+    }
+
     // conditional -> equality ("?" equality ":" equality)*
-    Conditional() {
-        let expr = this.Equality();
+    Conditional(): ReturnType<typeof this.Equality> | Ast.Ternary {
+        let expr: ReturnType<typeof this.Equality> | Ast.Ternary = this.Equality();
         while (this.match(TOKEN.QUESTION)) {
             const question = this.previous();
             const middle = this.Equality();
@@ -39,8 +161,8 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.Expression> {
         return expr;
     }
 
-    // equality   -> comparison (("!=" | "==") comparison)*
-    Equality() {
+    // equality -> comparison (("!=" | "==") comparison)*
+    Equality(): ReturnType<typeof this.Comparison> | Ast.Binary {
         let expr = this.Comparison();
         while (this.match(TOKEN.BANG_EQUAL, TOKEN.EQUAL_EQUAL)) {
             const operator = this.previous();
@@ -51,7 +173,7 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.Expression> {
     }
 
     // comparison -> term ((">"|"<"|"<="|">=") term)*
-    Comparison() {
+    Comparison(): ReturnType<typeof this.Term> | Ast.Binary {
         let expr = this.Term();
         while (
             this.match(
@@ -68,8 +190,8 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.Expression> {
         return expr;
     }
 
-    // term       -> factor (("+"|"-") factor)*
-    Term() {
+    // term -> factor (("+"|"-") factor)*
+    Term(): ReturnType<typeof this.Factor> | Ast.Binary {
         let expr = this.Factor();
         while (this.match(TOKEN.PLUS, TOKEN.DASH)) {
             const operator = this.previous();
@@ -79,9 +201,9 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.Expression> {
         return expr;
     }
 
-    // factor     -> unary (("*"|"/") unary)*
-    Factor() {
-        let expr = this.Unary();
+    // factor -> unary (("*"|"/") unary)*
+    Factor(): ReturnType<typeof this.Unary> | Ast.Binary {
+        let expr: ReturnType<typeof this.Unary> | Ast.Binary = this.Unary();
         while (this.match(TOKEN.STAR, TOKEN.SLASH)) {
             const operator = this.previous();
             const right = this.Unary();
@@ -90,14 +212,14 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.Expression> {
         return expr;
     }
 
-    // unary      -> _invalid_unary* _valid_unary
-    Unary() {
+    // unary -> _invalid_unary* _valid_unary
+    Unary(): ReturnType<typeof this._ValidUnary> {
         while (this._InvalidUnary()) { }
         return this._ValidUnary();
     }
 
     // _invalid_unary -> ("+" | "*" | "/") unary | e
-    private _InvalidUnary(): Ast.Expression | undefined {
+    private _InvalidUnary(): ReturnType<typeof this._ValidUnary> | undefined {
         if (this.match(TOKEN.PLUS, TOKEN.STAR, TOKEN.SLASH)) {
             this.reporter.error(
                 this.previous(),
@@ -109,8 +231,8 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.Expression> {
         return;
     }
 
-    // _valid_unary > ("!" | "-") unary | primary
-    private _ValidUnary(): Ast.Expression {
+    // _valid_unary -> ("!" | "-") unary | primary
+    private _ValidUnary(): Ast.Unary | ReturnType<typeof this.Primary> {
         if (this.match(TOKEN.BANG, TOKEN.DASH)) {
             const operator = this.previous();
             const right = this.Unary();
@@ -119,12 +241,15 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.Expression> {
         return this.Primary();
     }
 
-    // primary    -> NUMBER | STRING | TRUE | FALSE | NIL | "(" expression ")"
-    Primary(): Ast.Expression {
+    // primary    -> IDENTIFIER | NUMBER | STRING | TRUE | FALSE | NIL | "(" expression ")"
+    Primary(): Ast.Literal | Ast.Variable | Ast.Grouping {
         if (
             this.match(TOKEN.NUMBER, TOKEN.STRING, TOKEN.TRUE, TOKEN.FALSE, TOKEN.NIL)
         ) {
             return new Ast.Literal(this.previous().value);
+        }
+        if (this.match(TOKEN.IDENTIFIER)) {
+            return new Ast.Variable(this.previous());
         }
         if (this.match(TOKEN.LEFT_PAREN)) {
             const expr = this.Expression();
@@ -138,11 +263,12 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.Expression> {
         this.advance();
         while (!this.atEnd()) {
             if (this.previous().name == "SEMICOLON") return;
-            switch (this.peek().name) {
+            switch (this.peek()?.name ?? '') {
                 case "CLASS":
                 case "FOR":
                 case "FUN":
                 case "IF":
+                case "PRINT":
                 case "RETURN":
                 case "VAR":
                 case "WHILE":

@@ -1,12 +1,76 @@
 import * as Lib from './lib'
 
-export interface AstNode { }
+export abstract class Visitor<Result> extends Lib.Visitor<AstNode, Result> {
+    abstract Assign(assign: Assign): Result
+    abstract Binary(expr: Binary): Result
+    abstract Block(block: Block): Result | void
+    abstract ExpressionStatement(statement: ExpressionStatement): Result | void
+    abstract Grouping(expr: Grouping): Result
+    abstract IfStatement(statement: IfStatement): Result | void
+    abstract Literal(expr: Literal): Result
+    abstract Logical(expr: Logical): Result
+    abstract PrintStatement(statement: PrintStatement): Result | void
+    abstract Program(program: Program): Result | void
+    abstract Ternary(expr: Ternary): Result
+    abstract Unary(expr: Unary): Result
+    abstract VarDeclaration(declaration: VarDeclaration): Result | void
+    abstract Variable(expr: Variable): Result
+}
 
+
+export interface AstNode { }
+export interface Declaration extends AstNode { }
+export interface Statement extends Declaration { }
 export interface Expression extends AstNode { }
+
+export class Program implements AstNode {
+    constructor(
+        readonly declarations: Declaration[]
+    ) { }
+}
+
+export class VarDeclaration implements Declaration {
+    constructor(
+        readonly ident: Lib.Token<"IDENTIFIER">,
+        readonly expr: Expression | undefined
+    ) { }
+}
+
+export class IfStatement implements Statement {
+    constructor(
+        readonly condition: Expression,
+        readonly trueStatement: Statement,
+        readonly falseStatement?: Statement
+    ) { }
+}
+
+export class ExpressionStatement implements Statement {
+    constructor(
+        readonly expr: Expression
+    ) { }
+}
+
+export class PrintStatement implements Statement {
+    constructor(
+        readonly expr: Expression
+    ) { }
+}
+
+export class Block implements Statement {
+    constructor(
+        readonly statements: Statement[]
+    ) { }
+}
 
 export class Literal implements Expression {
     constructor(
         readonly value: string | number | boolean | undefined,
+    ) { }
+}
+
+export class Variable implements Expression {
+    constructor(
+        readonly name: Lib.Token<"IDENTIFIER">
     ) { }
 }
 
@@ -25,6 +89,15 @@ export class Binary implements Expression {
     ) { }
 }
 
+
+export class Assign implements Expression {
+    constructor(
+        readonly name: Lib.Token<'IDENTIFIER'>,
+        readonly expr: Expression
+    ) { }
+}
+export class Logical extends Binary { }
+
 export class Ternary implements Expression {
     constructor(
         readonly left: Expression,
@@ -39,12 +112,4 @@ export class Grouping implements Expression {
     constructor(
         readonly inner: Expression
     ) { }
-}
-
-export abstract class Visitor<Result> extends Lib.Visitor<AstNode, Result> {
-    abstract Literal(expr: Literal): Result
-    abstract Unary(expr: Unary): Result
-    abstract Binary(expr: Binary): Result
-    abstract Ternary(expr: Ternary): Result
-    abstract Grouping(expr: Grouping): Result
 }

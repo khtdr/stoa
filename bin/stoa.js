@@ -4123,7 +4123,7 @@ function* tokenGenerator(source, lexicon) {
         const match = regex.exec(source.substring(idx));
         if (match)
           return candidates.push([name2, match[0], valueFn(match[0])]);
-      } else if (source.substring(idx, idx + lexeme.length) == rule) {
+      } else if (source.substring(idx, idx + lexeme.length) == lexeme) {
         return candidates.push([name2, lexeme, valueFn(lexeme)]);
       }
     });
@@ -4154,7 +4154,7 @@ var Parser = class {
   }
   consume(name2, message) {
     if (this.check(name2))
-      this.advance();
+      return this.advance();
     else
       throw `Error: ${this.peek()} ${message}`;
   }
@@ -4163,7 +4163,8 @@ var Parser = class {
     return ((_a = this.peek()) == null ? void 0 : _a.name) == name2;
   }
   atEnd() {
-    return !this.peek().name;
+    var _a;
+    return !((_a = this.peek()) == null ? void 0 : _a.name);
   }
   advance() {
     if (!this.atEnd())
@@ -4246,16 +4247,15 @@ __name(StdReporter, "StdReporter");
 
 // src/scanner.ts
 var Scanner = TokenStreamClassFactory.buildTokenStreamClass({
-  FALSE: "false",
-  IDENTIFIER: /[a-z][a-z\d]*/i,
-  NIL: "nil",
+  FALSE: [/false/i, () => false],
+  NIL: [/nil/i, () => void 0],
   NUMBER: [/\d+(\.\d+)?/, (text) => parseFloat(text)],
   STRING: [stringScanner, (text) => {
     if (['"', "'"].includes(text.substring(text.length - 1)))
       return text.replace(/^.(.*).$/, "$1");
     return text.replace(/^.(.*)$/, "$1");
   }],
-  TRUE: "true",
+  TRUE: [/true/i, () => true],
   AND: /and/i,
   BANG: "!",
   BANG_EQUAL: "!=",
@@ -4280,16 +4280,18 @@ var Scanner = TokenStreamClassFactory.buildTokenStreamClass({
   RIGHT_CURL: "}",
   RIGHT_PAREN: ")",
   SEMICOLON: ";",
-  SUPER: /super/i,
-  VAR: /var/i,
-  THIS: /this/i,
-  FOR: /for/i,
-  WHILE: /while/i,
   CLASS: /class/i,
-  IF: /if/i,
   ELSE: /else/i,
+  FOR: /for/i,
   FUN: /fun/i,
+  IF: /if/i,
+  PRINT: /print/i,
   RETURN: /return/i,
+  SUPER: /super/i,
+  THIS: /this/i,
+  VAR: /var/i,
+  WHILE: /while/i,
+  IDENTIFIER: /[a-z][a-z\d]*/i,
   _MULTI_LINE_COMMENT: cStyleCommentScanner,
   _SINGLE_LINE_COMMENT: [/\/\/.*/, (text) => text.substring(2).trim()],
   _SPACE: /\s+/
@@ -4343,12 +4345,60 @@ function cStyleCommentScanner(value, reporter = new StdReporter()) {
 __name(cStyleCommentScanner, "cStyleCommentScanner");
 
 // src/ast.ts
+var Visitor2 = class extends Visitor {
+};
+__name(Visitor2, "Visitor");
+var Program = class {
+  constructor(declarations) {
+    this.declarations = declarations;
+  }
+};
+__name(Program, "Program");
+var VarDeclaration = class {
+  constructor(ident, expr) {
+    this.ident = ident;
+    this.expr = expr;
+  }
+};
+__name(VarDeclaration, "VarDeclaration");
+var IfStatement = class {
+  constructor(condition, trueStatement, falseStatement) {
+    this.condition = condition;
+    this.trueStatement = trueStatement;
+    this.falseStatement = falseStatement;
+  }
+};
+__name(IfStatement, "IfStatement");
+var ExpressionStatement = class {
+  constructor(expr) {
+    this.expr = expr;
+  }
+};
+__name(ExpressionStatement, "ExpressionStatement");
+var PrintStatement = class {
+  constructor(expr) {
+    this.expr = expr;
+  }
+};
+__name(PrintStatement, "PrintStatement");
+var Block = class {
+  constructor(statements) {
+    this.statements = statements;
+  }
+};
+__name(Block, "Block");
 var Literal = class {
   constructor(value) {
     this.value = value;
   }
 };
 __name(Literal, "Literal");
+var Variable = class {
+  constructor(name2) {
+    this.name = name2;
+  }
+};
+__name(Variable, "Variable");
 var Unary = class {
   constructor(operator, operand) {
     this.operator = operator;
@@ -4364,6 +4414,16 @@ var Binary = class {
   }
 };
 __name(Binary, "Binary");
+var Assign = class {
+  constructor(name2, expr) {
+    this.name = name2;
+    this.expr = expr;
+  }
+};
+__name(Assign, "Assign");
+var Logical = class extends Binary {
+};
+__name(Logical, "Logical");
 var Ternary = class {
   constructor(left, op1, middle, op2, right) {
     this.left = left;
@@ -4380,26 +4440,127 @@ var Grouping = class {
   }
 };
 __name(Grouping, "Grouping");
-var Visitor2 = class extends Visitor {
-};
-__name(Visitor2, "Visitor");
 
 // src/parser.ts
 var Parser2 = class extends Parser {
   parse() {
     if (!this._parsed)
-      this._parsed = this.Expression();
+      this._parsed = this.Program();
     return this._parsed;
+  }
+  Program() {
+    const declarations = [];
+    while (!this.atEnd()) {
+      const decl = this.Declaration();
+      if (decl)
+        declarations.push(decl);
+    }
+    return new Program(declarations);
+  }
+  Declaration() {
+    try {
+      return this.VarDeclaration() || this.Statement();
+    } catch (err) {
+      if (err instanceof ParseError) {
+        this.synchronize();
+        return;
+      } else
+        throw err;
+    }
+  }
+  VarDeclaration() {
+    if (this.match(TOKEN.VAR)) {
+      const ident = this.consume("IDENTIFIER", "Expected identifier");
+      let expr;
+      if (this.match(TOKEN.EQUAL)) {
+        expr = this.Expression();
+        this.consume(TOKEN.SEMICOLON, "Expected ;");
+      }
+      return new VarDeclaration(ident, expr);
+    }
+  }
+  Statement() {
+    return this.PrintStatement() || this.Block() || this.IfStatement() || this.ExpressionStatement();
+  }
+  Block() {
+    var _a;
+    if (this.match(TOKEN.LEFT_CURL)) {
+      const declarations = [];
+      while (!this.atEnd() && ((_a = this.peek()) == null ? void 0 : _a.name) != TOKEN.RIGHT_CURL) {
+        const decl = this.Declaration();
+        if (decl)
+          declarations.push(decl);
+      }
+      const block = new Block(declarations);
+      this.consume(TOKEN.RIGHT_CURL, "Expected }");
+      return block;
+    }
+  }
+  IfStatement() {
+    if (this.match(TOKEN.IF)) {
+      this.consume(TOKEN.LEFT_PAREN, "Expected (");
+      const cond = this.Expression();
+      this.consume(TOKEN.RIGHT_PAREN, "Expected )");
+      const trueStatement = this.Statement();
+      if (this.match(TOKEN.ELSE)) {
+        const falseStatement = this.Statement();
+        return new IfStatement(cond, trueStatement, falseStatement);
+      } else {
+        return new IfStatement(cond, trueStatement);
+      }
+    }
+  }
+  PrintStatement() {
+    if (this.match(TOKEN.PRINT)) {
+      const expr = this.Expression();
+      this.consume(TOKEN.SEMICOLON, "Expected ;");
+      return new PrintStatement(expr);
+    }
+  }
+  ExpressionStatement() {
+    const expr = this.Expression();
+    this.consume(TOKEN.SEMICOLON, "Expected ;");
+    return new ExpressionStatement(expr);
   }
   Expression() {
     return this.Comma();
   }
   Comma() {
-    let expr = this.Conditional();
+    let expr = this.Assignment();
     while (this.match(TOKEN.COMMA)) {
       const comma = this.previous();
-      const right = this.Conditional();
+      const right = this.Assignment();
       expr = new Binary(expr, comma, right);
+    }
+    return expr;
+  }
+  Assignment() {
+    const expr = this.LogicOr();
+    if (this.match(TOKEN.EQUAL)) {
+      const eq = this.previous();
+      const value = this.Assignment();
+      if (expr instanceof Variable) {
+        return new Assign(expr.name, value);
+      }
+      this.error(eq, "Invalid assignment target");
+    }
+    return expr;
+  }
+  LogicOr() {
+    let expr = this.LogicAnd();
+    while (this.match(TOKEN.OR)) {
+      const or = this.previous();
+      const right = this.LogicAnd();
+      expr = new Logical(expr, or, right);
+    }
+    return expr;
+  }
+  LogicAnd() {
+    let expr = this.Conditional();
+    while (this.match(TOKEN.AND)) {
+      const and = this.previous();
+      const right = this.Conditional();
+      expr = new Logical(expr, and, right);
     }
     return expr;
   }
@@ -4476,6 +4637,9 @@ var Parser2 = class extends Parser {
     if (this.match(TOKEN.NUMBER, TOKEN.STRING, TOKEN.TRUE, TOKEN.FALSE, TOKEN.NIL)) {
       return new Literal(this.previous().value);
     }
+    if (this.match(TOKEN.IDENTIFIER)) {
+      return new Variable(this.previous());
+    }
     if (this.match(TOKEN.LEFT_PAREN)) {
       const expr = this.Expression();
       this.consume(TOKEN.RIGHT_PAREN, 'Expected ")" after expression');
@@ -4484,15 +4648,17 @@ var Parser2 = class extends Parser {
     throw `Expected expression at ${this.peek()}`;
   }
   synchronize() {
+    var _a;
     this.advance();
     while (!this.atEnd()) {
       if (this.previous().name == "SEMICOLON")
         return;
-      switch (this.peek().name) {
+      switch (((_a = this.peek()) == null ? void 0 : _a.name) ?? "") {
         case "CLASS":
         case "FOR":
         case "FUN":
         case "IF":
+        case "PRINT":
         case "RETURN":
         case "VAR":
         case "WHILE":
@@ -4504,15 +4670,113 @@ var Parser2 = class extends Parser {
 };
 __name(Parser2, "Parser");
 
+// src/runtime.ts
+var Environment = class {
+  constructor(enclosure) {
+    this.enclosure = enclosure;
+    this.table = /* @__PURE__ */ new Map();
+  }
+  has(name2) {
+    return this.table.has(name2);
+  }
+  init(name2) {
+    if (!this.table.has(name2))
+      this.table.set(name2, void 0);
+    else
+      throw new RuntimeError(`Variable already defined: ${name2}`);
+  }
+  set(name2, value) {
+    var _a;
+    if (this.table.has(name2))
+      this.table.set(name2, value);
+    else if ((_a = this.enclosure) == null ? void 0 : _a.has(name2))
+      this.enclosure.set(name2, value);
+    else
+      throw new RuntimeError(`No such variable: ${name2}`);
+  }
+  get(name2) {
+    var _a;
+    if (this.table.has(name2))
+      return this.table.get(name2);
+    if ((_a = this.enclosure) == null ? void 0 : _a.has(name2))
+      return this.enclosure.get(name2);
+    throw new RuntimeError(`Undefined variable: ${name2}`);
+  }
+};
+__name(Environment, "Environment");
+function lit(val) {
+  if (val === void 0)
+    return "nil";
+  return `${val}`;
+}
+__name(lit, "lit");
+function truthy(val) {
+  if (val === false)
+    return false;
+  if (val === void 0)
+    return false;
+  return true;
+}
+__name(truthy, "truthy");
+function number(val) {
+  if (typeof val == "number")
+    return val;
+  return parseFloat(`${val}`);
+}
+__name(number, "number");
+var RuntimeError = class extends Error {
+};
+__name(RuntimeError, "RuntimeError");
+
 // src/printer.ts
 var Printer = class extends Visitor2 {
+  constructor() {
+    super(...arguments);
+    this.indent = 0;
+  }
+  Program(program) {
+    this.indent = 2;
+    const decls = program.declarations.map((decl) => this.visit(decl)).join("\n");
+    return `(program 
+${indent(decls, this.indent)}
+)`;
+  }
+  Logical(expr) {
+    return this.Binary(expr);
+  }
+  VarDeclaration(declaration) {
+    const decl = `(var ${declaration.ident.text}`;
+    const init = declaration.expr ? ` ${this.visit(declaration.expr)}` : "";
+    return `${decl}${init})`;
+  }
+  PrintStatement(statement) {
+    return `(print ${this.visit(statement.expr)})`;
+  }
+  Variable(expr) {
+    return `${expr.name.text}`;
+  }
+  ExpressionStatement(statement) {
+    return this.visit(statement.expr);
+  }
+  Assign(assign) {
+    return `(= ${assign.name.text} ${lit(this.visit(assign.expr))})`;
+  }
   Literal(expr) {
-    return JSON.stringify(expr.value);
+    return lit(expr.value);
   }
   Unary(expr) {
     const operator = expr.operator.text;
     const operand = this.visit(expr.operand);
     return `(${operator} ${operand})`;
+  }
+  Block(block) {
+    this.indent += 2;
+    const blocks = block.statements.map((stmt) => this.visit(stmt)).join("\n");
+    const block_string = `(block 
+${indent(blocks, this.indent)}
+)`;
+    this.indent -= 2;
+    return block_string;
   }
   Binary(expr) {
     const operator = expr.operator.text;
@@ -4524,19 +4788,78 @@ var Printer = class extends Visitor2 {
     const left = this.visit(expr.left);
     const middle = this.visit(expr.middle);
     const right = this.visit(expr.right);
-    return `(if ${left} ${middle} ${right})`;
+    return `(?: ${left} ${middle} ${right})`;
   }
   Grouping(expr) {
     const operand = this.visit(expr.inner);
-    return `${operand}`;
+    return `(group ${operand})`;
+  }
+  IfStatement(statement) {
+    const cond = this.visit(statement.condition);
+    const stmtTrue = this.visit(statement.trueStatement);
+    if (!statement.falseStatement)
+      return `(if ${cond} ${stmtTrue})`;
+    const stmtFalse = this.visit(statement.falseStatement);
+    this.indent += 2;
+    const str = `(if ${cond} 
+${indent(stmtTrue, this.indent)} 
+${indent(stmtFalse, this.indent)})`;
+    this.indent -= 2;
+    return str;
   }
 };
 __name(Printer, "Printer");
+function indent(text, by) {
+  const pad = new Array(by).fill(" ").join("");
+  return text.replace(/^/mg, pad);
+}
+__name(indent, "indent");
 
-// src/runtime.ts
+// src/evaluator.ts
 var Evaluator = class extends Visitor2 {
+  constructor() {
+    super(...arguments);
+    this.env = new Environment();
+  }
+  Program(program) {
+    const statements = program.declarations.map((stmt) => this.visit(stmt));
+    if (!statements.length)
+      return lit(void 0);
+    return lit(statements[statements.length - 1]);
+  }
+  PrintStatement(statement) {
+    console.log(lit(this.visit(statement.expr)));
+  }
+  VarDeclaration(declaration) {
+    this.env.init(declaration.ident.text);
+    const val = declaration.expr ? this.visit(declaration.expr) : void 0;
+    this.env.set(declaration.ident.text, val);
+  }
+  ExpressionStatement(statement) {
+    this.visit(statement.expr);
+  }
   Literal(expr) {
-    return JSON.parse(JSON.stringify(expr.value));
+    return expr.value;
+  }
+  Logical(expr) {
+    const { operator: { name: op } } = expr;
+    const left = this.visit(expr.left);
+    const left_truthy = truthy(left);
+    if (op == TOKEN.OR && left_truthy)
+      return left;
+    if (op == TOKEN.AND && !left_truthy)
+      return left;
+    const right = this.visit(expr.right);
+    if (truthy(right))
+      return right;
+    return truthy(false);
+  }
+  Variable(expr) {
+    return this.env.get(expr.name.text);
+  }
+  Assign(assign) {
+    this.env.set(assign.name.text, this.visit(assign.expr));
+    return this.env.get(assign.name.text);
   }
   Unary(expr) {
     const { operator: { name: op } } = expr;
@@ -4571,10 +4894,6 @@ var Evaluator = class extends Visitor2 {
       return number(left) < number(right);
     if (op == TOKEN.LESS_EQUAL)
       return number(left) <= number(right);
-    if (op == TOKEN.AND)
-      return truthy(left) && truthy(right);
-    if (op == TOKEN.OR)
-      return truthy(left) || truthy(right);
     throw new RuntimeError("Unexpected binary expression");
   }
   Ternary(expr) {
@@ -4590,21 +4909,24 @@ var Evaluator = class extends Visitor2 {
   Grouping(expr) {
     return this.visit(expr.inner);
   }
+  Block(block) {
+    const previous = this.env;
+    this.env = new Environment(previous);
+    try {
+      block.statements.map((stmt) => this.visit(stmt));
+    } finally {
+      this.env = previous;
+    }
+  }
+  IfStatement(statement) {
+    const condition = this.visit(statement.condition);
+    if (truthy(condition))
+      this.visit(statement.trueStatement);
+    else if (statement.falseStatement)
+      this.visit(statement.falseStatement);
+  }
 };
 __name(Evaluator, "Evaluator");
-function truthy(val) {
-  return val !== void 0 && val !== false;
-}
-__name(truthy, "truthy");
-function number(val) {
-  if (typeof val == "number")
-    return val;
-  return parseFloat(`${val}`);
-}
-__name(number, "number");
-var RuntimeError = class extends Error {
-};
-__name(RuntimeError, "RuntimeError");
 
 // src/stoa.ts
 var StoaLang = new Language2({ name, version, author, description, repository, license }, { Scanner, Parser: Parser2 });

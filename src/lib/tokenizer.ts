@@ -136,7 +136,7 @@ function* tokenGenerator<Lx extends Lexicon>(
                 const regex = new RegExp(`^${lexeme.source}`, lexeme.flags);
                 const match = regex.exec(source.substring(idx));
                 if (match) return candidates.push([name, match[0], valueFn(match[0])]);
-            } else if (source.substring(idx, idx + lexeme.length) == rule) {
+            } else if (source.substring(idx, idx + lexeme.length) == lexeme) {
                 return candidates.push([name, lexeme, valueFn(lexeme)]);
             }
         });

@@ -2,16 +2,15 @@ import { TokenStreamClassFactory, TokenStream, Token, StdReporter } from "./lib"
 
 export const Scanner = TokenStreamClassFactory.buildTokenStreamClass({
     // literals
-    FALSE: "false",
-    IDENTIFIER: /[a-z][a-z\d]*/i,
-    NIL: "nil",
+    FALSE: [/false/i, () => false],
+    NIL: [/nil/i, () => undefined],
     NUMBER: [/\d+(\.\d+)?/, (text) => parseFloat(text)],
     STRING: [stringScanner, (text) => {
         if (['"', "'"].includes(text.substring(text.length - 1)))
             return text.replace(/^.(.*).$/, "$1")
         return text.replace(/^.(.*)$/, "$1")
     }],
-    TRUE: "true",
+    TRUE: [/true/i, () => true],
 
     // operators
     AND: /and/i,
@@ -42,16 +41,20 @@ export const Scanner = TokenStreamClassFactory.buildTokenStreamClass({
     SEMICOLON: ";",
 
     // keywords
-    SUPER: /super/i,
-    VAR: /var/i,
-    THIS: /this/i,
-    FOR: /for/i,
-    WHILE: /while/i,
     CLASS: /class/i,
-    IF: /if/i,
     ELSE: /else/i,
+    FOR: /for/i,
     FUN: /fun/i,
+    IF: /if/i,
+    PRINT: /print/i,
     RETURN: /return/i,
+    SUPER: /super/i,
+    THIS: /this/i,
+    VAR: /var/i,
+    WHILE: /while/i,
+
+    // gotsta go last, could be better
+    IDENTIFIER: /[a-z][a-z\d]*/i,
 
     // discarded
     _MULTI_LINE_COMMENT: cStyleCommentScanner,
