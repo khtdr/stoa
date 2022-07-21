@@ -1,11 +1,11 @@
 * Project Stoa
 ** Build Status
-#+begin_src sh :exports both :results code
+#+begin_src sh :exports both :results drawer
 make build
 #+end_src
 
 #+RESULTS:
-#+begin_src sh
+:results:
 npx tsup --keep-names --no-splitting \
 	         --out-dir ./bin src/stoa.ts
 CLI Building entry: src/stoa.ts
@@ -13,17 +13,17 @@ CLI Using tsconfig: tsconfig.json
 CLI tsup v6.1.2
 CLI Target: node14
 CJS Build start
-CJS ⚡️ Build success in 62ms
+CJS ⚡️ Build success in 59ms
 CJS bin/stoa.js 153.09 KB
-#+end_src
+:end:
 
 ** Usage Documentation
-#+begin_src sh :exports both :results verbatim
+#+begin_src sh :exports both :results drawer
 ./bin/stoa --help
 #+end_src
 
 #+RESULTS:
-#+begin_example
+:results:
 Usage: node ./bin/stoa.js [options] [file]
 Show this help message
     --help
@@ -36,30 +36,30 @@ Emits the list of tokens (JSON)
 Displays the version and exits
     -v, --version
 
-#+end_example
+:end:
 
 ** Current Version
-#+begin_src sh :exports both :results code
+#+begin_src sh :exports both :results drawer
 ./bin/stoa -v
 #+end_src
 
 #+RESULTS:
-#+begin_src sh
+:results:
 stoa-2022.07.20 {
   author: 'Kay Oh <khtdr.com@gmail.com>',
   description: 'language framework',
   repository: 'https://github.com/khtdr/stoa',
   license: 'UNLICENSED'
 }
-#+end_src
+:end:
 
 ** Test Suite Status
-#+begin_src sh :exports both :results code
+#+begin_src sh :exports both :results drawer
 make test
 #+end_src
 
 #+RESULTS:
-#+begin_src sh
+:results:
 ./tests/run.sh
 ❌ hello-world.stoa
 diff <(hello-world.stoa) hello-world.stoa.txt
@@ -70,9 +70,9 @@ diff <(name.stoa) name.stoa.txt
 2d1
 < nil
 Passing: 0 Failing: 2
-#+end_src
+:end:
 
-* Build All
+* ...
 ** build
 src_elisp[:results none]{(save-excursion (org-goto-line 1) (org-babel-execute-subtree))}
 ** clean
