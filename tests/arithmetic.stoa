@@ -1,0 +1,9 @@
+#!/usr/bin/env stoa
+
+print 1;
+print 1 + 1;
+print 1 + 2 * 3 - 4 / 5;
+
+var seven = 1 + 5 + 2 + -1;
+var answer = 4/2 * (seven + seven * 12 / 6);
+print answer;

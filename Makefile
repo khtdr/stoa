@@ -18,13 +18,16 @@ build-watch: deps
 	         --keep-names --no-splitting \
 	         --out-dir ./bin src/stoa.ts
 
+test:
+	@make build >/dev/null
+	./tests/run.sh
+
+test-watch: build
+	npx nodemon -e sh,stoa,txt,js -w tests -w bin/stoa.js -x './tests/run.sh'
+
 dev:
 	make build
-	make -j 1 build-watch
-
-repl:
-	@make build >/dev/null
-	@bin/stoa --repl
+	make -j 2 build-watch test-watch
 
 install: build
 	mkdir -p ~/bin
@@ -33,12 +36,9 @@ install: build
 	chmod +x ~/bin/stoa
 	stoa --version
 
-test:
+repl:
 	@make build >/dev/null
-	./tests/run.sh
-
-test-watch: build
-	./tests/run.sh
+	@bin/stoa --repl
 
 lint:
 	npx tsc --noEmit

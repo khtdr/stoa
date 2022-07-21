@@ -3910,17 +3910,15 @@ var CliDriver = class {
   }
   run() {
     const [driver, { runFile, runPipe, runRepl, tokenize }] = this.configure();
-    let out = { result: void 0, tokens: [] };
     if (runFile)
-      out = driver.run((0, import_fs.readFileSync)((0, import_path.resolve)(runFile)).toString());
+      driver.run((0, import_fs.readFileSync)((0, import_path.resolve)(runFile)).toString());
     if (runPipe)
-      out = driver.run((0, import_fs.readFileSync)("/dev/stdin").toString());
+      driver.run((0, import_fs.readFileSync)("/dev/stdin").toString());
     if (runRepl) {
       new Repl(driver).run(tokenize).then(() => {
         process.exit(driver.status);
       });
     } else {
-      console.log(tokenize ? out.tokens.join("\n") : out.result);
       process.exit(driver.status);
     }
   }

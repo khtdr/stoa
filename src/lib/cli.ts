@@ -14,17 +14,13 @@ export class CliDriver<Lx extends Lexicon, Ast extends object> {
 
     run() {
         const [driver, { runFile, runPipe, runRepl, tokenize }] = this.configure();
-
-        let out: any = { result: undefined, tokens: [] };
-        if (runFile) out = driver.run(readFileSync(resolve(runFile)).toString());
-        if (runPipe) out = driver.run(readFileSync("/dev/stdin").toString());
-
+        if (runFile) driver.run(readFileSync(resolve(runFile)).toString());
+        if (runPipe) driver.run(readFileSync("/dev/stdin").toString());
         if (runRepl) {
             new Repl(driver).run(tokenize).then(() => {
                 process.exit(driver.status);
             });
         } else {
-            console.log(tokenize ? out.tokens.join("\n") : out.result);
             process.exit(driver.status);
         }
     }
