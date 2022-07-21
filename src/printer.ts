@@ -2,11 +2,9 @@ import * as Ast from './ast'
 import * as Runtime from './runtime'
 
 export class Printer extends Ast.Visitor<string> {
-    indent = 0
     Program(program: Ast.Program): string {
-        this.indent = 2
         const decls = program.declarations.map(decl => this.visit(decl)).join("\n")
-        return `(program \n${indent(decls, this.indent)}\n)`
+        return `(program \n${indent(decls)}\n)`
     }
     Logical(expr: Ast.Logical): string {
         return this.Binary(expr)
@@ -25,6 +23,16 @@ export class Printer extends Ast.Visitor<string> {
     ExpressionStatement(statement: Ast.ExpressionStatement): string {
         return this.visit(statement.expr)
     }
+    WhileStatement(statement: Ast.WhileStatement): string {
+        const cond = this.visit(statement.condition)
+        const body = this.visit(statement.body)
+        return `(while ${cond} \n${indent(body)}\n)`
+    }
+    JumpStatement(statement: Ast.JumpStatement): string {
+        const dest = statement.destination.name
+        const dist = this.visit(statement.distance || new Ast.Literal(1))
+        return `(${dest} ${dist})`
+    }
     Assign(assign: Ast.Assign): string {
         return `(= ${assign.name.text} ${Runtime.lit(this.visit(assign.expr))})`
     }
@@ -37,11 +45,8 @@ export class Printer extends Ast.Visitor<string> {
         return `(${operator} ${operand})`
     }
     Block(block: Ast.Block): string {
-        this.indent += 2
         const blocks = block.statements.map(stmt => this.visit(stmt)).join("\n")
-        const block_string = `(block \n${indent(blocks, this.indent)}\n)`
-        this.indent -= 2
-        return block_string
+        return `(block \n${indent(blocks)}\n)`
     }
     Binary(expr: Ast.Binary): string {
         const operator = expr.operator.text
@@ -64,14 +69,11 @@ export class Printer extends Ast.Visitor<string> {
         const stmtTrue = this.visit(statement.trueStatement)
         if (!statement.falseStatement) return `(if ${cond} ${stmtTrue})`
         const stmtFalse = this.visit(statement.falseStatement)
-        this.indent += 2
-        const str = `(if ${cond} \n${indent(stmtTrue, this.indent)} \n${indent(stmtFalse, this.indent)})`
-        this.indent -= 2
-        return str
+        return `(if ${cond} \n${indent(stmtTrue)} \n${indent(stmtFalse)})`
     }
 }
 
-function indent(text: string, by: number): string {
-    const pad = new Array(by).fill(' ').join('')
+function indent(text: string): string {
+    const pad = new Array(3).fill(' ').join('')
     return text.replace(/^/mg, pad)
 }

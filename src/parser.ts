@@ -44,9 +44,15 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
         }
     }
 
-    // statement -> print_statement | expression_statement | if_statement | block
+    // statement -> print_statement | expression_statement | if_statement | jump_statement | block
     Statement(): Ast.Statement {
-        return this.PrintStatement() || this.Block() || this.IfStatement() || this.ExpressionStatement()
+        return this.PrintStatement() ||
+            this.Block() ||
+            this.IfStatement() ||
+            this.WhileStatement() ||
+            this.ForStatement() ||
+            this.JumpStatement() ||
+            this.ExpressionStatement()
     }
 
     // block -> "{" declaration* "}"
@@ -63,6 +69,18 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
         }
     }
 
+    // jump_statement -> ("break" | "continue") expression? ";"
+    JumpStatement(): Ast.JumpStatement | void {
+        if (this.match(TOKEN.BREAK, TOKEN.CONTINUE)) {
+            const jump = this.previous<"CONTINUE" | "BREAK">()
+            let expr: Ast.Expression = new Ast.Literal(1)
+            if (this.peek()?.name != TOKEN.SEMICOLON)
+                expr = this.Expression()
+            this.consume(TOKEN.SEMICOLON, "Expected ;")
+            return new Ast.JumpStatement(jump, expr);
+        }
+    }
+
     // if_statement -> "if" "(" expression ")" statement ("else" statement)?
     IfStatement(): Ast.IfStatement | void {
         if (this.match(TOKEN.IF)) {
@@ -76,6 +94,46 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
             } else {
                 return new Ast.IfStatement(cond, trueStatement)
             }
+        }
+    }
+
+    // while_statement -> "while" "(" expression ")" statement
+    WhileStatement(): Ast.WhileStatement | void {
+        if (this.match(TOKEN.WHILE)) {
+            this.consume(TOKEN.LEFT_PAREN, "Expected (")
+            const cond = this.Expression()
+            this.consume(TOKEN.RIGHT_PAREN, "Expected )")
+            const body = this.Statement()
+            return new Ast.WhileStatement(cond, body)
+        }
+    }
+
+    // for_statement -> "for" "(" var_decl | exprStmt | ";" expression? ";" expression? ")" statement
+    ForStatement(): Ast.Block | void {
+        if (this.match(TOKEN.FOR)) {
+            this.consume(TOKEN.LEFT_PAREN, "Expected (")
+            const init = this.VarDeclaration() ||
+                this.ExpressionStatement() ||
+                (this.consume(TOKEN.SEMICOLON, "Expected ;") && new Ast.Literal(true))
+            let cond: Ast.Expression = new Ast.Literal(true)
+            if (this.peek()?.name != TOKEN.SEMICOLON)
+                cond = this.Expression()
+            this.consume(TOKEN.SEMICOLON, "Expected ;")
+            let incr: Ast.Expression = new Ast.Literal(true)
+            if (this.peek()?.name != TOKEN.RIGHT_PAREN)
+                incr = this.Expression()
+            this.consume(TOKEN.RIGHT_PAREN, "Expected )")
+            const body_statement = this.Statement()
+            return new Ast.Block([
+                init,
+                new Ast.WhileStatement(
+                    cond,
+                    new Ast.Block([
+                        body_statement,
+                        new Ast.ExpressionStatement(incr)
+                    ])
+                )
+            ])
         }
     }
 

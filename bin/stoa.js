@@ -4280,7 +4280,9 @@ var Scanner = TokenStreamClassFactory.buildTokenStreamClass({
   RIGHT_CURL: "}",
   RIGHT_PAREN: ")",
   SEMICOLON: ";",
+  BREAK: /break/i,
   CLASS: /class/i,
+  CONTINUE: /continue/i,
   ELSE: /else/i,
   FOR: /for/i,
   FUN: /fun/i,
@@ -4294,6 +4296,7 @@ var Scanner = TokenStreamClassFactory.buildTokenStreamClass({
   IDENTIFIER: /[a-z][a-z\d]*/i,
   _MULTI_LINE_COMMENT: cStyleCommentScanner,
   _SINGLE_LINE_COMMENT: [/\/\/.*/, (text) => text.substring(2).trim()],
+  _SHEBANG_COMMENT: /\#\!\/usr\/bin\/env\s.*/,
   _SPACE: /\s+/
 });
 var TOKEN = Scanner.TOKENS;
@@ -4369,6 +4372,20 @@ var IfStatement = class {
   }
 };
 __name(IfStatement, "IfStatement");
+var JumpStatement = class {
+  constructor(destination, distance) {
+    this.destination = destination;
+    this.distance = distance;
+  }
+};
+__name(JumpStatement, "JumpStatement");
+var WhileStatement = class {
+  constructor(condition, body) {
+    this.condition = condition;
+    this.body = body;
+  }
+};
+__name(WhileStatement, "WhileStatement");
 var ExpressionStatement = class {
   constructor(expr) {
     this.expr = expr;
@@ -4480,7 +4497,7 @@ var Parser2 = class extends Parser {
     }
   }
   Statement() {
-    return this.PrintStatement() || this.Block() || this.IfStatement() || this.ExpressionStatement();
+    return this.PrintStatement() || this.Block() || this.IfStatement() || this.WhileStatement() || this.ForStatement() || this.JumpStatement() || this.ExpressionStatement();
   }
   Block() {
     var _a;
@@ -4496,6 +4513,17 @@ var Parser2 = class extends Parser {
       return block;
     }
   }
+  JumpStatement() {
+    var _a;
+    if (this.match(TOKEN.BREAK, TOKEN.CONTINUE)) {
+      const jump = this.previous();
+      let expr = new Literal(1);
+      if (((_a = this.peek()) == null ? void 0 : _a.name) != TOKEN.SEMICOLON)
+        expr = this.Expression();
+      this.consume(TOKEN.SEMICOLON, "Expected ;");
+      return new JumpStatement(jump, expr);
+    }
+  }
   IfStatement() {
     if (this.match(TOKEN.IF)) {
       this.consume(TOKEN.LEFT_PAREN, "Expected (");
@@ -4508,6 +4536,38 @@ var Parser2 = class extends Parser {
       } else {
         return new IfStatement(cond, trueStatement);
       }
+    }
+  }
+  WhileStatement() {
+    if (this.match(TOKEN.WHILE)) {
+      this.consume(TOKEN.LEFT_PAREN, "Expected (");
+      const cond = this.Expression();
+      this.consume(TOKEN.RIGHT_PAREN, "Expected )");
+      const body = this.Statement();
+      return new WhileStatement(cond, body);
+    }
+  }
+  ForStatement() {
+    var _a, _b;
+    if (this.match(TOKEN.FOR)) {
+      this.consume(TOKEN.LEFT_PAREN, "Expected (");
+      const init = this.VarDeclaration() || this.ExpressionStatement() || this.consume(TOKEN.SEMICOLON, "Expected ;") && new Literal(true);
+      let cond = new Literal(true);
+      if (((_a = this.peek()) == null ? void 0 : _a.name) != TOKEN.SEMICOLON)
+        cond = this.Expression();
+      this.consume(TOKEN.SEMICOLON, "Expected ;");
+      let incr = new Literal(true);
+      if (((_b = this.peek()) == null ? void 0 : _b.name) != TOKEN.RIGHT_PAREN)
+        incr = this.Expression();
+      this.consume(TOKEN.RIGHT_PAREN, "Expected )");
+      const body_statement = this.Statement();
+      return new Block([
+        init,
+        new WhileStatement(cond, new Block([
+          body_statement,
+          new ExpressionStatement(incr)
+        ]))
+      ]);
     }
   }
   PrintStatement() {
@@ -4677,7 +4737,8 @@ var Environment = class {
     this.table = /* @__PURE__ */ new Map();
   }
   has(name2) {
-    return this.table.has(name2);
+    var _a;
+    return this.table.has(name2) || !!((_a = this.enclosure) == null ? void 0 : _a.has(name2));
   }
   init(name2) {
     if (!this.table.has(name2))
@@ -4727,18 +4788,26 @@ __name(number, "number");
 var RuntimeError = class extends Error {
 };
 __name(RuntimeError, "RuntimeError");
+var JumpException = class extends Error {
+  constructor() {
+    super(...arguments);
+    this.distance = 1;
+  }
+};
+__name(JumpException, "JumpException");
+var BreakException = class extends JumpException {
+};
+__name(BreakException, "BreakException");
+var ContinueException = class extends JumpException {
+};
+__name(ContinueException, "ContinueException");
 
 // src/printer.ts
 var Printer = class extends Visitor2 {
-  constructor() {
-    super(...arguments);
-    this.indent = 0;
-  }
   Program(program) {
-    this.indent = 2;
     const decls = program.declarations.map((decl) => this.visit(decl)).join("\n");
     return `(program 
-${indent(decls, this.indent)}
+${indent(decls)}
 )`;
   }
   Logical(expr) {
@@ -4758,6 +4827,18 @@ ${indent(decls, this.indent)}
   ExpressionStatement(statement) {
     return this.visit(statement.expr);
   }
+  WhileStatement(statement) {
+    const cond = this.visit(statement.condition);
+    const body = this.visit(statement.body);
+    return `(while ${cond} 
+${indent(body)}
+)`;
+  }
+  JumpStatement(statement) {
+    const dest = statement.destination.name;
+    const dist = this.visit(statement.distance || new Literal(1));
+    return `(${dest} ${dist})`;
+  }
   Assign(assign) {
     return `(= ${assign.name.text} ${lit(this.visit(assign.expr))})`;
   }
@@ -4770,13 +4851,10 @@ ${indent(decls, this.indent)}
     return `(${operator} ${operand})`;
   }
   Block(block) {
-    this.indent += 2;
     const blocks = block.statements.map((stmt) => this.visit(stmt)).join("\n");
-    const block_string = `(block 
-${indent(blocks, this.indent)}
+    return `(block 
+${indent(blocks)}
 )`;
-    this.indent -= 2;
-    return block_string;
   }
   Binary(expr) {
     const operator = expr.operator.text;
@@ -4800,17 +4878,14 @@ ${indent(blocks, this.indent)}
     if (!statement.falseStatement)
       return `(if ${cond} ${stmtTrue})`;
     const stmtFalse = this.visit(statement.falseStatement);
-    this.indent += 2;
-    const str = `(if ${cond} 
-${indent(stmtTrue, this.indent)} 
-${indent(stmtFalse, this.indent)})`;
-    this.indent -= 2;
-    return str;
+    return `(if ${cond} 
+${indent(stmtTrue)} 
+${indent(stmtFalse)})`;
   }
 };
 __name(Printer, "Printer");
-function indent(text, by) {
-  const pad = new Array(by).fill(" ").join("");
+function indent(text) {
+  const pad = new Array(3).fill(" ").join("");
   return text.replace(/^/mg, pad);
 }
 __name(indent, "indent");
@@ -4837,6 +4912,36 @@ var Evaluator = class extends Visitor2 {
   }
   ExpressionStatement(statement) {
     this.visit(statement.expr);
+  }
+  IfStatement(statement) {
+    const condition = this.visit(statement.condition);
+    if (truthy(condition))
+      this.visit(statement.trueStatement);
+    else if (statement.falseStatement)
+      this.visit(statement.falseStatement);
+  }
+  WhileStatement(statement) {
+    while (truthy(this.visit(statement.condition))) {
+      try {
+        this.visit(statement.body);
+      } catch (e) {
+        if (e instanceof JumpException) {
+          if (e.distance > 1) {
+            e.distance -= 1;
+            throw e;
+          }
+          if (e instanceof ContinueException)
+            continue;
+          if (e instanceof BreakException)
+            break;
+        }
+      }
+    }
+  }
+  JumpStatement(statement) {
+    const jump = statement.destination.name == TOKEN.BREAK ? new BreakException() : new ContinueException();
+    jump.distance = number(this.visit(statement.distance || new Literal(1)));
+    throw jump;
   }
   Literal(expr) {
     return expr.value;
@@ -4917,13 +5022,6 @@ var Evaluator = class extends Visitor2 {
     } finally {
       this.env = previous;
     }
-  }
-  IfStatement(statement) {
-    const condition = this.visit(statement.condition);
-    if (truthy(condition))
-      this.visit(statement.trueStatement);
-    else if (statement.falseStatement)
-      this.visit(statement.falseStatement);
   }
 };
 __name(Evaluator, "Evaluator");

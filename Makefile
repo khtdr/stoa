@@ -7,6 +7,7 @@ help:
 	@echo make "dev       # Build and test, watching for changes"
 	@echo make "repl      # Launch the REPL"
 	@echo make "install   # Builds and installs to ~/bin"
+	@echo make "test      # Builds, installs, and tests"
 
 build: deps
 	npx tsup --keep-names --no-splitting \
@@ -31,6 +32,9 @@ install: build
 	cp bin/stoa ~/bin
 	chmod +x ~/bin/stoa
 	stoa --version
+
+test: build
+	./tests/run.sh
 
 lint:
 	npx tsc --noEmit

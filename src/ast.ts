@@ -7,6 +7,7 @@ export abstract class Visitor<Result> extends Lib.Visitor<AstNode, Result> {
     abstract ExpressionStatement(statement: ExpressionStatement): Result | void
     abstract Grouping(expr: Grouping): Result
     abstract IfStatement(statement: IfStatement): Result | void
+    abstract JumpStatement(statement: JumpStatement): Result | void
     abstract Literal(expr: Literal): Result
     abstract Logical(expr: Logical): Result
     abstract PrintStatement(statement: PrintStatement): Result | void
@@ -15,6 +16,7 @@ export abstract class Visitor<Result> extends Lib.Visitor<AstNode, Result> {
     abstract Unary(expr: Unary): Result
     abstract VarDeclaration(declaration: VarDeclaration): Result | void
     abstract Variable(expr: Variable): Result
+    abstract WhileStatement(statement: WhileStatement): Result | void
 }
 
 
@@ -41,6 +43,20 @@ export class IfStatement implements Statement {
         readonly condition: Expression,
         readonly trueStatement: Statement,
         readonly falseStatement?: Statement
+    ) { }
+}
+
+export class JumpStatement implements Statement {
+    constructor(
+        readonly destination: Lib.Token<'BREAK' | 'CONTINUE'>,
+        readonly distance: Expression
+    ) { }
+}
+
+export class WhileStatement implements Statement {
+    constructor(
+        readonly condition: Expression,
+        readonly body: Statement
     ) { }
 }
 

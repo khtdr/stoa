@@ -1,0 +1,4 @@
+#!/usr/bin/env stoa
+
+var name = "Joey";
+print "Hello, " + name + "!";

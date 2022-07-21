@@ -41,7 +41,9 @@ export const Scanner = TokenStreamClassFactory.buildTokenStreamClass({
     SEMICOLON: ";",
 
     // keywords
+    BREAK: /break/i,
     CLASS: /class/i,
+    CONTINUE: /continue/i,
     ELSE: /else/i,
     FOR: /for/i,
     FUN: /fun/i,
@@ -59,6 +61,7 @@ export const Scanner = TokenStreamClassFactory.buildTokenStreamClass({
     // discarded
     _MULTI_LINE_COMMENT: cStyleCommentScanner,
     _SINGLE_LINE_COMMENT: [/\/\/.*/, (text) => text.substring(2).trim()],
+    _SHEBANG_COMMENT: /\#\!\/usr\/bin\/env\s.*/,
     _SPACE: /\s+/,
 });
 

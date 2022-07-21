@@ -22,6 +22,33 @@ export class Evaluator extends Ast.Visitor<Result> {
     ExpressionStatement(statement: Ast.ExpressionStatement): void {
         this.visit(statement.expr)
     }
+    IfStatement(statement: Ast.IfStatement): void {
+        const condition = this.visit(statement.condition);
+        if (Runtime.truthy(condition)) this.visit(statement.trueStatement);
+        else if (statement.falseStatement) this.visit(statement.falseStatement);
+    }
+    WhileStatement(statement: Ast.WhileStatement): void {
+        while (Runtime.truthy(this.visit(statement.condition))) {
+            try {
+                this.visit(statement.body)
+            } catch (e) {
+                if (e instanceof Runtime.JumpException) {
+                    if (e.distance > 1) {
+                        e.distance -= 1
+                        throw e
+                    }
+                    if (e instanceof Runtime.ContinueException) continue
+                    if (e instanceof Runtime.BreakException) break
+                }
+            }
+        }
+    }
+    JumpStatement(statement: Ast.JumpStatement): void {
+        const jump = statement.destination.name == TOKEN.BREAK ?
+            new Runtime.BreakException() : new Runtime.ContinueException()
+        jump.distance = Runtime.number(this.visit(statement.distance || new Ast.Literal(1)))
+        throw jump
+    }
     Literal(expr: Ast.Literal): Result {
         return expr.value
     }
@@ -86,10 +113,5 @@ export class Evaluator extends Ast.Visitor<Result> {
         } finally {
             this.env = previous
         }
-    }
-    IfStatement(statement: Ast.IfStatement): void {
-        const condition = this.visit(statement.condition);
-        if (Runtime.truthy(condition)) this.visit(statement.trueStatement);
-        else if (statement.falseStatement) this.visit(statement.falseStatement);
     }
 }

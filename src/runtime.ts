@@ -5,8 +5,8 @@
 export class Environment {
     constructor(readonly enclosure?: Environment) { }
     private table = new Map<string, any>()
-    has(name: string) {
-        return this.table.has(name)
+    has(name: string): boolean {
+        return this.table.has(name) || !!this.enclosure?.has(name)
     }
     init(name: string) {
         if (!this.table.has(name)) this.table.set(name, undefined)
@@ -41,3 +41,6 @@ export function number(val: unknown) {
 }
 
 export class RuntimeError extends Error { }
+export class JumpException extends Error { distance = 1 }
+export class BreakException extends JumpException { }
+export class ContinueException extends JumpException { }
