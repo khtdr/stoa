@@ -3894,7 +3894,7 @@ var require_source = __commonJS({
 // package.json
 var name = "stoa";
 var description = "language framework";
-var version = "2022.06.23";
+var version = "2022.07.20";
 var repository = "https://github.com/khtdr/stoa";
 var author = "Kay Oh <khtdr.com@gmail.com>";
 var license = "UNLICENSED";

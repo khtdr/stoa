@@ -1,6 +1,24 @@
-* Current Help Docs
+* Project Stoa
+** Build Status
+#+begin_src sh :exports both :results code
+make build
+#+end_src
+
+#+RESULTS:
+#+begin_src sh
+npx tsup --keep-names --no-splitting \
+	         --out-dir ./bin src/stoa.ts
+CLI Building entry: src/stoa.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v6.1.2
+CLI Target: node14
+CJS Build start
+CJS ⚡️ Build success in 62ms
+CJS bin/stoa.js 153.09 KB
+#+end_src
+
+** Usage Documentation
 #+begin_src sh :exports both :results verbatim
-make build &> /dev/null
 ./bin/stoa --help
 #+end_src
 
@@ -20,36 +38,28 @@ Displays the version and exits
 
 #+end_example
 
-* Current Version
-#+begin_src sh :exports both :results verbatim
-make build &>/dev/null
+** Current Version
+#+begin_src sh :exports both :results code
 ./bin/stoa -v
 #+end_src
 
 #+RESULTS:
-: stoa-2022.06.23 {
-:   author: 'Kay Oh <khtdr.com@gmail.com>',
-:   description: 'language framework',
-:   repository: 'https://github.com/khtdr/stoa',
-:   license: 'UNLICENSED'
-: }
+#+begin_src sh
+stoa-2022.07.20 {
+  author: 'Kay Oh <khtdr.com@gmail.com>',
+  description: 'language framework',
+  repository: 'https://github.com/khtdr/stoa',
+  license: 'UNLICENSED'
+}
+#+end_src
 
-* Test Suite Status
-#+begin_src sh :exports both :results verbatim
+** Test Suite Status
+#+begin_src sh :exports both :results code
 make test
 #+end_src
 
 #+RESULTS:
-#+begin_example
-npx tsup --keep-names --no-splitting \
-	         --out-dir ./bin src/stoa.ts
-CLI Building entry: src/stoa.ts
-CLI Using tsconfig: tsconfig.json
-CLI tsup v6.1.2
-CLI Target: node14
-CJS Build start
-CJS ⚡️ Build success in 61ms
-CJS bin/stoa.js 153.09 KB
+#+begin_src sh
 ./tests/run.sh
 ❌ hello-world.stoa
 diff <(hello-world.stoa) hello-world.stoa.txt
@@ -60,4 +70,10 @@ diff <(name.stoa) name.stoa.txt
 2d1
 < nil
 Passing: 0 Failing: 2
-#+end_example
+#+end_src
+
+* Build All
+** build
+src_elisp[:results none]{(save-excursion (org-goto-line 1) (org-babel-execute-subtree))}
+** clean
+src_elisp[:results none]{(save-excursion (org-goto-line 1) (+org/remove-result-blocks t))}

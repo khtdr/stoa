@@ -1,7 +1,7 @@
 {
   "name": "stoa",
   "description": "language framework",
-  "version": "2022.06.23",
+  "version": "2022.07.20",
   "main": "bin/stoa.js",
   "repository": "https://github.com/khtdr/stoa",
   "author": "Kay Oh <khtdr.com@gmail.com>",

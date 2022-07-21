@@ -33,7 +33,11 @@ install: build
 	chmod +x ~/bin/stoa
 	stoa --version
 
-test: build
+test:
+	@make build >/dev/null
+	./tests/run.sh
+
+test-watch: build
 	./tests/run.sh
 
 lint:
