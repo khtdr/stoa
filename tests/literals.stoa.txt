@@ -1,0 +1,20 @@
+--- literal values ---
+
+string
+0
+3.14
+42
+true
+false
+nil
+
+--- truthiness ---
+"": true
+"string": true
+42: true
+0: true
+3.14: true
+0.00: true
+true: true
+false: false
+nil: false

@@ -3972,14 +3972,20 @@ var Driver = class {
     this.status = 0;
   }
   run(source) {
-    const tokens = this.lang.scan(source);
-    if (!tokens)
-      throw new Error("failed to tokenize");
-    const ast = this.lang.parse(tokens);
-    if (!ast)
-      throw new Error("failed to parse");
-    const result = this.treewalker.visit(ast);
-    return { tokens, result };
+    try {
+      const tokens = this.lang.scan(source);
+      if (!tokens)
+        throw new Error("failed to tokenize");
+      const ast = this.lang.parse(tokens);
+      if (!ast)
+        throw new Error("failed to parse");
+      const result = this.treewalker.visit(ast);
+      return { tokens, result };
+    } catch (e) {
+      console.warn(e);
+    } finally {
+      return { tokens: [], result: void 0 };
+    }
   }
 };
 __name(Driver, "Driver");
@@ -4489,13 +4495,13 @@ var Parser2 = class extends Parser {
       let expr;
       if (this.match(TOKEN.EQUAL)) {
         expr = this.Expression();
-        this.consume(TOKEN.SEMICOLON, "Expected ;");
       }
+      this.consume(TOKEN.SEMICOLON, "Expected ;");
       return new VarDeclaration(ident, expr);
     }
   }
   Statement() {
-    return this.PrintStatement() || this.Block() || this.IfStatement() || this.WhileStatement() || this.ForStatement() || this.JumpStatement() || this.ExpressionStatement();
+    return this.PrintStatement() || this.IfStatement() || this.WhileStatement() || this.ForStatement() || this.JumpStatement() || this.Block() || this.ExpressionStatement();
   }
   Block() {
     var _a;

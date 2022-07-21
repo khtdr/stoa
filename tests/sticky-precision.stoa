@@ -1,0 +1,7 @@
+#!/usr/bin/env stoa
+
+print 0;
+print 0.0;
+print 0.00;
+print 3.9 * 3.14;
+print 39 * 3.14;

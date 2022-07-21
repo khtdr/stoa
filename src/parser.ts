@@ -38,20 +38,20 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
             let expr: Ast.Expression | undefined
             if (this.match(TOKEN.EQUAL)) {
                 expr = this.Expression()
-                this.consume(TOKEN.SEMICOLON, "Expected ;")
             }
+            this.consume(TOKEN.SEMICOLON, "Expected ;")
             return new Ast.VarDeclaration(ident, expr)
         }
     }
 
-    // statement -> print_statement | expression_statement | if_statement | jump_statement | block
+    // statement -> print_statement | if_statement | while_statement | for_statement | jump_statement | block | expressiont_statement
     Statement(): Ast.Statement {
         return this.PrintStatement() ||
-            this.Block() ||
             this.IfStatement() ||
             this.WhileStatement() ||
             this.ForStatement() ||
             this.JumpStatement() ||
+            this.Block() ||
             this.ExpressionStatement()
     }
 

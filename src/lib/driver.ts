@@ -8,13 +8,19 @@ export class Driver<Lx extends Lib.Lexicon, Ast extends object, Result> {
     ) { }
 
     run(source: string) {
-        const tokens = this.lang.scan(source);
-        if (!tokens) throw new Error('failed to tokenize')
+        try {
+            const tokens = this.lang.scan(source);
+            if (!tokens) throw new Error('failed to tokenize')
 
-        const ast = this.lang.parse(tokens);
-        if (!ast) throw new Error('failed to parse')
+            const ast = this.lang.parse(tokens);
+            if (!ast) throw new Error('failed to parse')
 
-        const result = this.treewalker.visit(ast)
-        return { tokens, result }
+            const result = this.treewalker.visit(ast)
+            return { tokens, result }
+        } catch (e) {
+            console.warn(e)
+        } finally {
+            return { tokens: [], result: undefined }
+        }
     }
 }
