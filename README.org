@@ -1,29 +1,27 @@
 * Project Stoa
 ** Build Status
-#+begin_src sh :exports both :results drawer
+#+begin_src sh :exports both :results verbatim
 make build
 #+end_src
 
 #+RESULTS:
-:results:
-npx tsup --keep-names --no-splitting \
-	         --out-dir ./bin src/stoa.ts
-CLI Building entry: src/stoa.ts
-CLI Using tsconfig: tsconfig.json
-CLI tsup v6.1.2
-CLI Target: node14
-CJS Build start
-CJS ⚡️ Build success in 59ms
-CJS bin/stoa.js 153.09 KB
-:end:
+: npx tsup --keep-names --no-splitting \
+: 	         --out-dir ./bin src/stoa.ts
+: CLI Building entry: src/stoa.ts
+: CLI Using tsconfig: tsconfig.json
+: CLI tsup v6.1.2
+: CLI Target: node14
+: CJS Build start
+: CJS ⚡️ Build success in 61ms
+: CJS bin/stoa.js 153.09 KB
 
 ** Usage Documentation
-#+begin_src sh :exports both :results drawer
+#+begin_src sh :exports both :results verbatim
 ./bin/stoa --help
 #+end_src
 
 #+RESULTS:
-:results:
+#+begin_example
 Usage: node ./bin/stoa.js [options] [file]
 Show this help message
     --help
@@ -36,30 +34,28 @@ Emits the list of tokens (JSON)
 Displays the version and exits
     -v, --version
 
-:end:
+#+end_example
 
 ** Current Version
-#+begin_src sh :exports both :results drawer
+#+begin_src sh :exports both :results verbatim
 ./bin/stoa -v
 #+end_src
 
 #+RESULTS:
-:results:
-stoa-2022.07.20 {
-  author: 'Kay Oh <khtdr.com@gmail.com>',
-  description: 'language framework',
-  repository: 'https://github.com/khtdr/stoa',
-  license: 'UNLICENSED'
-}
-:end:
+: stoa-2022.07.20 {
+:   author: 'Kay Oh <khtdr.com@gmail.com>',
+:   description: 'language framework',
+:   repository: 'https://github.com/khtdr/stoa',
+:   license: 'UNLICENSED'
+: }
 
 ** Test Suite Status
-#+begin_src sh :exports both :results drawer
+#+begin_src sh :exports both :results verbatim
 make test
 #+end_src
 
 #+RESULTS:
-:results:
+#+begin_example
 ./tests/run.sh
 ❌ hello-world.stoa
 diff <(hello-world.stoa) hello-world.stoa.txt
@@ -70,7 +66,7 @@ diff <(name.stoa) name.stoa.txt
 2d1
 < nil
 Passing: 0 Failing: 2
-:end:
+#+end_example
 
 * ...
 ** build
