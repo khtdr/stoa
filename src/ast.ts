@@ -4,6 +4,7 @@ export abstract class Visitor<Result> extends Lib.Visitor<AstNode, Result> {
     abstract Assign(assign: Assign): Result
     abstract Binary(expr: Binary): Result
     abstract Block(block: Block): Result | void
+    abstract Call(call: Call): Result
     abstract ExpressionStatement(statement: ExpressionStatement): Result | void
     abstract Grouping(expr: Grouping): Result
     abstract IfStatement(statement: IfStatement): Result | void
@@ -94,6 +95,14 @@ export class Unary implements Expression {
     constructor(
         readonly operator: Lib.Token<any>,
         readonly operand: Expression
+    ) { }
+}
+
+export class Call implements Expression {
+    constructor(
+        readonly callee: Expression,
+        readonly args: Expression[],
+        readonly end: Lib.Token<any>,
     ) { }
 }
 

@@ -14,6 +14,12 @@ export class Printer extends Ast.Visitor<string> {
         const init = declaration.expr ? ` ${this.visit(declaration.expr)}` : ''
         return `${decl}${init})`
     }
+    Call(call: Ast.Call): string {
+        const callee = `(${this.visit(call.callee)}`
+        if (!call.args.length) return `${callee})`
+        const args = call.args.map(arg => this.visit(arg)).join(' ')
+        return `${callee} ${args})`
+    }
     PrintStatement(statement: Ast.PrintStatement): string {
         return `(print ${this.visit(statement.expr)})`
     }

@@ -22,6 +22,16 @@ export class Evaluator extends Ast.Visitor<Result> {
     ExpressionStatement(statement: Ast.ExpressionStatement): void {
         this.visit(statement.expr)
     }
+    Call(call: Ast.Call): Result {
+        const callee = this.visit(call.callee)
+        const args = call.args.map(arg => this.visit(arg))
+        // @ts-expect-error needs a function iface still
+        if (!callee.call) throw new Runtime.RuntimeError("uncallable target")
+        // @ts-expect-error needs a function iface still
+        if (callee.arity != args.length) throw new Runtime.RuntimeError("wrong number of args")
+        // @ts-expect-error needs a function iface still
+        return callee.call(args)
+    }
     IfStatement(statement: Ast.IfStatement): void {
         const condition = this.visit(statement.condition);
         if (Runtime.truthy(condition)) this.visit(statement.trueStatement);

@@ -4427,6 +4427,14 @@ var Unary = class {
   }
 };
 __name(Unary, "Unary");
+var Call = class {
+  constructor(callee, args, end) {
+    this.callee = callee;
+    this.args = args;
+    this.end = end;
+  }
+};
+__name(Call, "Call");
 var Binary = class {
   constructor(left, operator, right) {
     this.left = left;
@@ -4695,7 +4703,25 @@ var Parser2 = class extends Parser {
       const right = this.Unary();
       return new Unary(operator, right);
     }
-    return this.Primary();
+    return this.Call();
+  }
+  Call() {
+    const expr = this.Primary();
+    while (true) {
+      if (!this.match(TOKEN.LEFT_PAREN))
+        break;
+      const args = [];
+      if (!this.check(TOKEN.RIGHT_PAREN)) {
+        if (args.length >= 255)
+          this.error(this.peek(), "Too many args (255 max)");
+        do {
+          args.push(this.Expression());
+        } while (this.match(TOKEN.COMMA));
+      }
+      const paren = this.consume(TOKEN.RIGHT_PAREN, "Expected ) after arguments");
+      return new Call(expr, args, paren);
+    }
+    return expr;
   }
   Primary() {
     if (this.match(TOKEN.NUMBER, TOKEN.STRING, TOKEN.TRUE, TOKEN.FALSE, TOKEN.NIL)) {
@@ -4822,6 +4848,13 @@ ${indent(decls)}
     const init = declaration.expr ? ` ${this.visit(declaration.expr)}` : "";
     return `${decl}${init})`;
   }
+  Call(call) {
+    const callee = `(${this.visit(call.callee)}`;
+    if (!call.args.length)
+      return `${callee})`;
+    const args = call.args.map((arg2) => this.visit(arg2)).join(" ");
+    return `${callee} ${args})`;
+  }
   PrintStatement(statement) {
     return `(print ${this.visit(statement.expr)})`;
   }
@@ -4916,6 +4949,15 @@ var Evaluator = class extends Visitor2 {
   }
   ExpressionStatement(statement) {
     this.visit(statement.expr);
+  }
+  Call(call) {
+    const callee = this.visit(call.callee);
+    const args = call.args.map((arg2) => this.visit(arg2));
+    if (!callee.call)
+      throw new RuntimeError("uncallable target");
+    if (callee.arity != args.length)
+      throw new RuntimeError("wrong number of args");
+    return callee.call(args);
   }
   IfStatement(statement) {
     const condition = this.visit(statement.condition);

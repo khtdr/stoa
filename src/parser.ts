@@ -289,14 +289,33 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
         return;
     }
 
-    // _valid_unary -> ("!" | "-") unary | primary
-    private _ValidUnary(): Ast.Unary | ReturnType<typeof this.Primary> {
+    // _valid_unary -> ("!" | "-") unary | call
+    private _ValidUnary(): Ast.Unary | ReturnType<typeof this.Call> {
         if (this.match(TOKEN.BANG, TOKEN.DASH)) {
             const operator = this.previous();
             const right = this.Unary();
             return new Ast.Unary(operator, right);
         }
-        return this.Primary();
+        return this.Call();
+    }
+
+    // call -> primary ("(" (expression ("," expression)*)? ")")*
+    Call(): ReturnType<typeof this.Primary> | Ast.Call {
+        const expr = this.Primary();
+
+        while (true) {
+            if (!this.match(TOKEN.LEFT_PAREN)) break
+            const args: Ast.Expression[] = []
+            if (!this.check(TOKEN.RIGHT_PAREN)) {
+                if (args.length >= 255) this.error(this.peek()!, 'Too many args (255 max)')
+                do {
+                    args.push(this.Expression())
+                } while (this.match(TOKEN.COMMA))
+            }
+            const paren = this.consume(TOKEN.RIGHT_PAREN, "Expected ) after arguments")
+            return new Ast.Call(expr, args, paren)
+        }
+        return expr;
     }
 
     // primary    -> IDENTIFIER | NUMBER | STRING | TRUE | FALSE | NIL | "(" expression ")"
