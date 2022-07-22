@@ -1,0 +1,28 @@
+#!/usr/bin/env stoa
+
+var counter = "outer-scope";
+print counter;
+
+var inc;
+{
+  var counter = 0;
+  print counter;
+  fun incr() { counter = counter + 1; return counter; }
+  inc = incr;
+}
+print inc();
+print inc();
+print inc();
+
+print counter;
+
+fun makeDec(i) {
+  fun dec() { i =i-1; return i; }
+  return dec;
+}
+
+var i = 12;
+var dec = makeDec(100);
+print dec();
+print dec();
+print i;

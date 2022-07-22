@@ -19,10 +19,10 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
         return new Ast.Program(declarations)
     }
 
-    // declaration -> var_declaration | statement
+    // declaration -> fun_declaration | var_declaration | statement
     Declaration() {
         try {
-            return this.VarDeclaration() || this.Statement()
+            return this.FunDeclaration() || this.VarDeclaration() || this.Statement()
         } catch (err) {
             if (err instanceof Lib.ParseError) {
                 this.synchronize()
@@ -31,8 +31,39 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
         }
     }
 
+    // fun_declaration -> "fun" function
+    FunDeclaration(): Ast.Function | void {
+        if (this.match(TOKEN.FUN)) {
+            return this.Function()
+        }
+    }
+
+    // function -> IDENTIFIER "(" parameters? ")" block
+    Function(): Ast.Function {
+        const ident = this.consume("IDENTIFIER", "Expected identifier")
+        this.consume(TOKEN.LEFT_PAREN, "Expected (")
+        const parameters = this.Parameters()
+        this.consume(TOKEN.RIGHT_PAREN, "Expected )")
+        const block = this.Block()
+        if (!block) throw this.error(this.peek()!, "Expected {")
+        return new Ast.Function(ident, parameters, block)
+    }
+
+    // parameters -> IDENTIFER ("," IDENTIFIER)*
+    Parameters(): Lib.Token<"IDENTIFIER">[] {
+        const params: Lib.Token<"IDENTIFIER">[] = []
+        if (this.peek()?.name != TOKEN.RIGHT_PAREN) {
+            if (params.length >= 255) this.error(this.peek()!, 'Too many params (255 max)')
+            do {
+                const id = this.consume(TOKEN.IDENTIFIER, 'expected param name')
+                params.push(id as Lib.Token<'IDENTIFIER'>)
+            } while (this.peek()?.name == TOKEN.COMMA)
+        }
+        return params
+    }
+
     // var_declaration -> "var" IDENTIFIER ("=" expression ";")
-    VarDeclaration() {
+    VarDeclaration(): Ast.VarDeclaration | void {
         if (this.match(TOKEN.VAR)) {
             const ident = this.consume("IDENTIFIER", "Expected identifier")
             let expr: Ast.Expression | undefined
@@ -44,15 +75,28 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
         }
     }
 
-    // statement -> print_statement | if_statement | while_statement | for_statement | jump_statement | block | expressiont_statement
+    // statement -> return_statement | print_statement | if_statement | while_statement |
+    //              for_statement | jump_statement | block | expressiont_statement
     Statement(): Ast.Statement {
         return this.PrintStatement() ||
+            this.ReturnStatement() ||
             this.IfStatement() ||
             this.WhileStatement() ||
             this.ForStatement() ||
             this.JumpStatement() ||
             this.Block() ||
             this.ExpressionStatement()
+    }
+
+    ReturnStatement(): Ast.ReturnStatement | void {
+        if (this.match(TOKEN.RETURN)) {
+            let expr: Ast.Expression = new Ast.Literal(undefined)
+            if (!this.match(TOKEN.SEMICOLON)) {
+                expr = this.Expression()
+                this.consume(TOKEN.SEMICOLON, "Expected ;");
+            }
+            return new Ast.ReturnStatement(expr)
+        }
     }
 
     // block -> "{" declaration* "}"

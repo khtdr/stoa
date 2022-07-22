@@ -6,6 +6,15 @@ export class Printer extends Ast.Visitor<string> {
         const decls = program.declarations.map(decl => this.visit(decl)).join("\n")
         return `(program \n${indent(decls)}\n)`
     }
+    ReturnStatement(ret: Ast.ReturnStatement): string | void {
+        return `(return ${this.visit(ret.expr)})`
+    }
+    Function(fun: Ast.Function): string {
+        const name = fun.ident.text
+        const params = fun.params.map(p => p.text).join(' ')
+        const body = indent(this.visit(fun.block))
+        return `(${name} [${params}]${body})`
+    }
     Logical(expr: Ast.Logical): string {
         return this.Binary(expr)
     }

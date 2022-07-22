@@ -6,6 +6,7 @@ export abstract class Visitor<Result> extends Lib.Visitor<AstNode, Result> {
     abstract Block(block: Block): Result | void
     abstract Call(call: Call): Result
     abstract ExpressionStatement(statement: ExpressionStatement): Result | void
+    abstract Function(fun: Function): Result | void
     abstract Grouping(expr: Grouping): Result
     abstract IfStatement(statement: IfStatement): Result | void
     abstract JumpStatement(statement: JumpStatement): Result | void
@@ -13,6 +14,7 @@ export abstract class Visitor<Result> extends Lib.Visitor<AstNode, Result> {
     abstract Logical(expr: Logical): Result
     abstract PrintStatement(statement: PrintStatement): Result | void
     abstract Program(program: Program): Result | void
+    abstract ReturnStatement(ret: ReturnStatement): Result | void
     abstract Ternary(expr: Ternary): Result
     abstract Unary(expr: Unary): Result
     abstract VarDeclaration(declaration: VarDeclaration): Result | void
@@ -39,11 +41,25 @@ export class VarDeclaration implements Declaration {
     ) { }
 }
 
+export class Function implements Declaration {
+    constructor(
+        readonly ident: Lib.Token<"IDENTIFIER">,
+        readonly params: Lib.Token<"IDENTIFIER">[],
+        readonly block: Block
+    ) { }
+}
+
 export class IfStatement implements Statement {
     constructor(
         readonly condition: Expression,
         readonly trueStatement: Statement,
         readonly falseStatement?: Statement
+    ) { }
+}
+
+export class ReturnStatement implements Statement {
+    constructor(
+        readonly expr: Expression
     ) { }
 }
 

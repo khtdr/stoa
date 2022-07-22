@@ -2,6 +2,8 @@
 // - Runtime errors
 // - Error handling in general
 
+import { Expression } from "./ast"
+
 export class Environment {
     constructor(readonly enclosure?: Environment) { }
     private table = new Map<string, any>()
@@ -24,6 +26,14 @@ export class Environment {
     }
 }
 
+export function isNumber(val: unknown): val is number {
+    return typeof val == 'number'
+}
+
+export function isString(val: unknown): val is string {
+    return typeof val == 'string'
+}
+
 export function lit(val: unknown): string {
     if (val === undefined) return "nil"
     return `${val}`
@@ -35,12 +45,21 @@ export function truthy(val: unknown) {
     return true
 }
 
-export function number(val: unknown) {
-    if (typeof val == 'number') return val
-    return parseFloat(`${val}`)
+export class Function implements Callable {
+    constructor(
+        readonly arity: number,
+        readonly call: (args: Result[]) => Result
+    ) { }
 }
 
+export type Result = string | number | boolean | undefined | Callable
 export class RuntimeError extends Error { }
+export class ReturnException extends Error { value: Result = undefined }
 export class JumpException extends Error { distance = 1 }
 export class BreakException extends JumpException { }
 export class ContinueException extends JumpException { }
+export interface Callable { arity: number; call(args: Result[]): Result }
+export function isCallable(val: Result): val is Callable {
+    if (!val) return false
+    return !!(val as Callable).call
+}

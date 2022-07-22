@@ -956,7 +956,7 @@ var require_is_number = __commonJS({
   "node_modules/.pnpm/is-number@3.0.0/node_modules/is-number/index.js"(exports, module2) {
     "use strict";
     var typeOf = require_kind_of();
-    module2.exports = /* @__PURE__ */ __name(function isNumber(num) {
+    module2.exports = /* @__PURE__ */ __name(function isNumber2(num) {
       var type = typeOf(num);
       if (type === "string") {
         if (!num.trim())
@@ -1247,7 +1247,7 @@ var require_utils = __commonJS({
   "node_modules/.pnpm/window-size@1.1.1/node_modules/window-size/utils.js"(exports, module2) {
     "use strict";
     var os = require("os");
-    var isNumber = require_is_number();
+    var isNumber2 = require_is_number();
     var cp = require("child_process");
     function windowSize(options) {
       options = options || {};
@@ -1338,7 +1338,7 @@ var require_utils = __commonJS({
     }
     __name(tputSize, "tputSize");
     function isSize(size) {
-      return Array.isArray(size) && isNumber(size[0]) && isNumber(size[1]);
+      return Array.isArray(size) && isNumber2(size[0]) && isNumber2(size[1]);
     }
     __name(isSize, "isSize");
     module2.exports = {
@@ -1712,7 +1712,7 @@ var require_readline_utils = __commonJS({
       return lines;
     };
     utils.clearTrailingLines = function(rl, lines, height) {
-      if (!isNumber(lines))
+      if (!isNumber2(lines))
         lines = 0;
       var len = height + lines;
       while (len--) {
@@ -2176,12 +2176,12 @@ var require_readline_utils = __commonJS({
       return arr[arr.length - 1];
     }
     __name(last, "last");
-    function isNumber(n) {
+    function isNumber2(n) {
       return isNum(n) && String(n).trim() !== "";
     }
-    __name(isNumber, "isNumber");
+    __name(isNumber2, "isNumber");
     function toNumber(n) {
-      return isNumber(n) ? Number(n) : 1;
+      return isNumber2(n) ? Number(n) : 1;
     }
     __name(toNumber, "toNumber");
   }
@@ -3633,9 +3633,9 @@ var require_templates = __commonJS({
       const chunks = arguments_.trim().split(/\s*,\s*/g);
       let matches;
       for (const chunk of chunks) {
-        const number2 = Number(chunk);
-        if (!Number.isNaN(number2)) {
-          results.push(number2);
+        const number = Number(chunk);
+        if (!Number.isNaN(number)) {
+          results.push(number);
         } else if (matches = chunk.match(STRING_REGEX)) {
           results.push(matches[2].replace(ESCAPE_REGEX, (m, escape, character) => escape ? unescape(escape) : character));
         } else {
@@ -4368,6 +4368,14 @@ var VarDeclaration = class {
   }
 };
 __name(VarDeclaration, "VarDeclaration");
+var Function2 = class {
+  constructor(ident, params, block) {
+    this.ident = ident;
+    this.params = params;
+    this.block = block;
+  }
+};
+__name(Function2, "Function");
 var IfStatement = class {
   constructor(condition, trueStatement, falseStatement) {
     this.condition = condition;
@@ -4376,6 +4384,12 @@ var IfStatement = class {
   }
 };
 __name(IfStatement, "IfStatement");
+var ReturnStatement = class {
+  constructor(expr) {
+    this.expr = expr;
+  }
+};
+__name(ReturnStatement, "ReturnStatement");
 var JumpStatement = class {
   constructor(destination, distance) {
     this.destination = destination;
@@ -4488,7 +4502,7 @@ var Parser2 = class extends Parser {
   }
   Declaration() {
     try {
-      return this.VarDeclaration() || this.Statement();
+      return this.FunDeclaration() || this.VarDeclaration() || this.Statement();
     } catch (err) {
       if (err instanceof ParseError) {
         this.synchronize();
@@ -4496,6 +4510,34 @@ var Parser2 = class extends Parser {
       } else
         throw err;
     }
+  }
+  FunDeclaration() {
+    if (this.match(TOKEN.FUN)) {
+      return this.Function();
+    }
+  }
+  Function() {
+    const ident = this.consume("IDENTIFIER", "Expected identifier");
+    this.consume(TOKEN.LEFT_PAREN, "Expected (");
+    const parameters = this.Parameters();
+    this.consume(TOKEN.RIGHT_PAREN, "Expected )");
+    const block = this.Block();
+    if (!block)
+      throw this.error(this.peek(), "Expected {");
+    return new Function2(ident, parameters, block);
+  }
+  Parameters() {
+    var _a, _b;
+    const params = [];
+    if (((_a = this.peek()) == null ? void 0 : _a.name) != TOKEN.RIGHT_PAREN) {
+      if (params.length >= 255)
+        this.error(this.peek(), "Too many params (255 max)");
+      do {
+        const id = this.consume(TOKEN.IDENTIFIER, "expected param name");
+        params.push(id);
+      } while (((_b = this.peek()) == null ? void 0 : _b.name) == TOKEN.COMMA);
+    }
+    return params;
   }
   VarDeclaration() {
     if (this.match(TOKEN.VAR)) {
@@ -4509,7 +4551,17 @@ var Parser2 = class extends Parser {
     }
   }
   Statement() {
-    return this.PrintStatement() || this.IfStatement() || this.WhileStatement() || this.ForStatement() || this.JumpStatement() || this.Block() || this.ExpressionStatement();
+    return this.PrintStatement() || this.ReturnStatement() || this.IfStatement() || this.WhileStatement() || this.ForStatement() || this.JumpStatement() || this.Block() || this.ExpressionStatement();
+  }
+  ReturnStatement() {
+    if (this.match(TOKEN.RETURN)) {
+      let expr = new Literal(void 0);
+      if (!this.match(TOKEN.SEMICOLON)) {
+        expr = this.Expression();
+        this.consume(TOKEN.SEMICOLON, "Expected ;");
+      }
+      return new ReturnStatement(expr);
+    }
   }
   Block() {
     var _a;
@@ -4795,6 +4847,14 @@ var Environment = class {
   }
 };
 __name(Environment, "Environment");
+function isNumber(val) {
+  return typeof val == "number";
+}
+__name(isNumber, "isNumber");
+function isString(val) {
+  return typeof val == "string";
+}
+__name(isString, "isString");
 function lit(val) {
   if (val === void 0)
     return "nil";
@@ -4809,15 +4869,23 @@ function truthy(val) {
   return true;
 }
 __name(truthy, "truthy");
-function number(val) {
-  if (typeof val == "number")
-    return val;
-  return parseFloat(`${val}`);
-}
-__name(number, "number");
+var Function3 = class {
+  constructor(arity, call) {
+    this.arity = arity;
+    this.call = call;
+  }
+};
+__name(Function3, "Function");
 var RuntimeError = class extends Error {
 };
 __name(RuntimeError, "RuntimeError");
+var ReturnException = class extends Error {
+  constructor() {
+    super(...arguments);
+    this.value = void 0;
+  }
+};
+__name(ReturnException, "ReturnException");
 var JumpException = class extends Error {
   constructor() {
     super(...arguments);
@@ -4831,6 +4899,12 @@ __name(BreakException, "BreakException");
 var ContinueException = class extends JumpException {
 };
 __name(ContinueException, "ContinueException");
+function isCallable(val) {
+  if (!val)
+    return false;
+  return !!val.call;
+}
+__name(isCallable, "isCallable");
 
 // src/printer.ts
 var Printer = class extends Visitor2 {
@@ -4839,6 +4913,15 @@ var Printer = class extends Visitor2 {
     return `(program 
 ${indent(decls)}
 )`;
+  }
+  ReturnStatement(ret) {
+    return `(return ${this.visit(ret.expr)})`;
+  }
+  Function(fun) {
+    const name2 = fun.ident.text;
+    const params = fun.params.map((p) => p.text).join(" ");
+    const body = indent(this.visit(fun.block));
+    return `(${name2} [${params}]${body})`;
   }
   Logical(expr) {
     return this.Binary(expr);
@@ -4930,14 +5013,46 @@ __name(indent, "indent");
 // src/evaluator.ts
 var Evaluator = class extends Visitor2 {
   constructor() {
-    super(...arguments);
-    this.env = new Environment();
+    super();
+    this.globals = new Environment();
+    this.env = this.globals;
+    this.globals.init("clock");
+    this.globals.set("clock", {
+      arity: 0,
+      call() {
+        return new Date().toLocaleString();
+      }
+    });
   }
   Program(program) {
     const statements = program.declarations.map((stmt) => this.visit(stmt));
     if (!statements.length)
       return lit(void 0);
     return lit(statements[statements.length - 1]);
+  }
+  Function(fun) {
+    const func = new Function3(fun.params.length, (args) => {
+      const previous = this.env;
+      this.env = new Environment(previous);
+      try {
+        args.map((arg2, i) => {
+          const param = fun.params[i].text;
+          this.env.init(param);
+          this.env.set(param, arg2);
+        });
+        this.visit(fun.block);
+      } catch (e) {
+        if (e instanceof ReturnException) {
+          return e.value;
+        } else
+          throw e;
+      } finally {
+        this.env = previous;
+      }
+    });
+    this.env.init(fun.ident.text);
+    this.env.set(fun.ident.text, func);
+    return func;
   }
   PrintStatement(statement) {
     console.log(lit(this.visit(statement.expr)));
@@ -4952,12 +5067,11 @@ var Evaluator = class extends Visitor2 {
   }
   Call(call) {
     const callee = this.visit(call.callee);
-    const args = call.args.map((arg2) => this.visit(arg2));
-    if (!callee.call)
+    if (!isCallable(callee))
       throw new RuntimeError("uncallable target");
-    if (callee.arity != args.length)
+    if (callee.arity != call.args.length)
       throw new RuntimeError("wrong number of args");
-    return callee.call(args);
+    return callee.call(call.args.map((arg2) => this.visit(arg2)));
   }
   IfStatement(statement) {
     const condition = this.visit(statement.condition);
@@ -4984,9 +5098,17 @@ var Evaluator = class extends Visitor2 {
       }
     }
   }
+  ReturnStatement(ret) {
+    const ex = new ReturnException();
+    ex.value = this.visit(ret.expr);
+    throw ex;
+  }
   JumpStatement(statement) {
     const jump = statement.destination.name == TOKEN.BREAK ? new BreakException() : new ContinueException();
-    jump.distance = number(this.visit(statement.distance || new Literal(1)));
+    const distance = this.visit(statement.distance || new Literal(1));
+    if (!isNumber(distance))
+      throw new RuntimeError("expected numerical distance");
+    jump.distance = distance;
     throw jump;
   }
   Literal(expr) {
@@ -5017,34 +5139,41 @@ var Evaluator = class extends Visitor2 {
     const value = this.visit(expr.operand);
     if (op == TOKEN.BANG)
       return !truthy(value);
+    if (!isNumber(value))
+      throw new RuntimeError("must negate a number value");
     if (op == TOKEN.DASH)
-      return -number(value);
+      return -value;
     throw new RuntimeError("Unexpected unary expression");
   }
   Binary(expr) {
     const { operator: { name: op } } = expr;
     const left = this.visit(expr.left);
     const right = this.visit(expr.right);
-    if (typeof left == "string" || typeof right == "string" && op == TOKEN.PLUS)
-      return `${left}${right}`;
     if (op == TOKEN.COMMA)
       return right;
+    if (op == TOKEN.PLUS) {
+      if (isString(left) || isString(right)) {
+        return `${left}${right}`;
+      }
+    }
+    if (!isNumber(left) || !isNumber(right))
+      throw new RuntimeError("number values expected");
     if (op == TOKEN.PLUS)
-      return number(left) + number(right);
+      return left + right;
     if (op == TOKEN.DASH)
-      return number(left) - number(right);
+      return left - right;
     if (op == TOKEN.STAR)
-      return number(left) * number(right);
+      return left * right;
     if (op == TOKEN.SLASH)
-      return number(left) / number(right);
+      return left / right;
     if (op == TOKEN.GREATER)
-      return number(left) > number(right);
+      return left > right;
     if (op == TOKEN.GREATER_EQUAL)
-      return number(left) >= number(right);
+      return left >= right;
     if (op == TOKEN.LESS)
-      return number(left) < number(right);
+      return left < right;
     if (op == TOKEN.LESS_EQUAL)
-      return number(left) <= number(right);
+      return left <= right;
     throw new RuntimeError("Unexpected binary expression");
   }
   Ternary(expr) {
