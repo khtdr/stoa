@@ -12,8 +12,8 @@ make build
 : CLI tsup v6.1.2
 : CLI Target: node14
 : CJS Build start
-: CJS ⚡️ Build success in 75ms
-: CJS bin/stoa.js 157.67 KB
+: CJS ⚡️ Build success in 59ms
+: CJS bin/stoa.js 158.06 KB
 
 ** Usage Documentation
 #+begin_src sh :exports both :results verbatim
@@ -60,6 +60,13 @@ make test
 ✔ arithmetic.stoa
 ✔ closures.stoa
 ✔ fib.stoa
+❌ functions.stoa
+diff <(functions.stoa) functions.stoa.txt
+1,2c1
+< ./functions.stoa: line 4: syntax error near unexpected token `('
+< ./functions.stoa: line 4: `fun makeCounter(start) {'
+---
+> 213
 ✔ hello-world.stoa
 ✔ literals.stoa
 ✔ name.stoa
@@ -77,7 +84,7 @@ diff <(sticky-precision.stoa) sticky-precision.stoa.txt
 > 12.25
 > 122.46
 > 122.46
-Passing: 6 Failing: 1
+Passing: 6 Failing: 2
 #+end_example
 
 * ...
