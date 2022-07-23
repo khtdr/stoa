@@ -20,11 +20,12 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
         return Runtime.lit(statements[statements.length - 1])
     }
     Function(fun: Ast.Function): Runtime.Result {
+        const closure = new Runtime.Environment(this.env)
         const func = new Runtime.Function(
             fun.params.length,
             (args: Runtime.Result[]) => {
                 const previous = this.env
-                this.env = new Runtime.Environment(previous)
+                this.env = new Runtime.Environment(closure)
                 try {
                     args.map((arg, i) => {
                         const param = fun.params[i].text

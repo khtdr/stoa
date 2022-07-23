@@ -1,0 +1,9 @@
+outer-scope
+0
+1
+2
+3
+outer-scope
+99
+98
+12

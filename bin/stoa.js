@@ -5031,9 +5031,10 @@ var Evaluator = class extends Visitor2 {
     return lit(statements[statements.length - 1]);
   }
   Function(fun) {
+    const closure = new Environment(this.env);
     const func = new Function3(fun.params.length, (args) => {
       const previous = this.env;
-      this.env = new Environment(previous);
+      this.env = new Environment(closure);
       try {
         args.map((arg2, i) => {
           const param = fun.params[i].text;
