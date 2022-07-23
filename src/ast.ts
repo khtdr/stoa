@@ -24,6 +24,7 @@ export abstract class Visitor<Result> extends Lib.Visitor<AstNode, Result> {
 }
 
 
+export type Scalar = string | [number, number] | boolean | undefined
 export interface AstNode { }
 export interface Declaration extends AstNode { }
 export interface Statement extends Declaration { }
@@ -104,9 +105,17 @@ export class Block implements Statement {
 
 export class Literal implements Expression {
     constructor(
-        readonly value: string | number | boolean | undefined,
+        readonly value: Scalar
     ) { }
+    toString() {
+        if (this.value === true || this.value === false) return `${this.value}`
+        if (this.value === undefined) return 'nil'
+        if (typeof this.value == 'string') return this.value
+        const [val, prec] = this.value
+        return `${val.toFixed(prec)}`
+    }
 }
+
 
 export class Variable implements Expression {
     constructor(

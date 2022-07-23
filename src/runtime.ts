@@ -1,8 +1,7 @@
 // SKIPPED OVER
 // - Runtime errors
 // - Error handling in general
-
-import { Expression } from "./ast"
+import * as Ast from './ast'
 
 export class Environment {
     constructor(readonly enclosure?: Environment) { }
@@ -26,17 +25,12 @@ export class Environment {
     }
 }
 
-export function isNumber(val: unknown): val is number {
-    return typeof val == 'number'
+export function isNumber(val: unknown): val is [number, number] {
+    return Array.isArray(val) && val.length == 2
 }
 
 export function isString(val: unknown): val is string {
     return typeof val == 'string'
-}
-
-export function lit(val: unknown): string {
-    if (val === undefined) return "nil"
-    return `${val}`
 }
 
 export function truthy(val: unknown) {
@@ -52,7 +46,7 @@ export class Function implements Callable {
     ) { }
 }
 
-export type Result = string | number | boolean | undefined | Callable
+export type Result = Ast.Scalar | Callable
 export class RuntimeError extends Error { }
 export class ReturnException extends Error { value: Result = undefined }
 export class JumpException extends Error { distance = 1 }

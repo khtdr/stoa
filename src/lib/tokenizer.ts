@@ -1,9 +1,7 @@
 import { StdReporter } from ".";
 
-export type Scalar = string | number | boolean | undefined
 export type Lexeme = string | RegExp | ((text: string) => undefined | string);
-export type Lexer = Lexeme | [Lexeme, (text: string) => Scalar];
-export type Lexicon = Record<string, Lexer>;
+export type Lexicon = Record<string, Lexeme>;
 const ERROR_TOKEN = "__stoa__::error";
 
 
@@ -11,13 +9,11 @@ export class Token<Name = string> {
     constructor(
         readonly name: Name,
         readonly text: string,
-        readonly value: Scalar,
         readonly pos: { line: number; column: number }
     ) { }
     toString() {
         const pos = `[${this.pos.line},${this.pos.column}]`;
-        const value = this.text === this.value ? "" : `(${this.value})`;
-        return `${this.name}${value}${pos}`;
+        return `${this.name}${pos}`;
     }
 }
 
@@ -102,8 +98,8 @@ function* tokenGenerator<Lx extends Lexicon>(
         line = 1,
         column = 1;
     while (idx < source.length) {
-        const [name = ERROR_TOKEN, text = source[idx], value] = longest(possible());
-        const token = new Token(name, text, value, pos());
+        const [name = ERROR_TOKEN, text = source[idx]] = longest(possible());
+        const token = new Token(name, text, pos());
 
         const lines = text.split("\n").length;
         if (lines > 1) {
@@ -117,27 +113,24 @@ function* tokenGenerator<Lx extends Lexicon>(
     function pos() {
         return { line: line, column: column };
     }
-    function longest(candidates: [keyof Lx, string, Scalar][]) {
+    function longest(candidates: [keyof Lx, string][]) {
         if (!candidates.length) return [];
         return candidates.reduce((longest, current) =>
             current[1]!.length > longest[1]!.length ? current : longest
         );
     }
     function possible() {
-        const candidates: [keyof Lx, string, Scalar][] = [];
+        const candidates: [keyof Lx, string][] = [];
         Object.entries(lexicon).map(([name, rule]) => {
-            const [lexeme, valueFn = (val: string) => val] = Array.isArray(rule)
-                ? rule
-                : [rule];
-            if (typeof lexeme == "function") {
-                const text = lexeme(source.substring(idx));
-                if (text) candidates.push([name, text, valueFn(text)]);
-            } else if (typeof lexeme != "string") {
-                const regex = new RegExp(`^${lexeme.source}`, lexeme.flags);
+            if (typeof rule == "function") {
+                const text = rule(source.substring(idx));
+                if (text !== undefined) candidates.push([name, text]);
+            } else if (typeof rule != "string") {
+                const regex = new RegExp(`^${rule.source}`, rule.flags);
                 const match = regex.exec(source.substring(idx));
-                if (match) return candidates.push([name, match[0], valueFn(match[0])]);
-            } else if (source.substring(idx, idx + lexeme.length) == lexeme) {
-                return candidates.push([name, lexeme, valueFn(lexeme)]);
+                if (match) return candidates.push([name, match[0]]);
+            } else if (source.substring(idx, idx + rule.length) == rule) {
+                return candidates.push([name, rule]);
             }
         });
         return candidates;

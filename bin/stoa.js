@@ -4015,16 +4015,14 @@ __name(Language2, "Language");
 // src/lib/tokenizer.ts
 var ERROR_TOKEN = "__stoa__::error";
 var Token = class {
-  constructor(name2, text, value, pos) {
+  constructor(name2, text, pos) {
     this.name = name2;
     this.text = text;
-    this.value = value;
     this.pos = pos;
   }
   toString() {
     const pos = `[${this.pos.line},${this.pos.column}]`;
-    const value = this.text === this.value ? "" : `(${this.value})`;
-    return `${this.name}${value}${pos}`;
+    return `${this.name}${pos}`;
   }
 };
 __name(Token, "Token");
@@ -4093,8 +4091,8 @@ __name(TokenStreamClassFactory, "TokenStreamClassFactory");
 function* tokenGenerator(source, lexicon) {
   let idx = 0, line = 1, column = 1;
   while (idx < source.length) {
-    const [name2 = ERROR_TOKEN, text = source[idx], value] = longest(possible());
-    const token = new Token(name2, text, value, pos());
+    const [name2 = ERROR_TOKEN, text = source[idx]] = longest(possible());
+    const token = new Token(name2, text, pos());
     const lines = text.split("\n").length;
     if (lines > 1) {
       line += lines - 1;
@@ -4117,18 +4115,17 @@ function* tokenGenerator(source, lexicon) {
   function possible() {
     const candidates = [];
     Object.entries(lexicon).map(([name2, rule]) => {
-      const [lexeme, valueFn = /* @__PURE__ */ __name((val) => val, "valueFn")] = Array.isArray(rule) ? rule : [rule];
-      if (typeof lexeme == "function") {
-        const text = lexeme(source.substring(idx));
-        if (text)
-          candidates.push([name2, text, valueFn(text)]);
-      } else if (typeof lexeme != "string") {
-        const regex = new RegExp(`^${lexeme.source}`, lexeme.flags);
+      if (typeof rule == "function") {
+        const text = rule(source.substring(idx));
+        if (text !== void 0)
+          candidates.push([name2, text]);
+      } else if (typeof rule != "string") {
+        const regex = new RegExp(`^${rule.source}`, rule.flags);
         const match = regex.exec(source.substring(idx));
         if (match)
-          return candidates.push([name2, match[0], valueFn(match[0])]);
-      } else if (source.substring(idx, idx + lexeme.length) == lexeme) {
-        return candidates.push([name2, lexeme, valueFn(lexeme)]);
+          return candidates.push([name2, match[0]]);
+      } else if (source.substring(idx, idx + rule.length) == rule) {
+        return candidates.push([name2, rule]);
       }
     });
     return candidates;
@@ -4251,15 +4248,11 @@ __name(StdReporter, "StdReporter");
 
 // src/scanner.ts
 var Scanner = TokenStreamClassFactory.buildTokenStreamClass({
-  FALSE: [/false/i, () => false],
-  NIL: [/nil/i, () => void 0],
-  NUMBER: [/\d+(\.\d+)?/, (text) => parseFloat(text)],
-  STRING: [stringScanner, (text) => {
-    if (['"', "'"].includes(text.substring(text.length - 1)))
-      return text.replace(/^.(.*).$/, "$1");
-    return text.replace(/^.(.*)$/, "$1");
-  }],
-  TRUE: [/true/i, () => true],
+  FALSE: /false/i,
+  NIL: /nil/,
+  NUMBER: /\d+(\.\d+)?/,
+  STRING: stringScanner,
+  TRUE: /true/i,
   AND: /and/i,
   BANG: "!",
   BANG_EQUAL: "!=",
@@ -4299,7 +4292,7 @@ var Scanner = TokenStreamClassFactory.buildTokenStreamClass({
   WHILE: /while/i,
   IDENTIFIER: /[a-z][a-z\d]*/i,
   _MULTI_LINE_COMMENT: cStyleCommentScanner,
-  _SINGLE_LINE_COMMENT: [/\/\/.*/, (text) => text.substring(2).trim()],
+  _SINGLE_LINE_COMMENT: /\/\/.*/,
   _SHEBANG_COMMENT: /\#\!\/usr\/bin\/env\s.*/,
   _SPACE: /\s+/
 });
@@ -4431,6 +4424,16 @@ __name(Block, "Block");
 var Literal = class {
   constructor(value) {
     this.value = value;
+  }
+  toString() {
+    if (this.value === true || this.value === false)
+      return `${this.value}`;
+    if (this.value === void 0)
+      return "nil";
+    if (typeof this.value == "string")
+      return this.value;
+    const [val, prec] = this.value;
+    return `${val.toFixed(prec)}`;
   }
 };
 __name(Literal, "Literal");
@@ -4590,7 +4593,7 @@ var Parser2 = class extends Parser {
     var _a;
     if (this.match(TOKEN.BREAK, TOKEN.CONTINUE)) {
       const jump = this.previous();
-      let expr = new Literal(1);
+      let expr = new Literal([1, 0]);
       if (((_a = this.peek()) == null ? void 0 : _a.name) != TOKEN.SEMICOLON)
         expr = this.Expression();
       this.consume(TOKEN.SEMICOLON, "Expected ;");
@@ -4787,8 +4790,29 @@ var Parser2 = class extends Parser {
     return expr;
   }
   Primary() {
-    if (this.match(TOKEN.NUMBER, TOKEN.STRING, TOKEN.TRUE, TOKEN.FALSE, TOKEN.NIL)) {
-      return new Literal(this.previous().value);
+    if (this.match(TOKEN.NUMBER)) {
+      const numStr = this.previous().text;
+      const value = parseFloat(numStr);
+      const precision = `${numStr}.`.split(".")[1].length;
+      return new Literal([value, precision]);
+    }
+    if (this.match(TOKEN.STRING)) {
+      const str = this.previous().text;
+      let value;
+      if (['"', "'"].includes(str.substring(str.length - 1)))
+        value = str.replace(/^.(.*).$/, "$1");
+      else
+        value = str.replace(/^.(.*)$/, "$1");
+      return new Literal(value);
+    }
+    if (this.match(TOKEN.TRUE)) {
+      return new Literal(true);
+    }
+    if (this.match(TOKEN.FALSE)) {
+      return new Literal(false);
+    }
+    if (this.match(TOKEN.NIL)) {
+      return new Literal(void 0);
     }
     if (this.match(TOKEN.IDENTIFIER)) {
       return new Variable(this.previous());
@@ -4825,100 +4849,6 @@ var Parser2 = class extends Parser {
   }
 };
 __name(Parser2, "Parser");
-
-// src/runtime.ts
-var Environment = class {
-  constructor(enclosure) {
-    this.enclosure = enclosure;
-    this.table = /* @__PURE__ */ new Map();
-  }
-  has(name2) {
-    var _a;
-    return this.table.has(name2) || !!((_a = this.enclosure) == null ? void 0 : _a.has(name2));
-  }
-  init(name2) {
-    if (!this.table.has(name2))
-      this.table.set(name2, void 0);
-    else
-      throw new RuntimeError(`Variable already defined: ${name2}`);
-  }
-  set(name2, value) {
-    var _a;
-    if (this.table.has(name2))
-      this.table.set(name2, value);
-    else if ((_a = this.enclosure) == null ? void 0 : _a.has(name2))
-      this.enclosure.set(name2, value);
-    else
-      throw new RuntimeError(`No such variable: ${name2}`);
-  }
-  get(name2) {
-    var _a;
-    if (this.table.has(name2))
-      return this.table.get(name2);
-    if ((_a = this.enclosure) == null ? void 0 : _a.has(name2))
-      return this.enclosure.get(name2);
-    throw new RuntimeError(`Undefined variable: ${name2}`);
-  }
-};
-__name(Environment, "Environment");
-function isNumber(val) {
-  return typeof val == "number";
-}
-__name(isNumber, "isNumber");
-function isString(val) {
-  return typeof val == "string";
-}
-__name(isString, "isString");
-function lit(val) {
-  if (val === void 0)
-    return "nil";
-  return `${val}`;
-}
-__name(lit, "lit");
-function truthy(val) {
-  if (val === false)
-    return false;
-  if (val === void 0)
-    return false;
-  return true;
-}
-__name(truthy, "truthy");
-var Function3 = class {
-  constructor(arity, call) {
-    this.arity = arity;
-    this.call = call;
-  }
-};
-__name(Function3, "Function");
-var RuntimeError = class extends Error {
-};
-__name(RuntimeError, "RuntimeError");
-var ReturnException = class extends Error {
-  constructor() {
-    super(...arguments);
-    this.value = void 0;
-  }
-};
-__name(ReturnException, "ReturnException");
-var JumpException = class extends Error {
-  constructor() {
-    super(...arguments);
-    this.distance = 1;
-  }
-};
-__name(JumpException, "JumpException");
-var BreakException = class extends JumpException {
-};
-__name(BreakException, "BreakException");
-var ContinueException = class extends JumpException {
-};
-__name(ContinueException, "ContinueException");
-function isCallable(val) {
-  if (!val)
-    return false;
-  return !!val.call;
-}
-__name(isCallable, "isCallable");
 
 // src/printer.ts
 var Printer = class extends Visitor2 {
@@ -4974,14 +4904,14 @@ ${indent(body)}
   }
   JumpStatement(statement) {
     const dest = statement.destination.name;
-    const dist = this.visit(statement.distance || new Literal(1));
+    const dist = this.visit(statement.distance || new Literal([1, 0]));
     return `(${dest} ${dist})`;
   }
   Assign(assign) {
-    return `(= ${assign.name.text} ${lit(this.visit(assign.expr))})`;
+    return `(= ${assign.name.text} ${this.visit(assign.expr)})`;
   }
   Literal(expr) {
-    return lit(expr.value);
+    return expr.toString();
   }
   Unary(expr) {
     const operator = expr.operator.text;
@@ -5028,6 +4958,94 @@ function indent(text) {
 }
 __name(indent, "indent");
 
+// src/runtime.ts
+var Environment = class {
+  constructor(enclosure) {
+    this.enclosure = enclosure;
+    this.table = /* @__PURE__ */ new Map();
+  }
+  has(name2) {
+    var _a;
+    return this.table.has(name2) || !!((_a = this.enclosure) == null ? void 0 : _a.has(name2));
+  }
+  init(name2) {
+    if (!this.table.has(name2))
+      this.table.set(name2, void 0);
+    else
+      throw new RuntimeError(`Variable already defined: ${name2}`);
+  }
+  set(name2, value) {
+    var _a;
+    if (this.table.has(name2))
+      this.table.set(name2, value);
+    else if ((_a = this.enclosure) == null ? void 0 : _a.has(name2))
+      this.enclosure.set(name2, value);
+    else
+      throw new RuntimeError(`No such variable: ${name2}`);
+  }
+  get(name2) {
+    var _a;
+    if (this.table.has(name2))
+      return this.table.get(name2);
+    if ((_a = this.enclosure) == null ? void 0 : _a.has(name2))
+      return this.enclosure.get(name2);
+    throw new RuntimeError(`Undefined variable: ${name2}`);
+  }
+};
+__name(Environment, "Environment");
+function isNumber(val) {
+  return Array.isArray(val) && val.length == 2;
+}
+__name(isNumber, "isNumber");
+function isString(val) {
+  return typeof val == "string";
+}
+__name(isString, "isString");
+function truthy(val) {
+  if (val === false)
+    return false;
+  if (val === void 0)
+    return false;
+  return true;
+}
+__name(truthy, "truthy");
+var Function3 = class {
+  constructor(arity, call) {
+    this.arity = arity;
+    this.call = call;
+  }
+};
+__name(Function3, "Function");
+var RuntimeError = class extends Error {
+};
+__name(RuntimeError, "RuntimeError");
+var ReturnException = class extends Error {
+  constructor() {
+    super(...arguments);
+    this.value = void 0;
+  }
+};
+__name(ReturnException, "ReturnException");
+var JumpException = class extends Error {
+  constructor() {
+    super(...arguments);
+    this.distance = 1;
+  }
+};
+__name(JumpException, "JumpException");
+var BreakException = class extends JumpException {
+};
+__name(BreakException, "BreakException");
+var ContinueException = class extends JumpException {
+};
+__name(ContinueException, "ContinueException");
+function isCallable(val) {
+  if (!val)
+    return false;
+  return !!val.call;
+}
+__name(isCallable, "isCallable");
+
 // src/evaluator.ts
 var Evaluator = class extends Visitor2 {
   constructor() {
@@ -5044,9 +5062,10 @@ var Evaluator = class extends Visitor2 {
   }
   Program(program) {
     const statements = program.declarations.map((stmt) => this.visit(stmt));
-    if (!statements.length)
-      return lit(void 0);
-    return lit(statements[statements.length - 1]);
+    const last = statements[statements.length - 1];
+    if (isCallable(last))
+      return `${last}`;
+    return new Literal(last).toString();
   }
   FunctionDeclaration(decl) {
     const func = this.Function(decl.fun);
@@ -5076,7 +5095,9 @@ var Evaluator = class extends Visitor2 {
     });
   }
   PrintStatement(statement) {
-    console.log(lit(this.visit(statement.expr)));
+    const val = this.visit(statement.expr);
+    const str = isCallable(val) ? val : new Literal(val).toString();
+    console.log(str + "");
   }
   VarDeclaration(declaration) {
     this.env.init(declaration.ident.text);
@@ -5126,10 +5147,10 @@ var Evaluator = class extends Visitor2 {
   }
   JumpStatement(statement) {
     const jump = statement.destination.name == TOKEN.BREAK ? new BreakException() : new ContinueException();
-    const distance = this.visit(statement.distance || new Literal(1));
+    const distance = this.visit(statement.distance || new Literal([1, 0]));
     if (!isNumber(distance))
       throw new RuntimeError("expected numerical distance");
-    jump.distance = distance;
+    jump.distance = distance[0];
     throw jump;
   }
   Literal(expr) {
@@ -5163,7 +5184,7 @@ var Evaluator = class extends Visitor2 {
     if (!isNumber(value))
       throw new RuntimeError("must negate a number value");
     if (op == TOKEN.DASH)
-      return -value;
+      return [-value[0], value[1]];
     throw new RuntimeError("Unexpected unary expression");
   }
   Binary(expr) {
@@ -5174,27 +5195,29 @@ var Evaluator = class extends Visitor2 {
       return right;
     if (op == TOKEN.PLUS) {
       if (isString(left) || isString(right)) {
-        return `${left}${right}`;
+        const lStr = isCallable(left) ? left : new Literal(left);
+        const rStr = isCallable(right) ? right : new Literal(right);
+        return `${lStr}${rStr}`;
       }
     }
     if (!isNumber(left) || !isNumber(right))
       throw new RuntimeError("number values expected");
     if (op == TOKEN.PLUS)
-      return left + right;
+      return [left[0] + right[0], Math.max(left[1], right[1])];
     if (op == TOKEN.DASH)
-      return left - right;
+      return [left[0] - right[0], Math.max(left[1], right[1])];
     if (op == TOKEN.STAR)
-      return left * right;
+      return [left[0] * right[0], Math.max(left[1], right[1])];
     if (op == TOKEN.SLASH)
-      return left / right;
+      return [left[0] / right[0], Math.max(left[1], right[1])];
     if (op == TOKEN.GREATER)
-      return left > right;
+      return left[0] > right[0];
     if (op == TOKEN.GREATER_EQUAL)
-      return left >= right;
+      return left[0] >= right[0];
     if (op == TOKEN.LESS)
-      return left < right;
+      return left[0] < right[0];
     if (op == TOKEN.LESS_EQUAL)
-      return left <= right;
+      return left[0] <= right[0];
     throw new RuntimeError("Unexpected binary expression");
   }
   Ternary(expr) {

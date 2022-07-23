@@ -16,8 +16,9 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
 
     Program(program: Ast.Program): Runtime.Result {
         const statements = program.declarations.map(stmt => this.visit(stmt))
-        if (!statements.length) return Runtime.lit(undefined)
-        return Runtime.lit(statements[statements.length - 1])
+        const last = statements[statements.length - 1]
+        if (Runtime.isCallable(last)) return `${last}`
+        return new Ast.Literal(last).toString()
     }
     FunctionDeclaration(decl: Ast.FunctionDeclaration): void {
         const func = this.Function(decl.fun)
@@ -48,7 +49,9 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
             })
     }
     PrintStatement(statement: Ast.PrintStatement): void {
-        console.log(Runtime.lit(this.visit(statement.expr)))
+        const val = this.visit(statement.expr)
+        const str = (Runtime.isCallable(val)) ? val : new Ast.Literal(val).toString()
+        console.log(str + '')
     }
     VarDeclaration(declaration: Ast.VarDeclaration): void {
         this.env.init(declaration.ident.text)
@@ -93,9 +96,9 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
     JumpStatement(statement: Ast.JumpStatement): void {
         const jump = statement.destination.name == TOKEN.BREAK ?
             new Runtime.BreakException() : new Runtime.ContinueException()
-        const distance = this.visit(statement.distance || new Ast.Literal(1))
+        const distance = this.visit(statement.distance || new Ast.Literal([1, 0]))
         if (!Runtime.isNumber(distance)) throw new Runtime.RuntimeError("expected numerical distance")
-        jump.distance = distance
+        jump.distance = distance[0]
         throw jump
     }
     Literal(expr: Ast.Literal): Runtime.Result {
@@ -123,7 +126,7 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
         const value = this.visit(expr.operand);
         if (op == TOKEN.BANG) return !Runtime.truthy(value);
         if (!Runtime.isNumber(value)) throw new Runtime.RuntimeError("must negate a number value")
-        if (op == TOKEN.DASH) return -value;
+        if (op == TOKEN.DASH) return [-value[0], value[1]];
         throw new Runtime.RuntimeError("Unexpected unary expression")
     }
     Binary(expr: Ast.Binary): Runtime.Result {
@@ -133,19 +136,21 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
         if (op == TOKEN.COMMA) return right;
         if (op == TOKEN.PLUS) {
             if (Runtime.isString(left) || Runtime.isString(right)) {
-                return `${left}${right}`
+                const lStr = (Runtime.isCallable(left)) ? left : new Ast.Literal(left)
+                const rStr = (Runtime.isCallable(right)) ? right : new Ast.Literal(right)
+                return `${lStr}${rStr}`
             }
         }
         if (!Runtime.isNumber(left) || !Runtime.isNumber(right))
             throw new Runtime.RuntimeError("number values expected")
-        if (op == TOKEN.PLUS) return left + right;
-        if (op == TOKEN.DASH) return left - right;
-        if (op == TOKEN.STAR) return left * right;
-        if (op == TOKEN.SLASH) return left / right;
-        if (op == TOKEN.GREATER) return left > right;
-        if (op == TOKEN.GREATER_EQUAL) return left >= right;
-        if (op == TOKEN.LESS) return left < right;
-        if (op == TOKEN.LESS_EQUAL) return left <= right;
+        if (op == TOKEN.PLUS) return [left[0] + right[0], Math.max(left[1], right[1])];
+        if (op == TOKEN.DASH) return [left[0] - right[0], Math.max(left[1], right[1])];
+        if (op == TOKEN.STAR) return [left[0] * right[0], Math.max(left[1], right[1])];
+        if (op == TOKEN.SLASH) return [left[0] / right[0], Math.max(left[1], right[1])];
+        if (op == TOKEN.GREATER) return left[0] > right[0]
+        if (op == TOKEN.GREATER_EQUAL) return left[0] >= right[0]
+        if (op == TOKEN.LESS) return left[0] < right[0]
+        if (op == TOKEN.LESS_EQUAL) return left[0] <= right[0]
         throw new Runtime.RuntimeError("Unexpected binary expression")
     }
     Ternary(expr: Ast.Ternary): Runtime.Result {

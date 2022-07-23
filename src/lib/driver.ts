@@ -1,10 +1,10 @@
 import * as Lib from ".";
 
-export class Driver<Lx extends Lib.Lexicon, Ast extends object, Result> {
+export class Driver<Lx extends Lib.Lexicon, Ast extends object> {
     status = 0;
     constructor(
         readonly lang: Lib.Language<Lx, Ast>,
-        readonly treewalker: Lib.Visitor<Ast, Result>
+        readonly treewalker: Lib.Visitor<Ast, string>
     ) { }
 
     run(source: string) {

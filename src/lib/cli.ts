@@ -1,7 +1,7 @@
 import * as opts from "opts";
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { Driver, Language, Lexicon, Repl, Scalar } from ".";
+import { Driver, Language, Lexicon, Repl } from ".";
 
 export class CliDriver<Lx extends Lexicon, Ast extends object> {
     constructor(
@@ -26,7 +26,7 @@ export class CliDriver<Lx extends Lexicon, Ast extends object> {
     }
 
     private _configuration?: [
-        Driver<Lx, Ast, Scalar>,
+        Driver<Lx, Ast>,
         { tokenize: boolean; runFile: false | string; runPipe: boolean; runRepl: boolean }
     ];
     private configure() {

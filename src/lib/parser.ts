@@ -54,7 +54,7 @@ export class Parser<Lx extends Lib.Lexicon, Ast extends object> {
     }
 }
 
-export class Visitor<Ast extends object, Result = Lib.Scalar> {
+export class Visitor<Ast extends object, Result = string> {
     visit(node: Ast): Result {
         const name = node.constructor.name
         const fn = this[name as keyof this]

@@ -119,7 +119,7 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
     JumpStatement(): Ast.JumpStatement | void {
         if (this.match(TOKEN.BREAK, TOKEN.CONTINUE)) {
             const jump = this.previous<"CONTINUE" | "BREAK">()
-            let expr: Ast.Expression = new Ast.Literal(1)
+            let expr: Ast.Expression = new Ast.Literal([1, 0])
             if (this.peek()?.name != TOKEN.SEMICOLON)
                 expr = this.Expression()
             this.consume(TOKEN.SEMICOLON, "Expected ;")
@@ -367,10 +367,29 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
 
     // primary    -> IDENTIFIER | NUMBER | STRING | TRUE | FALSE | NIL | "(" expression ")" | "fun" function
     Primary(): Ast.Literal | Ast.Variable | Ast.Grouping | Ast.Function {
-        if (
-            this.match(TOKEN.NUMBER, TOKEN.STRING, TOKEN.TRUE, TOKEN.FALSE, TOKEN.NIL)
-        ) {
-            return new Ast.Literal(this.previous().value);
+        if (this.match(TOKEN.NUMBER)) {
+            const numStr = this.previous<'NUMBER'>().text
+            const value = parseFloat(numStr)
+            const precision = `${numStr}.`.split('.')[1].length
+            return new Ast.Literal([value, precision])
+        }
+        if (this.match(TOKEN.STRING)) {
+            const str = this.previous<'STRING'>().text
+            let value: string
+            if (['"', "'"].includes(str.substring(str.length - 1)))
+                value = str.replace(/^.(.*).$/, "$1")
+            else
+                value = str.replace(/^.(.*)$/, "$1")
+            return new Ast.Literal(value);
+        }
+        if (this.match(TOKEN.TRUE)) {
+            return new Ast.Literal(true);
+        }
+        if (this.match(TOKEN.FALSE)) {
+            return new Ast.Literal(false);
+        }
+        if (this.match(TOKEN.NIL)) {
+            return new Ast.Literal(undefined);
         }
         if (this.match(TOKEN.IDENTIFIER)) {
             return new Ast.Variable(this.previous());

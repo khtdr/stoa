@@ -24,8 +24,8 @@ make build
 : CLI tsup v6.1.2
 : CLI Target: node14
 : CJS Build start
-: CJS ⚡️ Build success in 61ms
-: CJS bin/stoa.js 158.29 KB
+: CJS ⚡️ Build success in 62ms
+: CJS bin/stoa.js 158.97 KB
 
 ** Usage Documentation
 #+begin_src sh :exports both :results verbatim
@@ -76,21 +76,8 @@ make test
 ✔ hello-world.stoa
 ✔ literals.stoa
 ✔ name.stoa
-❌ sticky-precision.stoa
-diff <(sticky-precision.stoa) sticky-precision.stoa.txt
-2,6c2,6
-< 0
-< 0
-< 12.246
-< 122.46000000000001
-< 122.46000000000001
----
-> 0.0
-> 0.00
-> 12.25
-> 122.46
-> 122.46
-Passing: 7 Failing: 1
+✔ sticky-precision.stoa
+Passing: 8 Failing: 0
 #+end_example
 
 * ...

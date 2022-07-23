@@ -1,5 +1,4 @@
 import * as Ast from './ast'
-import * as Runtime from './runtime'
 
 export class Printer extends Ast.Visitor<string> {
     Program(program: Ast.Program): string {
@@ -49,14 +48,14 @@ export class Printer extends Ast.Visitor<string> {
     }
     JumpStatement(statement: Ast.JumpStatement): string {
         const dest = statement.destination.name
-        const dist = this.visit(statement.distance || new Ast.Literal(1))
+        const dist = this.visit(statement.distance || new Ast.Literal([1, 0]))
         return `(${dest} ${dist})`
     }
     Assign(assign: Ast.Assign): string {
-        return `(= ${assign.name.text} ${Runtime.lit(this.visit(assign.expr))})`
+        return `(= ${assign.name.text} ${this.visit(assign.expr)})`
     }
     Literal(expr: Ast.Literal): string {
-        return Runtime.lit(expr.value)
+        return expr.toString()
     }
     Unary(expr: Ast.Unary): string {
         const operator = expr.operator.text

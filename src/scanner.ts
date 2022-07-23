@@ -2,15 +2,16 @@ import { TokenStreamClassFactory, TokenStream, Token, StdReporter } from "./lib"
 
 export const Scanner = TokenStreamClassFactory.buildTokenStreamClass({
     // literals
-    FALSE: [/false/i, () => false],
-    NIL: [/nil/i, () => undefined],
-    NUMBER: [/\d+(\.\d+)?/, (text) => parseFloat(text)],
-    STRING: [stringScanner, (text) => {
-        if (['"', "'"].includes(text.substring(text.length - 1)))
-            return text.replace(/^.(.*).$/, "$1")
-        return text.replace(/^.(.*)$/, "$1")
-    }],
-    TRUE: [/true/i, () => true],
+    FALSE: /false/i,
+    NIL: /nil/,
+    NUMBER: /\d+(\.\d+)?/,
+    STRING: stringScanner,
+    // STRING: [stringScanner, (text) => {
+    //     if (['"', "'"].includes(text.substring(text.length - 1)))
+    //         return text.replace(/^.(.*).$/, "$1")
+    //     return text.replace(/^.(.*)$/, "$1")
+    // }],
+    TRUE: /true/i,
 
     // operators
     AND: /and/i,
@@ -60,7 +61,7 @@ export const Scanner = TokenStreamClassFactory.buildTokenStreamClass({
 
     // discarded
     _MULTI_LINE_COMMENT: cStyleCommentScanner,
-    _SINGLE_LINE_COMMENT: [/\/\/.*/, (text) => text.substring(2).trim()],
+    _SINGLE_LINE_COMMENT: /\/\/.*/,
     _SHEBANG_COMMENT: /\#\!\/usr\/bin\/env\s.*/,
     _SPACE: /\s+/,
 });

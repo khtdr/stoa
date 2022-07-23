@@ -6,7 +6,7 @@ import { Driver } from "."
 
 export class Repl {
     constructor(
-        readonly driver: Driver<any, any, any>
+        readonly driver: Driver<any, any>
     ) { }
 
     async run(tokenize = false) {
