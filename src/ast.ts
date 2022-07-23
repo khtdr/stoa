@@ -6,7 +6,8 @@ export abstract class Visitor<Result> extends Lib.Visitor<AstNode, Result> {
     abstract Block(block: Block): Result | void
     abstract Call(call: Call): Result
     abstract ExpressionStatement(statement: ExpressionStatement): Result | void
-    abstract Function(fun: Function): Result | void
+    abstract Function(fun: Function): Result
+    abstract FunctionDeclaration(decl: FunctionDeclaration): Result | void
     abstract Grouping(expr: Grouping): Result
     abstract IfStatement(statement: IfStatement): Result | void
     abstract JumpStatement(statement: JumpStatement): Result | void
@@ -41,9 +42,15 @@ export class VarDeclaration implements Declaration {
     ) { }
 }
 
-export class Function implements Declaration {
+export class FunctionDeclaration implements Declaration {
     constructor(
         readonly ident: Lib.Token<"IDENTIFIER">,
+        readonly fun: Function,
+    ) { }
+}
+
+export class Function implements Expression {
+    constructor(
         readonly params: Lib.Token<"IDENTIFIER">[],
         readonly block: Block
     ) { }

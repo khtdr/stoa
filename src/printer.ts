@@ -9,11 +9,15 @@ export class Printer extends Ast.Visitor<string> {
     ReturnStatement(ret: Ast.ReturnStatement): string | void {
         return `(return ${this.visit(ret.expr)})`
     }
+    FunctionDeclaration(decl: Ast.FunctionDeclaration): string {
+        const name = decl.ident.text
+        const val = this.visit(decl.fun)
+        return `(fun ${name} ${val})`
+    }
     Function(fun: Ast.Function): string {
-        const name = fun.ident.text
         const params = fun.params.map(p => p.text).join(' ')
-        const body = indent(this.visit(fun.block))
-        return `(${name} [${params}]${body})`
+        const body = this.visit(fun.block)
+        return `(let [${params}] ${body})`
     }
     Logical(expr: Ast.Logical): string {
         return this.Binary(expr)

@@ -19,9 +19,14 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
         if (!statements.length) return Runtime.lit(undefined)
         return Runtime.lit(statements[statements.length - 1])
     }
+    FunctionDeclaration(decl: Ast.FunctionDeclaration): void {
+        const func = this.Function(decl.fun)
+        this.env.init(decl.ident.text)
+        this.env.set(decl.ident.text, func)
+    }
     Function(fun: Ast.Function): Runtime.Result {
         const closure = new Runtime.Environment(this.env)
-        const func = new Runtime.Function(
+        return new Runtime.Function(
             fun.params.length,
             (args: Runtime.Result[]) => {
                 const previous = this.env
@@ -41,9 +46,6 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
                     this.env = previous
                 }
             })
-        this.env.init(fun.ident.text)
-        this.env.set(fun.ident.text, func)
-        return func
     }
     PrintStatement(statement: Ast.PrintStatement): void {
         console.log(Runtime.lit(this.visit(statement.expr)))

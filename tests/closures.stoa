@@ -26,3 +26,19 @@ var dec = makeDec(100);
 print dec();
 print dec();
 print i;
+
+fun makeCounter(start) {
+  var n = start;
+  return fun() {
+    n = n+1;
+    return n;
+  };
+}
+
+var c = makeCounter(212);
+print c();
+
+// print makeCounter(212)();
+
+// need to peek ahead?
+// fun() {};

@@ -32,21 +32,22 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
     }
 
     // fun_declaration -> "fun" function
-    FunDeclaration(): Ast.Function | void {
+    FunDeclaration(): Ast.FunctionDeclaration | void {
         if (this.match(TOKEN.FUN)) {
-            return this.Function()
+            const ident = this.consume("IDENTIFIER", "Expected identifier")
+            const fun = this.Function()
+            return new Ast.FunctionDeclaration(ident, fun)
         }
     }
 
     // function -> IDENTIFIER "(" parameters? ")" block
     Function(): Ast.Function {
-        const ident = this.consume("IDENTIFIER", "Expected identifier")
         this.consume(TOKEN.LEFT_PAREN, "Expected (")
         const parameters = this.Parameters()
         this.consume(TOKEN.RIGHT_PAREN, "Expected )")
         const block = this.Block()
         if (!block) throw this.error(this.peek()!, "Expected {")
-        return new Ast.Function(ident, parameters, block)
+        return new Ast.Function(parameters, block)
     }
 
     // parameters -> IDENTIFER ("," IDENTIFIER)*
@@ -362,8 +363,8 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
         return expr;
     }
 
-    // primary    -> IDENTIFIER | NUMBER | STRING | TRUE | FALSE | NIL | "(" expression ")"
-    Primary(): Ast.Literal | Ast.Variable | Ast.Grouping {
+    // primary    -> IDENTIFIER | NUMBER | STRING | TRUE | FALSE | NIL | "(" expression ")" | "fun" function
+    Primary(): Ast.Literal | Ast.Variable | Ast.Grouping | Ast.Function {
         if (
             this.match(TOKEN.NUMBER, TOKEN.STRING, TOKEN.TRUE, TOKEN.FALSE, TOKEN.NIL)
         ) {
@@ -376,6 +377,9 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
             const expr = this.Expression();
             this.consume(TOKEN.RIGHT_PAREN, 'Expected ")" after expression');
             return new Ast.Grouping(expr);
+        }
+        if (this.match(TOKEN.FUN)) {
+            return this.Function()
         }
         throw `Expected expression at ${this.peek()}`;
     }

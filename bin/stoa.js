@@ -4368,9 +4368,15 @@ var VarDeclaration = class {
   }
 };
 __name(VarDeclaration, "VarDeclaration");
-var Function2 = class {
-  constructor(ident, params, block) {
+var FunctionDeclaration = class {
+  constructor(ident, fun) {
     this.ident = ident;
+    this.fun = fun;
+  }
+};
+__name(FunctionDeclaration, "FunctionDeclaration");
+var Function2 = class {
+  constructor(params, block) {
     this.params = params;
     this.block = block;
   }
@@ -4513,18 +4519,19 @@ var Parser2 = class extends Parser {
   }
   FunDeclaration() {
     if (this.match(TOKEN.FUN)) {
-      return this.Function();
+      const ident = this.consume("IDENTIFIER", "Expected identifier");
+      const fun = this.Function();
+      return new FunctionDeclaration(ident, fun);
     }
   }
   Function() {
-    const ident = this.consume("IDENTIFIER", "Expected identifier");
     this.consume(TOKEN.LEFT_PAREN, "Expected (");
     const parameters = this.Parameters();
     this.consume(TOKEN.RIGHT_PAREN, "Expected )");
     const block = this.Block();
     if (!block)
       throw this.error(this.peek(), "Expected {");
-    return new Function2(ident, parameters, block);
+    return new Function2(parameters, block);
   }
   Parameters() {
     var _a, _b;
@@ -4787,6 +4794,9 @@ var Parser2 = class extends Parser {
       this.consume(TOKEN.RIGHT_PAREN, 'Expected ")" after expression');
       return new Grouping(expr);
     }
+    if (this.match(TOKEN.FUN)) {
+      return this.Function();
+    }
     throw `Expected expression at ${this.peek()}`;
   }
   synchronize() {
@@ -4917,11 +4927,15 @@ ${indent(decls)}
   ReturnStatement(ret) {
     return `(return ${this.visit(ret.expr)})`;
   }
+  FunctionDeclaration(decl) {
+    const name2 = decl.ident.text;
+    const val = this.visit(decl.fun);
+    return `(fun ${name2} ${val})`;
+  }
   Function(fun) {
-    const name2 = fun.ident.text;
     const params = fun.params.map((p) => p.text).join(" ");
-    const body = indent(this.visit(fun.block));
-    return `(${name2} [${params}]${body})`;
+    const body = this.visit(fun.block);
+    return `(let [${params}] ${body})`;
   }
   Logical(expr) {
     return this.Binary(expr);
@@ -5030,9 +5044,14 @@ var Evaluator = class extends Visitor2 {
       return lit(void 0);
     return lit(statements[statements.length - 1]);
   }
+  FunctionDeclaration(decl) {
+    const func = this.Function(decl.fun);
+    this.env.init(decl.ident.text);
+    this.env.set(decl.ident.text, func);
+  }
   Function(fun) {
     const closure = new Environment(this.env);
-    const func = new Function3(fun.params.length, (args) => {
+    return new Function3(fun.params.length, (args) => {
       const previous = this.env;
       this.env = new Environment(closure);
       try {
@@ -5051,9 +5070,6 @@ var Evaluator = class extends Visitor2 {
         this.env = previous;
       }
     });
-    this.env.init(fun.ident.text);
-    this.env.set(fun.ident.text, func);
-    return func;
   }
   PrintStatement(statement) {
     console.log(lit(this.visit(statement.expr)));

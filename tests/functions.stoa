@@ -1,0 +1,16 @@
+
+#!/usr/bin/env stoa
+
+fun makeCounter(start) {
+  var n = start;
+  return fun() {
+    n = n+1;
+    return n;
+  };
+}
+
+// chained calls?
+print makeCounter(212)();
+
+// need to peek ahead?
+fun() {};
