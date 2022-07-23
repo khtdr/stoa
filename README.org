@@ -4,6 +4,7 @@
 - self-containing state?
 - lsp compatible
 - actually use it to create
+- minimize user function writing with string/date/number primitives
 
 ** Project Status
 🤣 if you aren't me, why are you here?
