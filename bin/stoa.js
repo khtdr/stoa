@@ -4175,8 +4175,8 @@ var Parser = class {
       this.current++;
     return this.previous();
   }
-  peek() {
-    return this.tokens[this.current];
+  peek(ahead = 1) {
+    return this.tokens[this.current + (ahead - 1)];
   }
   previous() {
     return this.tokens[this.current - 1];
@@ -4518,7 +4518,9 @@ var Parser2 = class extends Parser {
     }
   }
   FunDeclaration() {
-    if (this.match(TOKEN.FUN)) {
+    var _a, _b;
+    if (((_a = this.peek(1)) == null ? void 0 : _a.name) == TOKEN.FUN && ((_b = this.peek(2)) == null ? void 0 : _b.name) == TOKEN.IDENTIFIER) {
+      this.match(TOKEN.FUN);
       const ident = this.consume("IDENTIFIER", "Expected identifier");
       const fun = this.Function();
       return new FunctionDeclaration(ident, fun);
@@ -4765,7 +4767,9 @@ var Parser2 = class extends Parser {
     return this.Call();
   }
   Call() {
-    const expr = this.Primary();
+    let expr = this.Primary();
+    if (!this.check(TOKEN.LEFT_PAREN))
+      return expr;
     while (true) {
       if (!this.match(TOKEN.LEFT_PAREN))
         break;
@@ -4778,7 +4782,7 @@ var Parser2 = class extends Parser {
         } while (this.match(TOKEN.COMMA));
       }
       const paren = this.consume(TOKEN.RIGHT_PAREN, "Expected ) after arguments");
-      return new Call(expr, args, paren);
+      expr = new Call(expr, args, paren);
     }
     return expr;
   }

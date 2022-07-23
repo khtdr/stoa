@@ -1,4 +1,3 @@
-
 #!/usr/bin/env stoa
 
 fun makeCounter(start) {
@@ -9,8 +8,32 @@ fun makeCounter(start) {
   };
 }
 
-// chained calls?
 print makeCounter(212)();
 
-// need to peek ahead?
 fun() {};
+
+fun forkCounter(counter) {
+  return makeCounter(counter());
+}
+
+fun diffCounter(counter) {
+  var e = makeCounter(counter());
+  return fun() {
+    var cv = counter();
+    var ev = e();
+    return cv - ev;
+  };
+}
+
+var c = makeCounter(100);
+var d = forkCounter(c);
+
+print c() + "," + d();
+
+var e = diffCounter(c);
+
+e(); e(); e();
+
+print c() + "," + d() + "," + e();
+
+print "done";

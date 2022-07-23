@@ -40,8 +40,8 @@ export class Parser<Lx extends Lib.Lexicon, Ast extends object> {
         return this.previous();
     }
 
-    protected peek(): Lib.Token<keyof Lx> | undefined {
-        return this.tokens[this.current];
+    protected peek(ahead = 1): Lib.Token<keyof Lx> | undefined {
+        return this.tokens[this.current + (ahead - 1)];
     }
 
     protected previous<Name extends keyof Lx = keyof Lx>(): Lib.Token<Name> {

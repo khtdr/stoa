@@ -1,4 +1,15 @@
 * Project Stoa
+** Goals
+- full stack from sql to hover effects
+- self-containing state?
+- lsp compatible
+- actually use it to create
+
+** Project Status
+🤣 if you aren't me, why are you here?
+*** create a malleable language
+:in-progress:
+
 ** Build Status
 #+begin_src sh :exports both :results verbatim
 make build
@@ -12,8 +23,8 @@ make build
 : CLI tsup v6.1.2
 : CLI Target: node14
 : CJS Build start
-: CJS ⚡️ Build success in 59ms
-: CJS bin/stoa.js 158.06 KB
+: CJS ⚡️ Build success in 61ms
+: CJS bin/stoa.js 158.29 KB
 
 ** Usage Documentation
 #+begin_src sh :exports both :results verbatim
@@ -60,13 +71,7 @@ make test
 ✔ arithmetic.stoa
 ✔ closures.stoa
 ✔ fib.stoa
-❌ functions.stoa
-diff <(functions.stoa) functions.stoa.txt
-1,2c1
-< ./functions.stoa: line 4: syntax error near unexpected token `('
-< ./functions.stoa: line 4: `fun makeCounter(start) {'
----
-> 213
+✔ functions.stoa
 ✔ hello-world.stoa
 ✔ literals.stoa
 ✔ name.stoa
@@ -84,7 +89,7 @@ diff <(sticky-precision.stoa) sticky-precision.stoa.txt
 > 12.25
 > 122.46
 > 122.46
-Passing: 6 Failing: 2
+Passing: 7 Failing: 1
 #+end_example
 
 * ...

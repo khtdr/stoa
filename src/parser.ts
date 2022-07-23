@@ -31,16 +31,17 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
         }
     }
 
-    // fun_declaration -> "fun" function
+    // fun_declaration -> "fun" IDENTIFIER function
     FunDeclaration(): Ast.FunctionDeclaration | void {
-        if (this.match(TOKEN.FUN)) {
+        if (this.peek(1)?.name == TOKEN.FUN && this.peek(2)?.name == TOKEN.IDENTIFIER) {
+            this.match(TOKEN.FUN)
             const ident = this.consume("IDENTIFIER", "Expected identifier")
             const fun = this.Function()
             return new Ast.FunctionDeclaration(ident, fun)
         }
     }
 
-    // function -> IDENTIFIER "(" parameters? ")" block
+    // function -> "(" parameters? ")" block
     Function(): Ast.Function {
         this.consume(TOKEN.LEFT_PAREN, "Expected (")
         const parameters = this.Parameters()
@@ -346,7 +347,8 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
 
     // call -> primary ("(" (expression ("," expression)*)? ")")*
     Call(): ReturnType<typeof this.Primary> | Ast.Call {
-        const expr = this.Primary();
+        let expr: Ast.Call | ReturnType<typeof this.Primary> = this.Primary();
+        if (!this.check(TOKEN.LEFT_PAREN)) return expr
 
         while (true) {
             if (!this.match(TOKEN.LEFT_PAREN)) break
@@ -358,9 +360,9 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
                 } while (this.match(TOKEN.COMMA))
             }
             const paren = this.consume(TOKEN.RIGHT_PAREN, "Expected ) after arguments")
-            return new Ast.Call(expr, args, paren)
+            expr = new Ast.Call(expr, args, paren)
         }
-        return expr;
+        return expr
     }
 
     // primary    -> IDENTIFIER | NUMBER | STRING | TRUE | FALSE | NIL | "(" expression ")" | "fun" function
