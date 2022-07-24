@@ -3912,6 +3912,108 @@ var Token = class {
   }
 };
 __name(Token, "Token");
+var TokenStream = class {
+  constructor(source2, lexicon = {}, reporter2 = new StdReporter()) {
+    this.reporter = reporter2;
+    this.buffer = [];
+    this.eof = false;
+    this.error = false;
+    this.generator = tokenGenerator(source2, lexicon);
+  }
+  take() {
+    this.peek();
+    return this.buffer.shift();
+  }
+  peek() {
+    if (!this.buffer.length)
+      this.buffer.push(this.next());
+    return this.buffer[0];
+  }
+  drain() {
+    let token, tokens2 = [];
+    while (token = this.take())
+      tokens2.push(token);
+    return tokens2;
+  }
+  next() {
+    if (this.eof)
+      return;
+    while (true) {
+      const token = this.generator.next().value;
+      if (!token) {
+        this.eof = true;
+        break;
+      }
+      if (token.name.toString().startsWith("_"))
+        continue;
+      if (token.name == ERROR_TOKEN) {
+        this.err(token);
+        continue;
+      }
+      return token;
+    }
+  }
+  err(token) {
+    this.error = true;
+    const { text, pos: { line, column } } = token;
+    this.reporter.error(token, `Syntax error near ${text} at ${line}:${column}`);
+  }
+};
+__name(TokenStream, "TokenStream");
+function* tokenGenerator(source2, lexicon) {
+  let idx = 0, line = 1, column = 1;
+  while (idx < source2.length) {
+    const [name = ERROR_TOKEN, text = source2[idx]] = longest(possible());
+    const token = new Token(name, text, pos());
+    const lines = text.split("\n").length;
+    if (lines > 1) {
+      line += lines - 1;
+      column = text.length - text.lastIndexOf("\n");
+    } else
+      column += text.length;
+    idx += text.length;
+    yield token;
+  }
+  function pos() {
+    return { line, column };
+  }
+  __name(pos, "pos");
+  function longest(candidates) {
+    if (!candidates.length)
+      return [];
+    if (candidates.length == 1)
+      return candidates[0];
+    return candidates.reduce((longest2, current) => {
+      if (current[1].length > longest2[1].length)
+        return current;
+      if (current[1].length == longest2[1].length)
+        return !current[2] && longest2[2] ? current : longest2;
+      return longest2;
+    });
+  }
+  __name(longest, "longest");
+  function possible() {
+    const candidates = [];
+    Object.entries(lexicon).map(([name, rule]) => {
+      if (typeof rule == "function") {
+        const text = rule(source2.substring(idx));
+        if (text !== void 0)
+          candidates.push([name, text, false]);
+      } else if (typeof rule != "string") {
+        const dynamic = rule.source[rule.source.length - 1] == "*";
+        const regex = new RegExp(`^${rule.source}`, rule.flags);
+        const match = regex.exec(source2.substring(idx));
+        if (match)
+          return candidates.push([name, match[0], dynamic]);
+      } else if (source2.substring(idx, idx + rule.length) == rule) {
+        return candidates.push([name, rule, false]);
+      }
+    });
+    return candidates;
+  }
+  __name(possible, "possible");
+}
+__name(tokenGenerator, "tokenGenerator");
 var Tokens = {
   STRINGS: {
     STD: stringScanner
@@ -3971,122 +4073,6 @@ function stringScanner(value, reporter2 = new StdReporter()) {
   }
 }
 __name(stringScanner, "stringScanner");
-var TokenStream = class {
-  constructor(source2, lexicon = {}, reporter2 = new StdReporter()) {
-    this.reporter = reporter2;
-    this.buffer = [];
-    this.eof = false;
-    this.error = false;
-    this.generator = tokenGenerator(source2, lexicon);
-  }
-  take() {
-    this.peek();
-    return this.buffer.shift();
-  }
-  peek() {
-    if (!this.buffer.length)
-      this.buffer.push(this.next());
-    return this.buffer[0];
-  }
-  drain() {
-    let token, tokens2 = [];
-    while (token = this.take())
-      tokens2.push(token);
-    return tokens2;
-  }
-  next() {
-    if (this.eof)
-      return;
-    while (true) {
-      const token = this.generator.next().value;
-      if (!token) {
-        this.eof = true;
-        break;
-      }
-      if (token.name.toString().startsWith("_"))
-        continue;
-      if (token.name == ERROR_TOKEN) {
-        this.err(token);
-        continue;
-      }
-      return token;
-    }
-  }
-  err(token) {
-    this.error = true;
-    const { text, pos: { line, column } } = token;
-    this.reporter.error(token, `Syntax error near ${text} at ${line}:${column}`);
-  }
-};
-__name(TokenStream, "TokenStream");
-var TokenStreamClassFactory = class {
-  static buildTokenStreamClass(lexicon) {
-    const TOKENS = Object.keys(lexicon).reduce((a, c) => (a[c] = c, a), {});
-    class TokenStreamClassFactoryClass extends TokenStream {
-      constructor(source2) {
-        super(source2, lexicon);
-      }
-    }
-    __name(TokenStreamClassFactoryClass, "TokenStreamClassFactoryClass");
-    TokenStreamClassFactoryClass.TOKENS = TOKENS;
-    return TokenStreamClassFactoryClass;
-  }
-};
-__name(TokenStreamClassFactory, "TokenStreamClassFactory");
-function* tokenGenerator(source2, lexicon) {
-  let idx = 0, line = 1, column = 1;
-  while (idx < source2.length) {
-    const [name = ERROR_TOKEN, text = source2[idx]] = longest(possible());
-    const token = new Token(name, text, pos());
-    const lines = text.split("\n").length;
-    if (lines > 1) {
-      line += lines - 1;
-      column = text.length - text.lastIndexOf("\n");
-    } else
-      column += text.length;
-    idx += text.length;
-    yield token;
-  }
-  function pos() {
-    return { line, column };
-  }
-  __name(pos, "pos");
-  function longest(candidates) {
-    if (!candidates.length)
-      return [];
-    if (candidates.length == 1)
-      return candidates[0];
-    return candidates.reduce((longest2, current) => {
-      if (current[1].length > longest2[1].length)
-        return current;
-      if (current[1].length == longest2[1].length)
-        return !current[2] && longest2[2] ? current : longest2;
-      return longest2;
-    });
-  }
-  __name(longest, "longest");
-  function possible() {
-    const candidates = [];
-    Object.entries(lexicon).map(([name, rule]) => {
-      if (typeof rule == "function") {
-        const text = rule(source2.substring(idx));
-        if (text !== void 0)
-          candidates.push([name, text, false]);
-      } else if (typeof rule != "string") {
-        const dynamic = rule.source[rule.source.length - 1] == "*";
-        const regex = new RegExp(`^${rule.source}`, rule.flags);
-        const match = regex.exec(source2.substring(idx));
-        if (match)
-          return candidates.push([name, match[0], dynamic]);
-      } else if (source2.substring(idx, idx + rule.length) == rule) {
-        return candidates.push([name, rule, false]);
-      }
-    });
-    return candidates;
-  }
-  __name(possible, "possible");
-}
-__name(tokenGenerator, "tokenGenerator");
 
 // src/lib/parser.ts
 var Parser = class {
@@ -4166,7 +4152,14 @@ var StdReporter = class {
 __name(StdReporter, "StdReporter");
 
 // src/scanner.ts
-var Scanner = TokenStreamClassFactory.buildTokenStreamClass({
+var _Scanner = class extends TokenStream {
+  constructor(source2, reporter2) {
+    super(source2, _Scanner.lexicon, reporter2);
+  }
+};
+var Scanner = _Scanner;
+__name(Scanner, "Scanner");
+Scanner.lexicon = {
   FALSE: /false/i,
   NIL: /nil/,
   NUMBER: /\d+(\.\d+)?/,
@@ -4214,8 +4207,8 @@ var Scanner = TokenStreamClassFactory.buildTokenStreamClass({
   _MULTI_LINE_COMMENT: Tokens.COMMENTS.C_STYLE,
   _SINGLE_LINE_COMMENT: Tokens.COMMENTS.DOUBLE_SLASH,
   _SPACE: Tokens.SPACE.ALL
-});
-var TOKEN = Scanner.TOKENS;
+};
+var TOKEN = Object.keys(Scanner.lexicon).reduce((a, c) => (a[c] = c, a), {});
 
 // src/ast/declarations.ts
 var VariableDecl = class {
@@ -5200,7 +5193,7 @@ import_opts.default.parse([], [{ name: "file" }], true);
 var fileName = import_opts.default.arg("file") ?? "/dev/stdin";
 var reporter = new Reporter();
 var source = import_fs.default.readFileSync(fileName).toString();
-var scanner = new Scanner(source);
+var scanner = new Scanner(source, reporter);
 var tokens = scanner.drain();
 var parser = new Parser2(tokens, reporter);
 var interpreter = new Interpreter(reporter);

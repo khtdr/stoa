@@ -1,7 +1,6 @@
 import * as Ast from "./ast";
 import * as Runtime from './runtime'
 import { registerGlobals } from "./globals";
-import { TOKEN } from "./scanner";
 import { Reporter } from "./errors";
 
 export class Interpreter extends Ast.Visitor<Runtime.Result> {
@@ -35,8 +34,8 @@ export class Interpreter extends Ast.Visitor<Runtime.Result> {
         const { operator: { name: op } } = expr
         const left = this.visit(expr.left);
         const right = this.visit(expr.right);
-        if (op == TOKEN.COMMA) return right;
-        if (op == TOKEN.PLUS) {
+        if (op == Ast.TOKEN.COMMA) return right;
+        if (op == Ast.TOKEN.PLUS) {
             if (Runtime.isString(left) || Runtime.isString(right)) {
                 const lStr = (Runtime.isCallable(left)) ? left : new Ast.LiteralExpr(left)
                 const rStr = (Runtime.isCallable(right)) ? right : new Ast.LiteralExpr(right)
@@ -45,14 +44,14 @@ export class Interpreter extends Ast.Visitor<Runtime.Result> {
         }
         if (!Runtime.isNumber(left) || !Runtime.isNumber(right))
             throw new Runtime.RuntimeError("number values expected")
-        if (op == TOKEN.PLUS) return [left[0] + right[0], Math.max(left[1], right[1])];
-        if (op == TOKEN.DASH) return [left[0] - right[0], Math.max(left[1], right[1])];
-        if (op == TOKEN.STAR) return [left[0] * right[0], Math.max(left[1], right[1])];
-        if (op == TOKEN.SLASH) return [left[0] / right[0], Math.max(left[1], right[1])];
-        if (op == TOKEN.GREATER) return left[0] > right[0]
-        if (op == TOKEN.GREATER_EQUAL) return left[0] >= right[0]
-        if (op == TOKEN.LESS) return left[0] < right[0]
-        if (op == TOKEN.LESS_EQUAL) return left[0] <= right[0]
+        if (op == Ast.TOKEN.PLUS) return [left[0] + right[0], Math.max(left[1], right[1])];
+        if (op == Ast.TOKEN.DASH) return [left[0] - right[0], Math.max(left[1], right[1])];
+        if (op == Ast.TOKEN.STAR) return [left[0] * right[0], Math.max(left[1], right[1])];
+        if (op == Ast.TOKEN.SLASH) return [left[0] / right[0], Math.max(left[1], right[1])];
+        if (op == Ast.TOKEN.GREATER) return left[0] > right[0]
+        if (op == Ast.TOKEN.GREATER_EQUAL) return left[0] >= right[0]
+        if (op == Ast.TOKEN.LESS) return left[0] < right[0]
+        if (op == Ast.TOKEN.LESS_EQUAL) return left[0] <= right[0]
         throw new Runtime.RuntimeError("Unexpected binary expression")
     }
     BlockStmt(block: Ast.BlockStmt): Runtime.Result {
@@ -110,7 +109,7 @@ export class Interpreter extends Ast.Visitor<Runtime.Result> {
         else if (statement.falseStatement) this.visit(statement.falseStatement);
     }
     JumpStmt(statement: Ast.JumpStmt): Runtime.Result {
-        const jump = statement.destination.name == TOKEN.BREAK ?
+        const jump = statement.destination.name == Ast.TOKEN.BREAK ?
             new Runtime.BreakException() : new Runtime.ContinueException()
         const distance = this.visit(statement.distance || new Ast.LiteralExpr([1, 0]))
         if (!Runtime.isNumber(distance)) throw new Runtime.RuntimeError("expected numerical distance")
@@ -124,8 +123,8 @@ export class Interpreter extends Ast.Visitor<Runtime.Result> {
         const { operator: { name: op } } = expr
         const left = this.visit(expr.left)
         const left_truthy = Runtime.truthy(left)
-        if (op == TOKEN.OR && left_truthy) return left
-        if (op == TOKEN.AND && !left_truthy) return left
+        if (op == Ast.TOKEN.OR && left_truthy) return left
+        if (op == Ast.TOKEN.AND && !left_truthy) return left
         const right = this.visit(expr.right)
         if (Runtime.truthy(right)) return right
         return Runtime.truthy(false)
@@ -148,7 +147,7 @@ export class Interpreter extends Ast.Visitor<Runtime.Result> {
     }
     TernaryExpr(expr: Ast.TernaryExpr): Runtime.Result {
         const { op1: { name: op1 }, op2: { name: op2 } } = expr
-        if (op1 == TOKEN.QUESTION && op2 == TOKEN.COLON) {
+        if (op1 == Ast.TOKEN.QUESTION && op2 == Ast.TOKEN.COLON) {
             const left = this.visit(expr.left);
             if (Runtime.truthy(left)) return this.visit(expr.middle);
             return this.visit(expr.right);
@@ -158,9 +157,9 @@ export class Interpreter extends Ast.Visitor<Runtime.Result> {
     UnaryExpr(expr: Ast.UnaryExpr): Runtime.Result {
         const { operator: { name: op } } = expr
         const value = this.visit(expr.operand);
-        if (op == TOKEN.BANG) return !Runtime.truthy(value);
+        if (op == Ast.TOKEN.BANG) return !Runtime.truthy(value);
         if (!Runtime.isNumber(value)) throw new Runtime.RuntimeError("must negate a number value")
-        if (op == TOKEN.DASH) return [-value[0], value[1]];
+        if (op == Ast.TOKEN.DASH) return [-value[0], value[1]];
         throw new Runtime.RuntimeError("Unexpected unary expression")
     }
     VariableDecl(declaration: Ast.VariableDecl): Runtime.Result {

@@ -12,8 +12,8 @@ const fileName = opts.arg("file") ?? "/dev/stdin"
 const reporter = new Reporter()
 const source = fs.readFileSync(fileName).toString()
 
-const scanner = new Scanner(source)
-const tokens = scanner.drain() as Token<any>[]
+const scanner = new Scanner(source, reporter)
+const tokens = scanner.drain() as Token[]
 
 const parser = new Parser(tokens, reporter)
 const interpreter = new Interpreter(reporter);

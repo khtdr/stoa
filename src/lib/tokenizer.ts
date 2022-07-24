@@ -17,6 +17,113 @@ export class Token<Name = string> {
     }
 }
 
+export class TokenStream<Lx extends Lexicon> {
+    private generator: Generator<Token<keyof Lx>>;
+    constructor(
+        source: string,
+        lexicon: Lx = {} as Lx,
+        readonly reporter = new Lib.StdReporter()
+    ) {
+        this.generator = tokenGenerator(source, lexicon);
+    }
+
+    private buffer: (Token<keyof Lx> | undefined)[] = [];
+    take(): Token<keyof Lx> | undefined {
+        this.peek();
+        return this.buffer.shift();
+    }
+    peek(): Token<keyof Lx> | undefined {
+        if (!this.buffer.length) this.buffer.push(this.next());
+        return this.buffer[0];
+    }
+    drain(): Token<keyof Lx>[] {
+        let token, tokens = [];
+        while ((token = this.take())) tokens.push(token);
+        return tokens;
+    }
+
+    private eof = false
+    private next(): Token<keyof Lx> | undefined {
+        if (this.eof) return
+        while (true) {
+            const token = this.generator.next().value;
+            if (!token) {
+                this.eof = true;
+                break;
+            }
+
+            if (token.name.toString().startsWith("_")) continue;
+            if (token.name == ERROR_TOKEN) {
+                this.err(token);
+                continue;
+            }
+            return token;
+        }
+    }
+
+    public error = false;
+    private err(token: Token) {
+        this.error = true;
+        const { text, pos: { line, column } } = token;
+        this.reporter.error(
+            token,
+            `Syntax error near ${text} at ${line}:${column}`
+        );
+    }
+}
+
+function* tokenGenerator<Lx extends Lexicon>(
+    source: string,
+    lexicon: Lx
+): Generator<Token<keyof Lx>> {
+    let idx = 0,
+        line = 1,
+        column = 1;
+    while (idx < source.length) {
+        const [name = ERROR_TOKEN, text = source[idx]] = longest(possible());
+        const token = new Token(name, text, pos());
+
+        const lines = text.split("\n").length;
+        if (lines > 1) {
+            line += lines - 1;
+            column = text.length - text.lastIndexOf("\n");
+        } else column += text.length;
+        idx += text.length;
+        yield token;
+    }
+
+    function pos() {
+        return { line: line, column: column };
+    }
+    function longest(candidates: [keyof Lx, string, boolean][]) {
+        if (!candidates.length) return [];
+        if (candidates.length == 1) return candidates[0];
+        return candidates.reduce((longest, current) => {
+            if (current[1].length > longest[1].length) return current
+            if (current[1].length == longest[1].length)
+                return !current[2] && longest[2] ? current : longest
+            return longest
+        });
+    }
+    function possible() {
+        const candidates: [keyof Lx, string, boolean][] = [];
+        Object.entries(lexicon).map(([name, rule]) => {
+            if (typeof rule == "function") {
+                const text = rule(source.substring(idx));
+                if (text !== undefined) candidates.push([name, text, false]);
+            } else if (typeof rule != "string") {
+                const dynamic = rule.source[rule.source.length - 1] == '*'
+                const regex = new RegExp(`^${rule.source}`, rule.flags);
+                const match = regex.exec(source.substring(idx));
+                if (match) return candidates.push([name, match[0], dynamic]);
+            } else if (source.substring(idx, idx + rule.length) == rule) {
+                return candidates.push([name, rule, false]);
+            }
+        });
+        return candidates;
+    }
+}
+
 export const Tokens = {
     STRINGS: {
         STD: stringScanner
@@ -73,130 +180,5 @@ function stringScanner(value: string, reporter = new Lib.StdReporter()) {
         }
         reporter.error(opener, `Unclosed string at line ${opener.pos.line}, column ${opener.pos.column}.`);
         return text;
-    }
-}
-
-export class TokenStream<Lx extends Lexicon> {
-    private generator: Generator<Token<keyof Lx>>;
-    constructor(
-        source: string,
-        lexicon: Lx = {} as Lx,
-        readonly reporter = new Lib.StdReporter()
-    ) {
-        this.generator = tokenGenerator(source, lexicon);
-    }
-
-    private buffer: (Token<keyof Lx> | undefined)[] = [];
-    take(): Token<keyof Lx> | undefined {
-        this.peek();
-        return this.buffer.shift();
-    }
-    peek(): Token<keyof Lx> | undefined {
-        if (!this.buffer.length) this.buffer.push(this.next());
-        return this.buffer[0];
-    }
-    drain(): Token<keyof Lx>[] {
-        let token, tokens = [];
-        while ((token = this.take())) tokens.push(token);
-        return tokens;
-    }
-
-    private eof = false
-    private next(): Token<keyof Lx> | undefined {
-        if (this.eof) return
-        while (true) {
-            const token = this.generator.next().value;
-            if (!token) {
-                this.eof = true;
-                break;
-            }
-
-            if (token.name.toString().startsWith("_")) continue;
-            if (token.name == ERROR_TOKEN) {
-                this.err(token);
-                continue;
-            }
-            return token;
-        }
-    }
-
-    public error = false;
-    private err(token: Token) {
-        this.error = true;
-        const { text, pos: { line, column } } = token;
-        this.reporter.error(
-            token,
-            `Syntax error near ${text} at ${line}:${column}`
-        );
-    }
-}
-
-export class TokenStreamClassFactory {
-    static buildTokenStreamClass<Lx extends Lexicon>(
-        lexicon: Lx
-    ): typeof TokenStream & { TOKENS: Record<keyof Lx, keyof Lx> } {
-        const TOKENS = Object.keys(lexicon).reduce(
-            (a, c) => ((a[c as keyof Lx] = c), a),
-            {} as Record<keyof Lx, keyof Lx>
-        );
-        class TokenStreamClassFactoryClass extends TokenStream<{}> {
-            constructor(source: string) {
-                super(source, lexicon);
-            }
-            static TOKENS = TOKENS;
-        }
-        return TokenStreamClassFactoryClass;
-    }
-}
-
-function* tokenGenerator<Lx extends Lexicon>(
-    source: string,
-    lexicon: Lx
-): Generator<Token<keyof Lx>> {
-    let idx = 0,
-        line = 1,
-        column = 1;
-    while (idx < source.length) {
-        const [name = ERROR_TOKEN, text = source[idx]] = longest(possible());
-        const token = new Token(name, text, pos());
-
-        const lines = text.split("\n").length;
-        if (lines > 1) {
-            line += lines - 1;
-            column = text.length - text.lastIndexOf("\n");
-        } else column += text.length;
-        idx += text.length;
-        yield token;
-    }
-
-    function pos() {
-        return { line: line, column: column };
-    }
-    function longest(candidates: [keyof Lx, string, boolean][]) {
-        if (!candidates.length) return [];
-        if (candidates.length == 1) return candidates[0];
-        return candidates.reduce((longest, current) => {
-            if (current[1].length > longest[1].length) return current
-            if (current[1].length == longest[1].length)
-                return !current[2] && longest[2] ? current : longest
-            return longest
-        });
-    }
-    function possible() {
-        const candidates: [keyof Lx, string, boolean][] = [];
-        Object.entries(lexicon).map(([name, rule]) => {
-            if (typeof rule == "function") {
-                const text = rule(source.substring(idx));
-                if (text !== undefined) candidates.push([name, text, false]);
-            } else if (typeof rule != "string") {
-                const dynamic = rule.source[rule.source.length - 1] == '*'
-                const regex = new RegExp(`^${rule.source}`, rule.flags);
-                const match = regex.exec(source.substring(idx));
-                if (match) return candidates.push([name, match[0], dynamic]);
-            } else if (source.substring(idx, idx + rule.length) == rule) {
-                return candidates.push([name, rule, false]);
-            }
-        });
-        return candidates;
     }
 }

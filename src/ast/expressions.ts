@@ -44,7 +44,7 @@ export class CallExpr implements Ast.Expression {
 export class BinaryExpr implements Ast.Expression {
     constructor(
         readonly left: Ast.Expression,
-        readonly operator: Ast.Token<any>,
+        readonly operator: Ast.Token,
         readonly right: Ast.Expression
     ) { }
 }

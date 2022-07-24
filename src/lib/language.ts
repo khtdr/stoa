@@ -16,6 +16,7 @@ export class Language<Lex extends Lib.Lexicon, Ast extends object> {
         }
         this.frontend = {
             Scanner: frontend.Scanner ||
+                // @ts-expect-error not using this
                 Lib.TokenStreamClassFactory.buildTokenStreamClass({ CHAR: /./ }),
             Parser: frontend.Parser || Lib.AnyTokenParser<Lex, Ast>,
         }
