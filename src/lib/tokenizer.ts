@@ -1,6 +1,6 @@
-import { StdReporter } from ".";
+import * as Lib from ".";
 
-export type Lexeme = string | RegExp | ((text: string) => undefined | string);
+export type Lexeme = string | RegExp | ((text: string, reporter?: Lib.StdReporter) => undefined | string);
 export type Lexicon = Record<string, Lexeme>;
 const ERROR_TOKEN = "__stoa__::error";
 
@@ -17,12 +17,71 @@ export class Token<Name = string> {
     }
 }
 
+export const Tokens = {
+    STRINGS: {
+        STD: stringScanner
+    },
+    COMMENTS: {
+        SHEBANG: /\#\!\/usr\/bin\/env\s.*/,
+        DOUBLE_SLASH: /\/\/.*/,
+        C_STYLE: cStyleCommentScanner,
+    },
+    SPACE: {
+        ALL: /\s+/,
+    }
+}
+
+function cStyleCommentScanner(value: string, reporter = new Lib.StdReporter()) {
+    const tokenizer = new TokenStream(value, {
+        OPEN: "/*",
+        CLOSE: "*/",
+        ESCAPED_CHAR: /\\./,
+        CHAR: /.|\s/,
+    });
+    const opener = tokenizer.take();
+    if (opener && opener.name == "OPEN") {
+        let stack = 0,
+            closer: Lib.Token | undefined,
+            text = opener.text;
+        while ((closer = tokenizer.take())) {
+            text += closer.text;
+            if (closer.name == "OPEN") stack += 1;
+            else if (closer.name == "CLOSE") {
+                if (!stack) return text;
+                else stack -= 1;
+            }
+        }
+        reporter.error(opener, `Unclose comment at line ${opener.pos.line}, column ${opener.pos.column}.`);
+        return text;
+    }
+}
+
+function stringScanner(value: string, reporter = new Lib.StdReporter()) {
+    const tokenizer = new Lib.TokenStream(value, {
+        SINGLE: "'",
+        DOUBLE: '"',
+        ESCAPED_CHAR: /\\./,
+        CHAR: /.|\s/,
+    });
+    const opener = tokenizer.take();
+    if (opener && ["SINGLE", "DOUBLE"].includes(opener.name)) {
+        let { text } = opener,
+            closer: Lib.Token | undefined;
+        while ((closer = tokenizer.take())) {
+            text += closer.text;
+            if (closer.name == opener.name) return text;
+        }
+        reporter.error(opener, `Unclosed string at line ${opener.pos.line}, column ${opener.pos.column}.`);
+        return text;
+    }
+}
+
 export class TokenStream<Lx extends Lexicon> {
     private generator: Generator<Token<keyof Lx>>;
     constructor(
         source: string,
         lexicon: Lx = {} as Lx,
-        readonly reporter = new StdReporter()
+        readonly reporter = new Lib.StdReporter()
     ) {
         this.generator = tokenGenerator(source, lexicon);
     }
@@ -113,24 +172,29 @@ function* tokenGenerator<Lx extends Lexicon>(
     function pos() {
         return { line: line, column: column };
     }
-    function longest(candidates: [keyof Lx, string][]) {
+    function longest(candidates: [keyof Lx, string, boolean][]) {
         if (!candidates.length) return [];
-        return candidates.reduce((longest, current) =>
-            current[1]!.length > longest[1]!.length ? current : longest
-        );
+        if (candidates.length == 1) return candidates[0];
+        return candidates.reduce((longest, current) => {
+            if (current[1].length > longest[1].length) return current
+            if (current[1].length == longest[1].length)
+                return !current[2] && longest[2] ? current : longest
+            return longest
+        });
     }
     function possible() {
-        const candidates: [keyof Lx, string][] = [];
+        const candidates: [keyof Lx, string, boolean][] = [];
         Object.entries(lexicon).map(([name, rule]) => {
             if (typeof rule == "function") {
                 const text = rule(source.substring(idx));
-                if (text !== undefined) candidates.push([name, text]);
+                if (text !== undefined) candidates.push([name, text, false]);
             } else if (typeof rule != "string") {
+                const dynamic = rule.source[rule.source.length - 1] == '*'
                 const regex = new RegExp(`^${rule.source}`, rule.flags);
                 const match = regex.exec(source.substring(idx));
-                if (match) return candidates.push([name, match[0]]);
+                if (match) return candidates.push([name, match[0], dynamic]);
             } else if (source.substring(idx, idx + rule.length) == rule) {
-                return candidates.push([name, rule]);
+                return candidates.push([name, rule, false]);
             }
         });
         return candidates;

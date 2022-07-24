@@ -3912,6 +3912,65 @@ var Token = class {
   }
 };
 __name(Token, "Token");
+var Tokens = {
+  STRINGS: {
+    STD: stringScanner
+  },
+  COMMENTS: {
+    SHEBANG: /\#\!\/usr\/bin\/env\s.*/,
+    DOUBLE_SLASH: /\/\/.*/,
+    C_STYLE: cStyleCommentScanner
+  },
+  SPACE: {
+    ALL: /\s+/
+  }
+};
+function cStyleCommentScanner(value, reporter2 = new StdReporter()) {
+  const tokenizer = new TokenStream(value, {
+    OPEN: "/*",
+    CLOSE: "*/",
+    ESCAPED_CHAR: /\\./,
+    CHAR: /.|\s/
+  });
+  const opener = tokenizer.take();
+  if (opener && opener.name == "OPEN") {
+    let stack = 0, closer, text = opener.text;
+    while (closer = tokenizer.take()) {
+      text += closer.text;
+      if (closer.name == "OPEN")
+        stack += 1;
+      else if (closer.name == "CLOSE") {
+        if (!stack)
+          return text;
+        else
+          stack -= 1;
+      }
+    }
+    reporter2.error(opener, `Unclose comment at line ${opener.pos.line}, column ${opener.pos.column}.`);
+    return text;
+  }
+}
+__name(cStyleCommentScanner, "cStyleCommentScanner");
+function stringScanner(value, reporter2 = new StdReporter()) {
+  const tokenizer = new TokenStream(value, {
+    SINGLE: "'",
+    DOUBLE: '"',
+    ESCAPED_CHAR: /\\./,
+    CHAR: /.|\s/
+  });
+  const opener = tokenizer.take();
+  if (opener && ["SINGLE", "DOUBLE"].includes(opener.name)) {
+    let { text } = opener, closer;
+    while (closer = tokenizer.take()) {
+      text += closer.text;
+      if (closer.name == opener.name)
+        return text;
+    }
+    reporter2.error(opener, `Unclosed string at line ${opener.pos.line}, column ${opener.pos.column}.`);
+    return text;
+  }
+}
+__name(stringScanner, "stringScanner");
 var TokenStream = class {
   constructor(source2, lexicon = {}, reporter2 = new StdReporter()) {
     this.reporter = reporter2;
@@ -3995,7 +4054,15 @@ function* tokenGenerator(source2, lexicon) {
   function longest(candidates) {
     if (!candidates.length)
       return [];
-    return candidates.reduce((longest2, current) => current[1].length > longest2[1].length ? current : longest2);
+    if (candidates.length == 1)
+      return candidates[0];
+    return candidates.reduce((longest2, current) => {
+      if (current[1].length > longest2[1].length)
+        return current;
+      if (current[1].length == longest2[1].length)
+        return !current[2] && longest2[2] ? current : longest2;
+      return longest2;
+    });
   }
   __name(longest, "longest");
   function possible() {
@@ -4004,14 +4071,15 @@ function* tokenGenerator(source2, lexicon) {
       if (typeof rule == "function") {
         const text = rule(source2.substring(idx));
         if (text !== void 0)
-          candidates.push([name, text]);
+          candidates.push([name, text, false]);
       } else if (typeof rule != "string") {
+        const dynamic = rule.source[rule.source.length - 1] == "*";
         const regex = new RegExp(`^${rule.source}`, rule.flags);
         const match = regex.exec(source2.substring(idx));
         if (match)
-          return candidates.push([name, match[0]]);
+          return candidates.push([name, match[0], dynamic]);
       } else if (source2.substring(idx, idx + rule.length) == rule) {
-        return candidates.push([name, rule]);
+        return candidates.push([name, rule, false]);
       }
     });
     return candidates;
@@ -4102,8 +4170,9 @@ var Scanner = TokenStreamClassFactory.buildTokenStreamClass({
   FALSE: /false/i,
   NIL: /nil/,
   NUMBER: /\d+(\.\d+)?/,
-  STRING: stringScanner,
+  STRING: Tokens.STRINGS.STD,
   TRUE: /true/i,
+  IDENTIFIER: /[a-z][a-z\d]*/i,
   AND: /and/i,
   BANG: "!",
   BANG_EQUAL: "!=",
@@ -4141,59 +4210,12 @@ var Scanner = TokenStreamClassFactory.buildTokenStreamClass({
   THIS: /this/i,
   VAR: /var/i,
   WHILE: /while/i,
-  IDENTIFIER: /[a-z][a-z\d]*/i,
-  _MULTI_LINE_COMMENT: cStyleCommentScanner,
-  _SINGLE_LINE_COMMENT: /\/\/.*/,
-  _SHEBANG_COMMENT: /\#\!\/usr\/bin\/env\s.*/,
-  _SPACE: /\s+/
+  _SHEBANG_COMMENT: Tokens.COMMENTS.SHEBANG,
+  _MULTI_LINE_COMMENT: Tokens.COMMENTS.C_STYLE,
+  _SINGLE_LINE_COMMENT: Tokens.COMMENTS.DOUBLE_SLASH,
+  _SPACE: Tokens.SPACE.ALL
 });
 var TOKEN = Scanner.TOKENS;
-function stringScanner(value, reporter2 = new StdReporter()) {
-  const tokenizer = new TokenStream(value, {
-    SINGLE: "'",
-    DOUBLE: '"',
-    ESCAPED_CHAR: /\\./,
-    CHAR: /.|\s/
-  });
-  const opener = tokenizer.take();
-  if (opener && ["SINGLE", "DOUBLE"].includes(opener.name)) {
-    let { text } = opener, closer;
-    while (closer = tokenizer.take()) {
-      text += closer.text;
-      if (closer.name == opener.name)
-        return text;
-    }
-    reporter2.error(opener, `Expected to find a closing ${opener.text} for the string at ${opener.pos.line}:${opener.pos.column}`);
-    return text;
-  }
-}
-__name(stringScanner, "stringScanner");
-function cStyleCommentScanner(value, reporter2 = new StdReporter()) {
-  const tokenizer = new TokenStream(value, {
-    OPEN: "/*",
-    CLOSE: "*/",
-    ESCAPED_CHAR: /\\./,
-    CHAR: /.|\s/
-  });
-  const opener = tokenizer.take();
-  if (opener && opener.name == "OPEN") {
-    let stack = 0, closer, text = opener.text;
-    while (closer = tokenizer.take()) {
-      text += closer.text;
-      if (closer.name == "OPEN")
-        stack += 1;
-      else if (closer.name == "CLOSE") {
-        if (!stack)
-          return text;
-        else
-          stack -= 1;
-      }
-    }
-    reporter2.error(opener, `Expected to find a closing ${opener.text} for the comment at ${opener.pos.line}:${opener.pos.column}`);
-    return text;
-  }
-}
-__name(cStyleCommentScanner, "cStyleCommentScanner");
 
 // src/ast/declarations.ts
 var VariableDecl = class {
