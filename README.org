@@ -24,8 +24,8 @@ make build
 : CLI tsup v6.1.2
 : CLI Target: node14
 : CJS Build start
-: CJS ⚡️ Build success in 61ms
-: CJS bin/stoa.js 159.45 KB
+: CJS ⚡️ Build success in 62ms
+: CJS bin/stoa.js 156.12 KB
 
 ** Usage Documentation
 #+begin_src sh :exports both :results verbatim
@@ -33,20 +33,10 @@ make build
 #+end_src
 
 #+RESULTS:
-#+begin_example
-Usage: node ./bin/stoa.js [options] [file]
-Show this help message
-    --help
-Launches a colorful REPL
-    -r, --repl
-Emits the parse tree (CST/JSON)
-    -p, --parse
-Emits the list of tokens (JSON)
-    -t, --tokenize
-Displays the version and exits
-    -v, --version
-
-#+end_example
+: Usage: node ./bin/stoa.js [options] [file]
+: Show this help message
+:     --help
+:
 
 ** Current Version
 #+begin_src sh :exports both :results verbatim
@@ -54,12 +44,6 @@ Displays the version and exits
 #+end_src
 
 #+RESULTS:
-: stoa-2022.07.20 {
-:   author: 'Kay Oh <khtdr.com@gmail.com>',
-:   description: 'language framework',
-:   repository: 'https://github.com/khtdr/stoa',
-:   license: 'UNLICENSED'
-: }
 
 ** Test Suite Status
 #+begin_src sh :exports both :results verbatim
@@ -76,14 +60,9 @@ make test
 ✔ hello-world.stoa
 ✔ literals.stoa
 ✔ name.stoa
-❌ scope.stoa
-diff <(scope.stoa) scope.stoa.txt
-3c3
-< BBB
----
-> AAA
+✔ scope.stoa
 ✔ sticky-precision.stoa
-Passing: 8 Failing: 1
+Passing: 9 Failing: 0
 #+end_example
 
 * ...
