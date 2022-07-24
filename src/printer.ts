@@ -2,7 +2,7 @@ import * as Ast from './ast'
 
 export class Printer extends Ast.Visitor<string> {
     AssignExpr(assign: Ast.AssignExpr): string {
-        return `(= ${assign.name.text} ${this.visit(assign.expr)})`
+        return `(= ${assign.name.text} ${this.visit(assign.value)})`
     }
     BinaryExpr(expr: Ast.BinaryExpr): string {
         const operator = expr.operator.text
@@ -62,7 +62,7 @@ export class Printer extends Ast.Visitor<string> {
         const decls = program.code.map(decl => this.visit(decl)).join("\n")
         return `(program \n${indent(decls)}\n)`
     }
-    ReturnStmt(ret: Ast.ReturnStmt): string | void {
+    ReturnStmt(ret: Ast.ReturnStmt): string {
         return `(return ${this.visit(ret.expr)})`
     }
     TernaryExpr(expr: Ast.TernaryExpr): string {

@@ -8,7 +8,7 @@ export class CliDriver<Lx extends Lexicon, Ast extends object> {
         readonly lang: Language<Lx, Ast>,
         readonly treewalkers: Partial<{
             Printer: any;
-            Evaluator: any;
+            Interpreter: any;
         }> = {}
     ) { }
 
@@ -59,7 +59,7 @@ export class CliDriver<Lx extends Lexicon, Ast extends object> {
                     this.lang,
                     opts.get("parse")
                         ? new this.treewalkers.Printer()
-                        : new this.treewalkers.Evaluator()
+                        : new this.treewalkers.Interpreter()
                 ),
                 { tokenize: !!opts.get('tokenize'), runFile: false, runPipe: false, runRepl: false },
             ];

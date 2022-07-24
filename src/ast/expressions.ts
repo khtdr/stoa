@@ -9,7 +9,7 @@ export class FunctionExpr implements Ast.Expression {
 
 export class LiteralExpr implements Ast.Expression {
     constructor(
-        readonly value: string | [number, number] | boolean | undefined
+        readonly value: string | [number, number] | boolean | undefined | void
     ) { }
     toString() {
         if (this.value === true || this.value === false) return `${this.value}`
@@ -53,7 +53,7 @@ export class BinaryExpr implements Ast.Expression {
 export class AssignExpr implements Ast.Expression {
     constructor(
         readonly name: Ast.Token<'IDENTIFIER'>,
-        readonly expr: Ast.Expression
+        readonly value: Ast.Expression
     ) { }
 }
 

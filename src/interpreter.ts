@@ -2,12 +2,15 @@ import * as Ast from "./ast";
 import * as Runtime from './runtime'
 import { registerGlobals } from "./globals";
 import { TOKEN } from "./scanner";
+import { Reporter } from "./errors";
 
-export class Evaluator extends Ast.Visitor<Runtime.Result> {
+export class Interpreter extends Ast.Visitor<Runtime.Result> {
     readonly globals = new Runtime.Environment()
     private env = this.globals
 
-    constructor() {
+    constructor(
+        readonly reporter: Reporter
+    ) {
         super()
         registerGlobals(this)
     }
@@ -15,10 +18,18 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
     resolve(expr: Ast.Expression, depth: number) {
         this.locals.set(expr, depth)
     }
+    lookUpVariable(name: Ast.Token<'IDENTIFIER'>, expr: Ast.Expression) {
+        const distance = this.locals.get(expr)
+        if (distance !== undefined) return this.env.get(name.text, distance)
+        return this.globals.get(name.text)
+    }
 
-    AssignExpr(assign: Ast.AssignExpr): Runtime.Result {
-        this.env.set(assign.name.text, this.visit(assign.expr))
-        return this.env.get(assign.name.text)
+    AssignExpr(expr: Ast.AssignExpr): Runtime.Result {
+        const value = this.visit(expr.value)
+        const distance = this.locals.get(expr)
+        if (distance !== undefined) this.env.set(expr.name.text, value, distance)
+        else this.globals.set(expr.name.text, value)
+        return value
     }
     BinaryExpr(expr: Ast.BinaryExpr): Runtime.Result {
         const { operator: { name: op } } = expr
@@ -44,7 +55,7 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
         if (op == TOKEN.LESS_EQUAL) return left[0] <= right[0]
         throw new Runtime.RuntimeError("Unexpected binary expression")
     }
-    BlockStmt(block: Ast.BlockStmt): void {
+    BlockStmt(block: Ast.BlockStmt): Runtime.Result {
         const previous = this.env
         this.env = new Runtime.Environment(previous)
         try {
@@ -85,7 +96,7 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
                 }
             })
     }
-    FunctionDecl(decl: Ast.FunctionDecl): void {
+    FunctionDecl(decl: Ast.FunctionDecl): Runtime.Result {
         const func = this.FunctionExpr(decl.fun)
         this.env.init(decl.ident.text)
         this.env.set(decl.ident.text, func)
@@ -93,12 +104,12 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
     GroupExpr(expr: Ast.GroupExpr): Runtime.Result {
         return this.visit(expr.inner);
     }
-    IfStmt(statement: Ast.IfStmt): void {
+    IfStmt(statement: Ast.IfStmt): Runtime.Result {
         const condition = this.visit(statement.condition);
         if (Runtime.truthy(condition)) this.visit(statement.trueStatement);
         else if (statement.falseStatement) this.visit(statement.falseStatement);
     }
-    JumpStmt(statement: Ast.JumpStmt): void {
+    JumpStmt(statement: Ast.JumpStmt): Runtime.Result {
         const jump = statement.destination.name == TOKEN.BREAK ?
             new Runtime.BreakException() : new Runtime.ContinueException()
         const distance = this.visit(statement.distance || new Ast.LiteralExpr([1, 0]))
@@ -130,7 +141,7 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
         if (Runtime.isCallable(last)) return `${last}`
         return new Ast.LiteralExpr(last).toString()
     }
-    ReturnStmt(ret: Ast.ReturnStmt): void {
+    ReturnStmt(ret: Ast.ReturnStmt): Runtime.Result {
         const ex = new Runtime.ReturnException()
         ex.value = this.visit(ret.expr)
         throw ex
@@ -152,15 +163,15 @@ export class Evaluator extends Ast.Visitor<Runtime.Result> {
         if (op == TOKEN.DASH) return [-value[0], value[1]];
         throw new Runtime.RuntimeError("Unexpected unary expression")
     }
-    VariableDecl(declaration: Ast.VariableDecl): void {
+    VariableDecl(declaration: Ast.VariableDecl): Runtime.Result {
         this.env.init(declaration.ident.text)
         const val = declaration.expr ? this.visit(declaration.expr) : undefined
         this.env.set(declaration.ident.text, val)
     }
     VariableExpr(expr: Ast.VariableExpr): Runtime.Result {
-        return this.env.get(expr.name.text)
+        return this.lookUpVariable(expr.name, expr)
     }
-    WhileStmt(statement: Ast.WhileStmt): void {
+    WhileStmt(statement: Ast.WhileStmt): Runtime.Result {
         while (Runtime.truthy(this.visit(statement.condition))) {
             try {
                 this.visit(statement.body)

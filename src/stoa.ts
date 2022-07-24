@@ -1,13 +1,24 @@
-import { name, author, version, description, repository, license } from '../package.json'
-import { Language, CliDriver } from './lib'
-import { Scanner } from './scanner'
+import fs from 'fs'
+import opts from 'opts'
+import { Scanner, Token } from './scanner'
 import { Parser } from './parser'
-import { Printer } from './printer'
-import { Evaluator } from './evaluator'
+import { Interpreter } from './interpreter';
+import { Resolver } from './resolver';
+import { Reporter } from './errors';
 
-const StoaLang = new Language(
-    { name, version, author, description, repository, license },
-    { Scanner, Parser }
-)
+opts.parse([], [{ name: "file" }], true);
+const fileName = opts.arg("file") ?? "/dev/stdin"
 
-new CliDriver(StoaLang, { Printer, Evaluator }).run()
+const reporter = new Reporter()
+const source = fs.readFileSync(fileName).toString()
+
+const scanner = new Scanner(source)
+const tokens = scanner.drain() as Token<any>[]
+
+const parser = new Parser(tokens, reporter)
+const interpreter = new Interpreter(reporter);
+const resolver = new Resolver(interpreter, reporter)
+
+const ast = parser.parse()
+resolver.visit(ast)
+interpreter.visit(ast)

@@ -1,6 +1,3 @@
-// SKIPPED OVER
-// - Runtime errors
-// - Error handling in general
 import * as Ast from './ast'
 
 export class Environment {
@@ -13,12 +10,14 @@ export class Environment {
         if (!this.table.has(name)) this.table.set(name, undefined)
         else throw new RuntimeError(`Variable already defined: ${name}`)
     }
-    set(name: string, value: any): void {
+    set(name: string, value: any, distance = 0): void {
+        if (distance > 0 && this.enclosure) return this.enclosure.set(name, value, distance - 1)
         if (this.table.has(name)) this.table.set(name, value)
         else if (this.enclosure?.has(name)) this.enclosure.set(name, value)
         else throw new RuntimeError(`No such variable: ${name}`)
     }
-    get<T = any>(name: string): T {
+    get<T = any>(name: string, distance = 0): T {
+        if (distance > 0 && this.enclosure) return this.enclosure.get(name, distance - 1)
         if (this.table.has(name)) return this.table.get(name)
         if (this.enclosure?.has(name)) return this.enclosure.get(name)
         throw new RuntimeError(`Undefined variable: ${name}`)
