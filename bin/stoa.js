@@ -4344,84 +4344,31 @@ function cStyleCommentScanner(value, reporter = new StdReporter()) {
 }
 __name(cStyleCommentScanner, "cStyleCommentScanner");
 
-// src/ast.ts
-var Visitor2 = class extends Visitor {
-};
-__name(Visitor2, "Visitor");
-var Program = class {
-  constructor(declarations) {
-    this.declarations = declarations;
-  }
-};
-__name(Program, "Program");
-var VarDeclaration = class {
+// src/ast/declarations.ts
+var VariableDecl = class {
   constructor(ident, expr) {
     this.ident = ident;
     this.expr = expr;
   }
 };
-__name(VarDeclaration, "VarDeclaration");
-var FunctionDeclaration = class {
+__name(VariableDecl, "VariableDecl");
+var FunctionDecl = class {
   constructor(ident, fun) {
     this.ident = ident;
     this.fun = fun;
   }
 };
-__name(FunctionDeclaration, "FunctionDeclaration");
-var Function2 = class {
+__name(FunctionDecl, "FunctionDecl");
+
+// src/ast/expressions.ts
+var FunctionExpr = class {
   constructor(params, block) {
     this.params = params;
     this.block = block;
   }
 };
-__name(Function2, "Function");
-var IfStatement = class {
-  constructor(condition, trueStatement, falseStatement) {
-    this.condition = condition;
-    this.trueStatement = trueStatement;
-    this.falseStatement = falseStatement;
-  }
-};
-__name(IfStatement, "IfStatement");
-var ReturnStatement = class {
-  constructor(expr) {
-    this.expr = expr;
-  }
-};
-__name(ReturnStatement, "ReturnStatement");
-var JumpStatement = class {
-  constructor(destination, distance) {
-    this.destination = destination;
-    this.distance = distance;
-  }
-};
-__name(JumpStatement, "JumpStatement");
-var WhileStatement = class {
-  constructor(condition, body) {
-    this.condition = condition;
-    this.body = body;
-  }
-};
-__name(WhileStatement, "WhileStatement");
-var ExpressionStatement = class {
-  constructor(expr) {
-    this.expr = expr;
-  }
-};
-__name(ExpressionStatement, "ExpressionStatement");
-var PrintStatement = class {
-  constructor(expr) {
-    this.expr = expr;
-  }
-};
-__name(PrintStatement, "PrintStatement");
-var Block = class {
-  constructor(statements) {
-    this.statements = statements;
-  }
-};
-__name(Block, "Block");
-var Literal = class {
+__name(FunctionExpr, "FunctionExpr");
+var LiteralExpr = class {
   constructor(value) {
     this.value = value;
   }
@@ -4436,47 +4383,52 @@ var Literal = class {
     return `${val.toFixed(prec)}`;
   }
 };
-__name(Literal, "Literal");
-var Variable = class {
+__name(LiteralExpr, "LiteralExpr");
+var VariableExpr = class {
   constructor(name2) {
     this.name = name2;
   }
 };
-__name(Variable, "Variable");
-var Unary = class {
+__name(VariableExpr, "VariableExpr");
+var UnaryExpr = class {
   constructor(operator, operand) {
     this.operator = operator;
     this.operand = operand;
   }
 };
-__name(Unary, "Unary");
-var Call = class {
+__name(UnaryExpr, "UnaryExpr");
+var CallExpr = class {
   constructor(callee, args, end) {
     this.callee = callee;
     this.args = args;
     this.end = end;
   }
 };
-__name(Call, "Call");
-var Binary = class {
+__name(CallExpr, "CallExpr");
+var BinaryExpr = class {
   constructor(left, operator, right) {
     this.left = left;
     this.operator = operator;
     this.right = right;
   }
 };
-__name(Binary, "Binary");
-var Assign = class {
+__name(BinaryExpr, "BinaryExpr");
+var AssignExpr = class {
   constructor(name2, expr) {
     this.name = name2;
     this.expr = expr;
   }
 };
-__name(Assign, "Assign");
-var Logical = class extends Binary {
+__name(AssignExpr, "AssignExpr");
+var LogicalExpr = class {
+  constructor(left, operator, right) {
+    this.left = left;
+    this.operator = operator;
+    this.right = right;
+  }
 };
-__name(Logical, "Logical");
-var Ternary = class {
+__name(LogicalExpr, "LogicalExpr");
+var TernaryExpr = class {
   constructor(left, op1, middle, op2, right) {
     this.left = left;
     this.op1 = op1;
@@ -4485,13 +4437,74 @@ var Ternary = class {
     this.right = right;
   }
 };
-__name(Ternary, "Ternary");
-var Grouping = class {
+__name(TernaryExpr, "TernaryExpr");
+var GroupExpr = class {
   constructor(inner) {
     this.inner = inner;
   }
 };
-__name(Grouping, "Grouping");
+__name(GroupExpr, "GroupExpr");
+
+// src/ast/statements.ts
+var BlockStmt = class {
+  constructor(statements) {
+    this.statements = statements;
+  }
+};
+__name(BlockStmt, "BlockStmt");
+var ExpressionStmt = class {
+  constructor(expr) {
+    this.expr = expr;
+  }
+};
+__name(ExpressionStmt, "ExpressionStmt");
+var IfStmt = class {
+  constructor(condition, trueStatement, falseStatement) {
+    this.condition = condition;
+    this.trueStatement = trueStatement;
+    this.falseStatement = falseStatement;
+  }
+};
+__name(IfStmt, "IfStmt");
+var JumpStmt = class {
+  constructor(destination, distance) {
+    this.destination = destination;
+    this.distance = distance;
+  }
+};
+__name(JumpStmt, "JumpStmt");
+var PrintStmt = class {
+  constructor(expr) {
+    this.expr = expr;
+  }
+};
+__name(PrintStmt, "PrintStmt");
+var ReturnStmt = class {
+  constructor(expr) {
+    this.expr = expr;
+  }
+};
+__name(ReturnStmt, "ReturnStmt");
+var WhileStmt = class {
+  constructor(condition, body) {
+    this.condition = condition;
+    this.body = body;
+  }
+};
+__name(WhileStmt, "WhileStmt");
+
+// src/ast/visitor.ts
+var Visitor2 = class extends Visitor {
+};
+__name(Visitor2, "Visitor");
+
+// src/ast.ts
+var Program = class {
+  constructor(code) {
+    this.code = code;
+  }
+};
+__name(Program, "Program");
 
 // src/parser.ts
 var Parser2 = class extends Parser {
@@ -4526,7 +4539,7 @@ var Parser2 = class extends Parser {
       this.match(TOKEN.FUN);
       const ident = this.consume("IDENTIFIER", "Expected identifier");
       const fun = this.Function();
-      return new FunctionDeclaration(ident, fun);
+      return new FunctionDecl(ident, fun);
     }
   }
   Function() {
@@ -4536,7 +4549,7 @@ var Parser2 = class extends Parser {
     const block = this.Block();
     if (!block)
       throw this.error(this.peek(), "Expected {");
-    return new Function2(parameters, block);
+    return new FunctionExpr(parameters, block);
   }
   Parameters() {
     var _a, _b;
@@ -4559,7 +4572,7 @@ var Parser2 = class extends Parser {
         expr = this.Expression();
       }
       this.consume(TOKEN.SEMICOLON, "Expected ;");
-      return new VarDeclaration(ident, expr);
+      return new VariableDecl(ident, expr);
     }
   }
   Statement() {
@@ -4567,12 +4580,12 @@ var Parser2 = class extends Parser {
   }
   ReturnStatement() {
     if (this.match(TOKEN.RETURN)) {
-      let expr = new Literal(void 0);
+      let expr = new LiteralExpr(void 0);
       if (!this.match(TOKEN.SEMICOLON)) {
         expr = this.Expression();
         this.consume(TOKEN.SEMICOLON, "Expected ;");
       }
-      return new ReturnStatement(expr);
+      return new ReturnStmt(expr);
     }
   }
   Block() {
@@ -4584,7 +4597,7 @@ var Parser2 = class extends Parser {
         if (decl)
           declarations.push(decl);
       }
-      const block = new Block(declarations);
+      const block = new BlockStmt(declarations);
       this.consume(TOKEN.RIGHT_CURL, "Expected }");
       return block;
     }
@@ -4593,11 +4606,11 @@ var Parser2 = class extends Parser {
     var _a;
     if (this.match(TOKEN.BREAK, TOKEN.CONTINUE)) {
       const jump = this.previous();
-      let expr = new Literal([1, 0]);
+      let expr = new LiteralExpr([1, 0]);
       if (((_a = this.peek()) == null ? void 0 : _a.name) != TOKEN.SEMICOLON)
         expr = this.Expression();
       this.consume(TOKEN.SEMICOLON, "Expected ;");
-      return new JumpStatement(jump, expr);
+      return new JumpStmt(jump, expr);
     }
   }
   IfStatement() {
@@ -4608,9 +4621,9 @@ var Parser2 = class extends Parser {
       const trueStatement = this.Statement();
       if (this.match(TOKEN.ELSE)) {
         const falseStatement = this.Statement();
-        return new IfStatement(cond, trueStatement, falseStatement);
+        return new IfStmt(cond, trueStatement, falseStatement);
       } else {
-        return new IfStatement(cond, trueStatement);
+        return new IfStmt(cond, trueStatement);
       }
     }
   }
@@ -4620,28 +4633,28 @@ var Parser2 = class extends Parser {
       const cond = this.Expression();
       this.consume(TOKEN.RIGHT_PAREN, "Expected )");
       const body = this.Statement();
-      return new WhileStatement(cond, body);
+      return new WhileStmt(cond, body);
     }
   }
   ForStatement() {
     var _a, _b;
     if (this.match(TOKEN.FOR)) {
       this.consume(TOKEN.LEFT_PAREN, "Expected (");
-      const init = this.VarDeclaration() || this.ExpressionStatement() || this.consume(TOKEN.SEMICOLON, "Expected ;") && new Literal(true);
-      let cond = new Literal(true);
+      const init = this.VarDeclaration() || this.ExpressionStatement() || this.consume(TOKEN.SEMICOLON, "Expected ;") && new LiteralExpr(true);
+      let cond = new LiteralExpr(true);
       if (((_a = this.peek()) == null ? void 0 : _a.name) != TOKEN.SEMICOLON)
         cond = this.Expression();
       this.consume(TOKEN.SEMICOLON, "Expected ;");
-      let incr = new Literal(true);
+      let incr = new LiteralExpr(true);
       if (((_b = this.peek()) == null ? void 0 : _b.name) != TOKEN.RIGHT_PAREN)
         incr = this.Expression();
       this.consume(TOKEN.RIGHT_PAREN, "Expected )");
       const body_statement = this.Statement();
-      return new Block([
+      return new BlockStmt([
         init,
-        new WhileStatement(cond, new Block([
+        new WhileStmt(cond, new BlockStmt([
           body_statement,
-          new ExpressionStatement(incr)
+          new ExpressionStmt(incr)
         ]))
       ]);
     }
@@ -4650,13 +4663,13 @@ var Parser2 = class extends Parser {
     if (this.match(TOKEN.PRINT)) {
       const expr = this.Expression();
       this.consume(TOKEN.SEMICOLON, "Expected ;");
-      return new PrintStatement(expr);
+      return new PrintStmt(expr);
     }
   }
   ExpressionStatement() {
     const expr = this.Expression();
     this.consume(TOKEN.SEMICOLON, "Expected ;");
-    return new ExpressionStatement(expr);
+    return new ExpressionStmt(expr);
   }
   Expression() {
     return this.Comma();
@@ -4666,7 +4679,7 @@ var Parser2 = class extends Parser {
     while (this.match(TOKEN.COMMA)) {
       const comma = this.previous();
       const right = this.Assignment();
-      expr = new Binary(expr, comma, right);
+      expr = new BinaryExpr(expr, comma, right);
     }
     return expr;
   }
@@ -4675,8 +4688,8 @@ var Parser2 = class extends Parser {
     if (this.match(TOKEN.EQUAL)) {
       const eq = this.previous();
       const value = this.Assignment();
-      if (expr instanceof Variable) {
-        return new Assign(expr.name, value);
+      if (expr instanceof VariableExpr) {
+        return new AssignExpr(expr.name, value);
       }
       this.error(eq, "Invalid assignment target");
     }
@@ -4687,7 +4700,7 @@ var Parser2 = class extends Parser {
     while (this.match(TOKEN.OR)) {
       const or = this.previous();
       const right = this.LogicAnd();
-      expr = new Logical(expr, or, right);
+      expr = new LogicalExpr(expr, or, right);
     }
     return expr;
   }
@@ -4696,7 +4709,7 @@ var Parser2 = class extends Parser {
     while (this.match(TOKEN.AND)) {
       const and = this.previous();
       const right = this.Conditional();
-      expr = new Logical(expr, and, right);
+      expr = new LogicalExpr(expr, and, right);
     }
     return expr;
   }
@@ -4708,7 +4721,7 @@ var Parser2 = class extends Parser {
       this.consume(TOKEN.COLON, "Expected :");
       const colon = this.previous();
       const right = this.Equality();
-      expr = new Ternary(expr, question, middle, colon, right);
+      expr = new TernaryExpr(expr, question, middle, colon, right);
     }
     return expr;
   }
@@ -4717,7 +4730,7 @@ var Parser2 = class extends Parser {
     while (this.match(TOKEN.BANG_EQUAL, TOKEN.EQUAL_EQUAL)) {
       const operator = this.previous();
       const right = this.Comparison();
-      expr = new Binary(expr, operator, right);
+      expr = new BinaryExpr(expr, operator, right);
     }
     return expr;
   }
@@ -4726,7 +4739,7 @@ var Parser2 = class extends Parser {
     while (this.match(TOKEN.LESS, TOKEN.GREATER, TOKEN.LESS_EQUAL, TOKEN.GREATER_EQUAL)) {
       const operator = this.previous();
       const right = this.Term();
-      expr = new Binary(expr, operator, right);
+      expr = new BinaryExpr(expr, operator, right);
     }
     return expr;
   }
@@ -4735,7 +4748,7 @@ var Parser2 = class extends Parser {
     while (this.match(TOKEN.PLUS, TOKEN.DASH)) {
       const operator = this.previous();
       const right = this.Factor();
-      expr = new Binary(expr, operator, right);
+      expr = new BinaryExpr(expr, operator, right);
     }
     return expr;
   }
@@ -4744,7 +4757,7 @@ var Parser2 = class extends Parser {
     while (this.match(TOKEN.STAR, TOKEN.SLASH)) {
       const operator = this.previous();
       const right = this.Unary();
-      expr = new Binary(expr, operator, right);
+      expr = new BinaryExpr(expr, operator, right);
     }
     return expr;
   }
@@ -4765,7 +4778,7 @@ var Parser2 = class extends Parser {
     if (this.match(TOKEN.BANG, TOKEN.DASH)) {
       const operator = this.previous();
       const right = this.Unary();
-      return new Unary(operator, right);
+      return new UnaryExpr(operator, right);
     }
     return this.Call();
   }
@@ -4785,7 +4798,7 @@ var Parser2 = class extends Parser {
         } while (this.match(TOKEN.COMMA));
       }
       const paren = this.consume(TOKEN.RIGHT_PAREN, "Expected ) after arguments");
-      expr = new Call(expr, args, paren);
+      expr = new CallExpr(expr, args, paren);
     }
     return expr;
   }
@@ -4794,7 +4807,7 @@ var Parser2 = class extends Parser {
       const numStr = this.previous().text;
       const value = parseFloat(numStr);
       const precision = `${numStr}.`.split(".")[1].length;
-      return new Literal([value, precision]);
+      return new LiteralExpr([value, precision]);
     }
     if (this.match(TOKEN.STRING)) {
       const str = this.previous().text;
@@ -4803,24 +4816,24 @@ var Parser2 = class extends Parser {
         value = str.replace(/^.(.*).$/, "$1");
       else
         value = str.replace(/^.(.*)$/, "$1");
-      return new Literal(value);
+      return new LiteralExpr(value);
     }
     if (this.match(TOKEN.TRUE)) {
-      return new Literal(true);
+      return new LiteralExpr(true);
     }
     if (this.match(TOKEN.FALSE)) {
-      return new Literal(false);
+      return new LiteralExpr(false);
     }
     if (this.match(TOKEN.NIL)) {
-      return new Literal(void 0);
+      return new LiteralExpr(void 0);
     }
     if (this.match(TOKEN.IDENTIFIER)) {
-      return new Variable(this.previous());
+      return new VariableExpr(this.previous());
     }
     if (this.match(TOKEN.LEFT_PAREN)) {
       const expr = this.Expression();
       this.consume(TOKEN.RIGHT_PAREN, 'Expected ")" after expression');
-      return new Grouping(expr);
+      return new GroupExpr(expr);
     }
     if (this.match(TOKEN.FUN)) {
       return this.Function();
@@ -4852,95 +4865,46 @@ __name(Parser2, "Parser");
 
 // src/printer.ts
 var Printer = class extends Visitor2 {
-  Program(program) {
-    const decls = program.declarations.map((decl) => this.visit(decl)).join("\n");
-    return `(program 
-${indent(decls)}
+  AssignExpr(assign) {
+    return `(= ${assign.name.text} ${this.visit(assign.expr)})`;
+  }
+  BinaryExpr(expr) {
+    const operator = expr.operator.text;
+    const left = this.visit(expr.left);
+    const right = this.visit(expr.right);
+    return `(${operator} ${left} ${right})`;
+  }
+  BlockStmt(block) {
+    const blocks = block.statements.map((stmt) => this.visit(stmt)).join("\n");
+    return `(block 
+${indent(blocks)}
 )`;
   }
-  ReturnStatement(ret) {
-    return `(return ${this.visit(ret.expr)})`;
-  }
-  FunctionDeclaration(decl) {
-    const name2 = decl.ident.text;
-    const val = this.visit(decl.fun);
-    return `(fun ${name2} ${val})`;
-  }
-  Function(fun) {
-    const params = fun.params.map((p) => p.text).join(" ");
-    const body = this.visit(fun.block);
-    return `(let [${params}] ${body})`;
-  }
-  Logical(expr) {
-    return this.Binary(expr);
-  }
-  VarDeclaration(declaration) {
-    const decl = `(var ${declaration.ident.text}`;
-    const init = declaration.expr ? ` ${this.visit(declaration.expr)}` : "";
-    return `${decl}${init})`;
-  }
-  Call(call) {
+  CallExpr(call) {
     const callee = `(${this.visit(call.callee)}`;
     if (!call.args.length)
       return `${callee})`;
     const args = call.args.map((arg2) => this.visit(arg2)).join(" ");
     return `${callee} ${args})`;
   }
-  PrintStatement(statement) {
-    return `(print ${this.visit(statement.expr)})`;
-  }
-  Variable(expr) {
-    return `${expr.name.text}`;
-  }
-  ExpressionStatement(statement) {
+  ExpressionStmt(statement) {
     return this.visit(statement.expr);
   }
-  WhileStatement(statement) {
-    const cond = this.visit(statement.condition);
-    const body = this.visit(statement.body);
-    return `(while ${cond} 
-${indent(body)}
-)`;
+  FunctionExpr(fun) {
+    const params = fun.params.map((p) => p.text).join(" ");
+    const body = this.visit(fun.block);
+    return `(let [${params}] ${body})`;
   }
-  JumpStatement(statement) {
-    const dest = statement.destination.name;
-    const dist = this.visit(statement.distance || new Literal([1, 0]));
-    return `(${dest} ${dist})`;
+  FunctionDecl(decl) {
+    const name2 = decl.ident.text;
+    const val = this.visit(decl.fun);
+    return `(fun ${name2} ${val})`;
   }
-  Assign(assign) {
-    return `(= ${assign.name.text} ${this.visit(assign.expr)})`;
-  }
-  Literal(expr) {
-    return expr.toString();
-  }
-  Unary(expr) {
-    const operator = expr.operator.text;
-    const operand = this.visit(expr.operand);
-    return `(${operator} ${operand})`;
-  }
-  Block(block) {
-    const blocks = block.statements.map((stmt) => this.visit(stmt)).join("\n");
-    return `(block 
-${indent(blocks)}
-)`;
-  }
-  Binary(expr) {
-    const operator = expr.operator.text;
-    const left = this.visit(expr.left);
-    const right = this.visit(expr.right);
-    return `(${operator} ${left} ${right})`;
-  }
-  Ternary(expr) {
-    const left = this.visit(expr.left);
-    const middle = this.visit(expr.middle);
-    const right = this.visit(expr.right);
-    return `(?: ${left} ${middle} ${right})`;
-  }
-  Grouping(expr) {
+  GroupExpr(expr) {
     const operand = this.visit(expr.inner);
     return `(group ${operand})`;
   }
-  IfStatement(statement) {
+  IfStmt(statement) {
     const cond = this.visit(statement.condition);
     const stmtTrue = this.visit(statement.trueStatement);
     if (!statement.falseStatement)
@@ -4949,6 +4913,55 @@ ${indent(blocks)}
     return `(if ${cond} 
 ${indent(stmtTrue)} 
 ${indent(stmtFalse)})`;
+  }
+  JumpStmt(statement) {
+    const dest = statement.destination.name;
+    const dist = this.visit(statement.distance || new LiteralExpr([1, 0]));
+    return `(${dest} ${dist})`;
+  }
+  LiteralExpr(expr) {
+    return expr.toString();
+  }
+  LogicalExpr(expr) {
+    return this.BinaryExpr(expr);
+  }
+  PrintStmt(statement) {
+    return `(print ${this.visit(statement.expr)})`;
+  }
+  Program(program) {
+    const decls = program.code.map((decl) => this.visit(decl)).join("\n");
+    return `(program 
+${indent(decls)}
+)`;
+  }
+  ReturnStmt(ret) {
+    return `(return ${this.visit(ret.expr)})`;
+  }
+  TernaryExpr(expr) {
+    const left = this.visit(expr.left);
+    const middle = this.visit(expr.middle);
+    const right = this.visit(expr.right);
+    return `(?: ${left} ${middle} ${right})`;
+  }
+  UnaryExpr(expr) {
+    const operator = expr.operator.text;
+    const operand = this.visit(expr.operand);
+    return `(${operator} ${operand})`;
+  }
+  VariableDecl(declaration) {
+    const decl = `(var ${declaration.ident.text}`;
+    const init = declaration.expr ? ` ${this.visit(declaration.expr)}` : "";
+    return `${decl}${init})`;
+  }
+  VariableExpr(expr) {
+    return `${expr.name.text}`;
+  }
+  WhileStmt(statement) {
+    const cond = this.visit(statement.condition);
+    const body = this.visit(statement.body);
+    return `(while ${cond} 
+${indent(body)}
+)`;
   }
 };
 __name(Printer, "Printer");
@@ -5009,13 +5022,13 @@ function truthy(val) {
   return true;
 }
 __name(truthy, "truthy");
-var Function3 = class {
+var Function2 = class {
   constructor(arity, call) {
     this.arity = arity;
     this.call = call;
   }
 };
-__name(Function3, "Function");
+__name(Function2, "Function");
 var RuntimeError = class extends Error {
 };
 __name(RuntimeError, "RuntimeError");
@@ -5046,148 +5059,35 @@ function isCallable(val) {
 }
 __name(isCallable, "isCallable");
 
+// src/globals.ts
+function registerGlobals(evaluator) {
+  evaluator.globals.init("clock");
+  evaluator.globals.set("clock", {
+    arity: 0,
+    call() {
+      return new Date().toLocaleString();
+    }
+  });
+}
+__name(registerGlobals, "registerGlobals");
+
 // src/evaluator.ts
 var Evaluator = class extends Visitor2 {
   constructor() {
     super();
     this.globals = new Environment();
     this.env = this.globals;
-    this.globals.init("clock");
-    this.globals.set("clock", {
-      arity: 0,
-      call() {
-        return new Date().toLocaleString();
-      }
-    });
+    this.locals = /* @__PURE__ */ new Map();
+    registerGlobals(this);
   }
-  Program(program) {
-    const statements = program.declarations.map((stmt) => this.visit(stmt));
-    const last = statements[statements.length - 1];
-    if (isCallable(last))
-      return `${last}`;
-    return new Literal(last).toString();
+  resolve(expr, depth) {
+    this.locals.set(expr, depth);
   }
-  FunctionDeclaration(decl) {
-    const func = this.Function(decl.fun);
-    this.env.init(decl.ident.text);
-    this.env.set(decl.ident.text, func);
-  }
-  Function(fun) {
-    const closure = new Environment(this.env);
-    return new Function3(fun.params.length, (args) => {
-      const previous = this.env;
-      this.env = new Environment(closure);
-      try {
-        args.map((arg2, i) => {
-          const param = fun.params[i].text;
-          this.env.init(param);
-          this.env.set(param, arg2);
-        });
-        this.visit(fun.block);
-      } catch (e) {
-        if (e instanceof ReturnException) {
-          return e.value;
-        } else
-          throw e;
-      } finally {
-        this.env = previous;
-      }
-    });
-  }
-  PrintStatement(statement) {
-    const val = this.visit(statement.expr);
-    const str = isCallable(val) ? val : new Literal(val).toString();
-    console.log(str + "");
-  }
-  VarDeclaration(declaration) {
-    this.env.init(declaration.ident.text);
-    const val = declaration.expr ? this.visit(declaration.expr) : void 0;
-    this.env.set(declaration.ident.text, val);
-  }
-  ExpressionStatement(statement) {
-    this.visit(statement.expr);
-  }
-  Call(call) {
-    const callee = this.visit(call.callee);
-    if (!isCallable(callee))
-      throw new RuntimeError("uncallable target");
-    if (callee.arity != call.args.length)
-      throw new RuntimeError("wrong number of args");
-    return callee.call(call.args.map((arg2) => this.visit(arg2)));
-  }
-  IfStatement(statement) {
-    const condition = this.visit(statement.condition);
-    if (truthy(condition))
-      this.visit(statement.trueStatement);
-    else if (statement.falseStatement)
-      this.visit(statement.falseStatement);
-  }
-  WhileStatement(statement) {
-    while (truthy(this.visit(statement.condition))) {
-      try {
-        this.visit(statement.body);
-      } catch (e) {
-        if (e instanceof JumpException) {
-          if (e.distance > 1) {
-            e.distance -= 1;
-            throw e;
-          }
-          if (e instanceof ContinueException)
-            continue;
-          if (e instanceof BreakException)
-            break;
-        }
-      }
-    }
-  }
-  ReturnStatement(ret) {
-    const ex = new ReturnException();
-    ex.value = this.visit(ret.expr);
-    throw ex;
-  }
-  JumpStatement(statement) {
-    const jump = statement.destination.name == TOKEN.BREAK ? new BreakException() : new ContinueException();
-    const distance = this.visit(statement.distance || new Literal([1, 0]));
-    if (!isNumber(distance))
-      throw new RuntimeError("expected numerical distance");
-    jump.distance = distance[0];
-    throw jump;
-  }
-  Literal(expr) {
-    return expr.value;
-  }
-  Logical(expr) {
-    const { operator: { name: op } } = expr;
-    const left = this.visit(expr.left);
-    const left_truthy = truthy(left);
-    if (op == TOKEN.OR && left_truthy)
-      return left;
-    if (op == TOKEN.AND && !left_truthy)
-      return left;
-    const right = this.visit(expr.right);
-    if (truthy(right))
-      return right;
-    return truthy(false);
-  }
-  Variable(expr) {
-    return this.env.get(expr.name.text);
-  }
-  Assign(assign) {
+  AssignExpr(assign) {
     this.env.set(assign.name.text, this.visit(assign.expr));
     return this.env.get(assign.name.text);
   }
-  Unary(expr) {
-    const { operator: { name: op } } = expr;
-    const value = this.visit(expr.operand);
-    if (op == TOKEN.BANG)
-      return !truthy(value);
-    if (!isNumber(value))
-      throw new RuntimeError("must negate a number value");
-    if (op == TOKEN.DASH)
-      return [-value[0], value[1]];
-    throw new RuntimeError("Unexpected unary expression");
-  }
-  Binary(expr) {
+  BinaryExpr(expr) {
     const { operator: { name: op } } = expr;
     const left = this.visit(expr.left);
     const right = this.visit(expr.right);
@@ -5195,8 +5095,8 @@ var Evaluator = class extends Visitor2 {
       return right;
     if (op == TOKEN.PLUS) {
       if (isString(left) || isString(right)) {
-        const lStr = isCallable(left) ? left : new Literal(left);
-        const rStr = isCallable(right) ? right : new Literal(right);
+        const lStr = isCallable(left) ? left : new LiteralExpr(left);
+        const rStr = isCallable(right) ? right : new LiteralExpr(right);
         return `${lStr}${rStr}`;
       }
     }
@@ -5220,7 +5120,105 @@ var Evaluator = class extends Visitor2 {
       return left[0] <= right[0];
     throw new RuntimeError("Unexpected binary expression");
   }
-  Ternary(expr) {
+  BlockStmt(block) {
+    const previous = this.env;
+    this.env = new Environment(previous);
+    try {
+      block.statements.map((stmt) => this.visit(stmt));
+    } finally {
+      this.env = previous;
+    }
+  }
+  CallExpr(call) {
+    const callee = this.visit(call.callee);
+    if (!isCallable(callee))
+      throw new RuntimeError("uncallable target");
+    if (callee.arity != call.args.length)
+      throw new RuntimeError("wrong number of args");
+    return callee.call(call.args.map((arg2) => this.visit(arg2)));
+  }
+  ExpressionStmt(statement) {
+    this.visit(statement.expr);
+  }
+  FunctionExpr(fun) {
+    const closure = new Environment(this.env);
+    return new Function2(fun.params.length, (args) => {
+      const previous = this.env;
+      this.env = new Environment(closure);
+      try {
+        args.map((arg2, i) => {
+          const param = fun.params[i].text;
+          this.env.init(param);
+          this.env.set(param, arg2);
+        });
+        this.visit(fun.block);
+      } catch (e) {
+        if (e instanceof ReturnException) {
+          return e.value;
+        } else
+          throw e;
+      } finally {
+        this.env = previous;
+      }
+    });
+  }
+  FunctionDecl(decl) {
+    const func = this.FunctionExpr(decl.fun);
+    this.env.init(decl.ident.text);
+    this.env.set(decl.ident.text, func);
+  }
+  GroupExpr(expr) {
+    return this.visit(expr.inner);
+  }
+  IfStmt(statement) {
+    const condition = this.visit(statement.condition);
+    if (truthy(condition))
+      this.visit(statement.trueStatement);
+    else if (statement.falseStatement)
+      this.visit(statement.falseStatement);
+  }
+  JumpStmt(statement) {
+    const jump = statement.destination.name == TOKEN.BREAK ? new BreakException() : new ContinueException();
+    const distance = this.visit(statement.distance || new LiteralExpr([1, 0]));
+    if (!isNumber(distance))
+      throw new RuntimeError("expected numerical distance");
+    jump.distance = distance[0];
+    throw jump;
+  }
+  LiteralExpr(expr) {
+    return expr.value;
+  }
+  LogicalExpr(expr) {
+    const { operator: { name: op } } = expr;
+    const left = this.visit(expr.left);
+    const left_truthy = truthy(left);
+    if (op == TOKEN.OR && left_truthy)
+      return left;
+    if (op == TOKEN.AND && !left_truthy)
+      return left;
+    const right = this.visit(expr.right);
+    if (truthy(right))
+      return right;
+    return truthy(false);
+  }
+  PrintStmt(statement) {
+    const val = this.visit(statement.expr);
+    const str = isCallable(val) ? val : new LiteralExpr(val).toString();
+    console.log(str + "");
+  }
+  Program(program) {
+    const statements = program.code.map((stmt) => this.visit(stmt));
+    const last = statements[statements.length - 1];
+    if (isCallable(last))
+      return `${last}`;
+    return new LiteralExpr(last).toString();
+  }
+  ReturnStmt(ret) {
+    const ex = new ReturnException();
+    ex.value = this.visit(ret.expr);
+    throw ex;
+  }
+  TernaryExpr(expr) {
     const { op1: { name: op1 }, op2: { name: op2 } } = expr;
     if (op1 == TOKEN.QUESTION && op2 == TOKEN.COLON) {
       const left = this.visit(expr.left);
@@ -5230,16 +5228,41 @@ var Evaluator = class extends Visitor2 {
     }
     throw new RuntimeError("Unexpected ternary expression");
   }
-  Grouping(expr) {
-    return this.visit(expr.inner);
+  UnaryExpr(expr) {
+    const { operator: { name: op } } = expr;
+    const value = this.visit(expr.operand);
+    if (op == TOKEN.BANG)
+      return !truthy(value);
+    if (!isNumber(value))
+      throw new RuntimeError("must negate a number value");
+    if (op == TOKEN.DASH)
+      return [-value[0], value[1]];
+    throw new RuntimeError("Unexpected unary expression");
   }
-  Block(block) {
-    const previous = this.env;
-    this.env = new Environment(previous);
-    try {
-      block.statements.map((stmt) => this.visit(stmt));
-    } finally {
-      this.env = previous;
+  VariableDecl(declaration) {
+    this.env.init(declaration.ident.text);
+    const val = declaration.expr ? this.visit(declaration.expr) : void 0;
+    this.env.set(declaration.ident.text, val);
+  }
+  VariableExpr(expr) {
+    return this.env.get(expr.name.text);
+  }
+  WhileStmt(statement) {
+    while (truthy(this.visit(statement.condition))) {
+      try {
+        this.visit(statement.body);
+      } catch (e) {
+        if (e instanceof JumpException) {
+          if (e.distance > 1) {
+            e.distance -= 1;
+            throw e;
+          }
+          if (e instanceof ContinueException)
+            continue;
+          if (e instanceof BreakException)
+            break;
+        }
+      }
     }
   }
 };

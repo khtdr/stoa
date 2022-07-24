@@ -1,6 +1,6 @@
-import { TokenStreamClassFactory, TokenStream, Token, StdReporter } from "./lib";
+import * as Lib from "./lib";
 
-export const Scanner = TokenStreamClassFactory.buildTokenStreamClass({
+export const Scanner = Lib.TokenStreamClassFactory.buildTokenStreamClass({
     // literals
     FALSE: /false/i,
     NIL: /nil/,
@@ -67,9 +67,10 @@ export const Scanner = TokenStreamClassFactory.buildTokenStreamClass({
 });
 
 export const TOKEN = Scanner.TOKENS;
+export type Token<T extends keyof typeof TOKEN> = Lib.Token<T>
 
-function stringScanner(value: string, reporter = new StdReporter()) {
-    const tokenizer = new TokenStream(value, {
+function stringScanner(value: string, reporter = new Lib.StdReporter()) {
+    const tokenizer = new Lib.TokenStream(value, {
         SINGLE: "'",
         DOUBLE: '"',
         ESCAPED_CHAR: /\\./,
@@ -78,7 +79,7 @@ function stringScanner(value: string, reporter = new StdReporter()) {
     const opener = tokenizer.take();
     if (opener && ["SINGLE", "DOUBLE"].includes(opener.name)) {
         let { text } = opener,
-            closer: Token | undefined;
+            closer: Lib.Token | undefined;
         while ((closer = tokenizer.take())) {
             text += closer.text;
             if (closer.name == opener.name) return text;
@@ -88,8 +89,8 @@ function stringScanner(value: string, reporter = new StdReporter()) {
     }
 }
 
-function cStyleCommentScanner(value: string, reporter = new StdReporter()) {
-    const tokenizer = new TokenStream(value, {
+function cStyleCommentScanner(value: string, reporter = new Lib.StdReporter()) {
+    const tokenizer = new Lib.TokenStream(value, {
         OPEN: "/*",
         CLOSE: "*/",
         ESCAPED_CHAR: /\\./,
@@ -98,7 +99,7 @@ function cStyleCommentScanner(value: string, reporter = new StdReporter()) {
     const opener = tokenizer.take();
     if (opener && opener.name == "OPEN") {
         let stack = 0,
-            closer: Token | undefined,
+            closer: Lib.Token | undefined,
             text = opener.text;
         while ((closer = tokenizer.take())) {
             text += closer.text;

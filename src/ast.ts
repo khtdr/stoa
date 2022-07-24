@@ -1,172 +1,27 @@
-import * as Lib from './lib'
+// Any node that can be visited by a parser, printer, resolver, etc.
+export interface Visitable { }
 
-export abstract class Visitor<Result> extends Lib.Visitor<AstNode, Result> {
-    abstract Assign(assign: Assign): Result
-    abstract Binary(expr: Binary): Result
-    abstract Block(block: Block): Result | void
-    abstract Call(call: Call): Result
-    abstract ExpressionStatement(statement: ExpressionStatement): Result | void
-    abstract Function(fun: Function): Result
-    abstract FunctionDeclaration(decl: FunctionDeclaration): Result | void
-    abstract Grouping(expr: Grouping): Result
-    abstract IfStatement(statement: IfStatement): Result | void
-    abstract JumpStatement(statement: JumpStatement): Result | void
-    abstract Literal(expr: Literal): Result
-    abstract Logical(expr: Logical): Result
-    abstract PrintStatement(statement: PrintStatement): Result | void
-    abstract Program(program: Program): Result | void
-    abstract ReturnStatement(ret: ReturnStatement): Result | void
-    abstract Ternary(expr: Ternary): Result
-    abstract Unary(expr: Unary): Result
-    abstract VarDeclaration(declaration: VarDeclaration): Result | void
-    abstract Variable(expr: Variable): Result
-    abstract WhileStatement(statement: WhileStatement): Result | void
-}
+// Nodes that setup side effects
+export interface Declarable extends Visitable { }
 
+// Nodes that runtime side effects
+export interface Statement extends Visitable { }
 
-export type Scalar = string | [number, number] | boolean | undefined
-export interface AstNode { }
-export interface Declaration extends AstNode { }
-export interface Statement extends Declaration { }
-export interface Expression extends AstNode { }
+// Nodes that can be expressed as a value
+export interface Expression extends Visitable { }
 
-export class Program implements AstNode {
+// usually identifiers and references for static analysis
+export { TOKEN } from './scanner'
+export type { Token } from './scanner'
+
+// organized implementations
+export * from './ast/declarations'
+export * from './ast/expressions'
+export * from './ast/statements'
+export * from './ast/visitor'
+
+export class Program implements Visitable {
     constructor(
-        readonly declarations: Declaration[]
-    ) { }
-}
-
-export class VarDeclaration implements Declaration {
-    constructor(
-        readonly ident: Lib.Token<"IDENTIFIER">,
-        readonly expr: Expression | undefined
-    ) { }
-}
-
-export class FunctionDeclaration implements Declaration {
-    constructor(
-        readonly ident: Lib.Token<"IDENTIFIER">,
-        readonly fun: Function,
-    ) { }
-}
-
-export class Function implements Expression {
-    constructor(
-        readonly params: Lib.Token<"IDENTIFIER">[],
-        readonly block: Block
-    ) { }
-}
-
-export class IfStatement implements Statement {
-    constructor(
-        readonly condition: Expression,
-        readonly trueStatement: Statement,
-        readonly falseStatement?: Statement
-    ) { }
-}
-
-export class ReturnStatement implements Statement {
-    constructor(
-        readonly expr: Expression
-    ) { }
-}
-
-export class JumpStatement implements Statement {
-    constructor(
-        readonly destination: Lib.Token<'BREAK' | 'CONTINUE'>,
-        readonly distance: Expression
-    ) { }
-}
-
-export class WhileStatement implements Statement {
-    constructor(
-        readonly condition: Expression,
-        readonly body: Statement
-    ) { }
-}
-
-export class ExpressionStatement implements Statement {
-    constructor(
-        readonly expr: Expression
-    ) { }
-}
-
-export class PrintStatement implements Statement {
-    constructor(
-        readonly expr: Expression
-    ) { }
-}
-
-export class Block implements Statement {
-    constructor(
-        readonly statements: Statement[]
-    ) { }
-}
-
-export class Literal implements Expression {
-    constructor(
-        readonly value: Scalar
-    ) { }
-    toString() {
-        if (this.value === true || this.value === false) return `${this.value}`
-        if (this.value === undefined) return 'nil'
-        if (typeof this.value == 'string') return this.value
-        const [val, prec] = this.value
-        return `${val.toFixed(prec)}`
-    }
-}
-
-
-export class Variable implements Expression {
-    constructor(
-        readonly name: Lib.Token<"IDENTIFIER">
-    ) { }
-}
-
-export class Unary implements Expression {
-    constructor(
-        readonly operator: Lib.Token<any>,
-        readonly operand: Expression
-    ) { }
-}
-
-export class Call implements Expression {
-    constructor(
-        readonly callee: Expression,
-        readonly args: Expression[],
-        readonly end: Lib.Token<any>,
-    ) { }
-}
-
-export class Binary implements Expression {
-    constructor(
-        readonly left: Expression,
-        readonly operator: Lib.Token<any>,
-        readonly right: Expression
-    ) { }
-}
-
-
-export class Assign implements Expression {
-    constructor(
-        readonly name: Lib.Token<'IDENTIFIER'>,
-        readonly expr: Expression
-    ) { }
-}
-export class Logical extends Binary { }
-
-export class Ternary implements Expression {
-    constructor(
-        readonly left: Expression,
-        readonly op1: Lib.Token<any>,
-        readonly middle: Expression,
-        readonly op2: Lib.Token<any>,
-        readonly right: Expression
-    ) { }
-}
-
-export class Grouping implements Expression {
-    constructor(
-        readonly inner: Expression
+        readonly code: Visitable[]
     ) { }
 }

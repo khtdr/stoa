@@ -2,8 +2,8 @@ import * as Lib from "./lib";
 import * as Ast from "./ast";
 import { TOKEN } from "./scanner";
 
-export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
-    private _parsed?: Ast.AstNode;
+export class Parser extends Lib.Parser<typeof TOKEN, Ast.Visitable> {
+    private _parsed?: Ast.Visitable;
     parse() {
         if (!this._parsed) this._parsed = this.Program();
         return this._parsed;
@@ -32,23 +32,23 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
     }
 
     // fun_declaration -> "fun" IDENTIFIER function ";"
-    FunDeclaration(): Ast.FunctionDeclaration | void {
+    FunDeclaration(): Ast.FunctionDecl | void {
         if (this.peek(1)?.name == TOKEN.FUN && this.peek(2)?.name == TOKEN.IDENTIFIER) {
             this.match(TOKEN.FUN)
             const ident = this.consume("IDENTIFIER", "Expected identifier")
             const fun = this.Function()
-            return new Ast.FunctionDeclaration(ident, fun)
+            return new Ast.FunctionDecl(ident, fun)
         }
     }
 
     // function -> "(" parameters? ")" block
-    Function(): Ast.Function {
+    Function(): Ast.FunctionExpr {
         this.consume(TOKEN.LEFT_PAREN, "Expected (")
         const parameters = this.Parameters()
         this.consume(TOKEN.RIGHT_PAREN, "Expected )")
         const block = this.Block()
         if (!block) throw this.error(this.peek()!, "Expected {")
-        return new Ast.Function(parameters, block)
+        return new Ast.FunctionExpr(parameters, block)
     }
 
     // parameters -> IDENTIFER ("," IDENTIFIER)*
@@ -65,7 +65,7 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
     }
 
     // var_declaration -> "var" IDENTIFIER ("=" expression)? ";"
-    VarDeclaration(): Ast.VarDeclaration | void {
+    VarDeclaration(): Ast.VariableDecl | void {
         if (this.match(TOKEN.VAR)) {
             const ident = this.consume("IDENTIFIER", "Expected identifier")
             let expr: Ast.Expression | undefined
@@ -73,7 +73,7 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
                 expr = this.Expression()
             }
             this.consume(TOKEN.SEMICOLON, "Expected ;")
-            return new Ast.VarDeclaration(ident, expr)
+            return new Ast.VariableDecl(ident, expr)
         }
     }
 
@@ -90,45 +90,45 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
             this.ExpressionStatement()
     }
 
-    ReturnStatement(): Ast.ReturnStatement | void {
+    ReturnStatement(): Ast.ReturnStmt | void {
         if (this.match(TOKEN.RETURN)) {
-            let expr: Ast.Expression = new Ast.Literal(undefined)
+            let expr: Ast.Expression = new Ast.LiteralExpr(undefined)
             if (!this.match(TOKEN.SEMICOLON)) {
                 expr = this.Expression()
                 this.consume(TOKEN.SEMICOLON, "Expected ;");
             }
-            return new Ast.ReturnStatement(expr)
+            return new Ast.ReturnStmt(expr)
         }
     }
 
     // block -> "{" declaration* "}"
-    Block(): Ast.Block | void {
+    Block(): Ast.BlockStmt | void {
         if (this.match(TOKEN.LEFT_CURL)) {
-            const declarations: Ast.Declaration[] = []
+            const declarations: Ast.Declarable[] = []
             while (!this.atEnd() && this.peek()?.name != TOKEN.RIGHT_CURL) {
                 const decl = this.Declaration()
                 if (decl) declarations.push(decl)
             }
-            const block = new Ast.Block(declarations)
+            const block = new Ast.BlockStmt(declarations)
             this.consume(TOKEN.RIGHT_CURL, 'Expected }')
             return block
         }
     }
 
     // jump_statement -> ("break" | "continue") expression? ";"
-    JumpStatement(): Ast.JumpStatement | void {
+    JumpStatement(): Ast.JumpStmt | void {
         if (this.match(TOKEN.BREAK, TOKEN.CONTINUE)) {
             const jump = this.previous<"CONTINUE" | "BREAK">()
-            let expr: Ast.Expression = new Ast.Literal([1, 0])
+            let expr: Ast.Expression = new Ast.LiteralExpr([1, 0])
             if (this.peek()?.name != TOKEN.SEMICOLON)
                 expr = this.Expression()
             this.consume(TOKEN.SEMICOLON, "Expected ;")
-            return new Ast.JumpStatement(jump, expr);
+            return new Ast.JumpStmt(jump, expr);
         }
     }
 
     // if_statement -> "if" "(" expression ")" statement ("else" statement)?
-    IfStatement(): Ast.IfStatement | void {
+    IfStatement(): Ast.IfStmt | void {
         if (this.match(TOKEN.IF)) {
             this.consume(TOKEN.LEFT_PAREN, "Expected (")
             const cond = this.Expression()
@@ -136,47 +136,47 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
             const trueStatement = this.Statement()
             if (this.match(TOKEN.ELSE)) {
                 const falseStatement = this.Statement()
-                return new Ast.IfStatement(cond, trueStatement, falseStatement)
+                return new Ast.IfStmt(cond, trueStatement, falseStatement)
             } else {
-                return new Ast.IfStatement(cond, trueStatement)
+                return new Ast.IfStmt(cond, trueStatement)
             }
         }
     }
 
     // while_statement -> "while" "(" expression ")" statement
-    WhileStatement(): Ast.WhileStatement | void {
+    WhileStatement(): Ast.WhileStmt | void {
         if (this.match(TOKEN.WHILE)) {
             this.consume(TOKEN.LEFT_PAREN, "Expected (")
             const cond = this.Expression()
             this.consume(TOKEN.RIGHT_PAREN, "Expected )")
             const body = this.Statement()
-            return new Ast.WhileStatement(cond, body)
+            return new Ast.WhileStmt(cond, body)
         }
     }
 
     // for_statement -> "for" "(" var_decl | exprStmt | ";" expression? ";" expression? ")" statement
-    ForStatement(): Ast.Block | void {
+    ForStatement(): Ast.BlockStmt | void {
         if (this.match(TOKEN.FOR)) {
             this.consume(TOKEN.LEFT_PAREN, "Expected (")
             const init = this.VarDeclaration() ||
                 this.ExpressionStatement() ||
-                (this.consume(TOKEN.SEMICOLON, "Expected ;") && new Ast.Literal(true))
-            let cond: Ast.Expression = new Ast.Literal(true)
+                (this.consume(TOKEN.SEMICOLON, "Expected ;") && new Ast.LiteralExpr(true))
+            let cond: Ast.Expression = new Ast.LiteralExpr(true)
             if (this.peek()?.name != TOKEN.SEMICOLON)
                 cond = this.Expression()
             this.consume(TOKEN.SEMICOLON, "Expected ;")
-            let incr: Ast.Expression = new Ast.Literal(true)
+            let incr: Ast.Expression = new Ast.LiteralExpr(true)
             if (this.peek()?.name != TOKEN.RIGHT_PAREN)
                 incr = this.Expression()
             this.consume(TOKEN.RIGHT_PAREN, "Expected )")
             const body_statement = this.Statement()
-            return new Ast.Block([
+            return new Ast.BlockStmt([
                 init,
-                new Ast.WhileStatement(
+                new Ast.WhileStmt(
                     cond,
-                    new Ast.Block([
+                    new Ast.BlockStmt([
                         body_statement,
-                        new Ast.ExpressionStatement(incr)
+                        new Ast.ExpressionStmt(incr)
                     ])
                 )
             ])
@@ -184,19 +184,19 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
     }
 
     // print_statement -> "print" expression ";"
-    PrintStatement(): Ast.PrintStatement | void {
+    PrintStatement(): Ast.PrintStmt | void {
         if (this.match(TOKEN.PRINT)) {
             const expr = this.Expression();
             this.consume(TOKEN.SEMICOLON, "Expected ;")
-            return new Ast.PrintStatement(expr);
+            return new Ast.PrintStmt(expr);
         }
     }
 
     // expression_statement -> expression ";"
-    ExpressionStatement(): Ast.ExpressionStatement {
+    ExpressionStatement(): Ast.ExpressionStmt {
         const expr = this.Expression();
         this.consume(TOKEN.SEMICOLON, "Expected ;")
-        return new Ast.ExpressionStatement(expr);
+        return new Ast.ExpressionStmt(expr);
     }
 
     // expression -> comma
@@ -205,24 +205,24 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
     }
 
     // comma -> assignment ("," assignment)*
-    Comma(): ReturnType<typeof this.Assignment> | Ast.Binary {
+    Comma(): ReturnType<typeof this.Assignment> | Ast.BinaryExpr {
         let expr = this.Assignment();
         while (this.match(TOKEN.COMMA)) {
             const comma = this.previous();
             const right = this.Assignment();
-            expr = new Ast.Binary(expr, comma, right);
+            expr = new Ast.BinaryExpr(expr, comma, right);
         }
         return expr;
     }
 
     // assignment -> IDENTIFIER "=" assignment | logic_or
-    Assignment(): ReturnType<typeof this.LogicOr> | Ast.Assign {
+    Assignment(): ReturnType<typeof this.LogicOr> | Ast.AssignExpr {
         const expr = this.LogicOr()
         if (this.match(TOKEN.EQUAL)) {
             const eq = this.previous()
             const value = this.Assignment()
-            if (expr instanceof Ast.Variable) {
-                return new Ast.Assign(expr.name, value)
+            if (expr instanceof Ast.VariableExpr) {
+                return new Ast.AssignExpr(expr.name, value)
             }
             this.error(eq, "Invalid assignment target")
         }
@@ -230,54 +230,54 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
     }
 
     // logic_or -> logic_and ("or" logic_and)*
-    LogicOr(): ReturnType<typeof this.LogicAnd> | Ast.Logical {
+    LogicOr(): ReturnType<typeof this.LogicAnd> | Ast.LogicalExpr {
         let expr = this.LogicAnd();
         while (this.match(TOKEN.OR)) {
             const or = this.previous();
             const right = this.LogicAnd();
-            expr = new Ast.Logical(expr, or, right);
+            expr = new Ast.LogicalExpr(expr, or, right);
         }
         return expr;
     }
 
     // logic_and -> conditional ("and" conditional)*
-    LogicAnd(): ReturnType<typeof this.Conditional> | Ast.Logical {
+    LogicAnd(): ReturnType<typeof this.Conditional> | Ast.LogicalExpr {
         let expr = this.Conditional();
         while (this.match(TOKEN.AND)) {
             const and = this.previous();
             const right = this.Conditional();
-            expr = new Ast.Logical(expr, and, right);
+            expr = new Ast.LogicalExpr(expr, and, right);
         }
         return expr;
     }
 
     // conditional -> equality ("?" equality ":" equality)*
-    Conditional(): ReturnType<typeof this.Equality> | Ast.Ternary {
-        let expr: ReturnType<typeof this.Equality> | Ast.Ternary = this.Equality();
+    Conditional(): ReturnType<typeof this.Equality> | Ast.TernaryExpr {
+        let expr: ReturnType<typeof this.Equality> | Ast.TernaryExpr = this.Equality();
         while (this.match(TOKEN.QUESTION)) {
             const question = this.previous();
             const middle = this.Equality();
             this.consume(TOKEN.COLON, "Expected :");
             const colon = this.previous();
             const right = this.Equality();
-            expr = new Ast.Ternary(expr, question, middle, colon, right);
+            expr = new Ast.TernaryExpr(expr, question, middle, colon, right);
         }
         return expr;
     }
 
     // equality -> comparison (("!=" | "==") comparison)*
-    Equality(): ReturnType<typeof this.Comparison> | Ast.Binary {
+    Equality(): ReturnType<typeof this.Comparison> | Ast.BinaryExpr {
         let expr = this.Comparison();
         while (this.match(TOKEN.BANG_EQUAL, TOKEN.EQUAL_EQUAL)) {
             const operator = this.previous();
             const right = this.Comparison();
-            expr = new Ast.Binary(expr, operator, right);
+            expr = new Ast.BinaryExpr(expr, operator, right);
         }
         return expr;
     }
 
     // comparison -> term ((">"|"<"|"<="|">=") term)*
-    Comparison(): ReturnType<typeof this.Term> | Ast.Binary {
+    Comparison(): ReturnType<typeof this.Term> | Ast.BinaryExpr {
         let expr = this.Term();
         while (
             this.match(
@@ -289,29 +289,29 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
         ) {
             const operator = this.previous();
             const right = this.Term();
-            expr = new Ast.Binary(expr, operator, right);
+            expr = new Ast.BinaryExpr(expr, operator, right);
         }
         return expr;
     }
 
     // term -> factor (("+"|"-") factor)*
-    Term(): ReturnType<typeof this.Factor> | Ast.Binary {
+    Term(): ReturnType<typeof this.Factor> | Ast.BinaryExpr {
         let expr = this.Factor();
         while (this.match(TOKEN.PLUS, TOKEN.DASH)) {
             const operator = this.previous();
             const right = this.Factor();
-            expr = new Ast.Binary(expr, operator, right);
+            expr = new Ast.BinaryExpr(expr, operator, right);
         }
         return expr;
     }
 
     // factor -> unary (("*"|"/") unary)*
-    Factor(): ReturnType<typeof this.Unary> | Ast.Binary {
-        let expr: ReturnType<typeof this.Unary> | Ast.Binary = this.Unary();
+    Factor(): ReturnType<typeof this.Unary> | Ast.BinaryExpr {
+        let expr: ReturnType<typeof this.Unary> | Ast.BinaryExpr = this.Unary();
         while (this.match(TOKEN.STAR, TOKEN.SLASH)) {
             const operator = this.previous();
             const right = this.Unary();
-            expr = new Ast.Binary(expr, operator, right);
+            expr = new Ast.BinaryExpr(expr, operator, right);
         }
         return expr;
     }
@@ -336,18 +336,18 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
     }
 
     // _valid_unary -> ("!" | "-") unary | call
-    private _ValidUnary(): Ast.Unary | ReturnType<typeof this.Call> {
+    private _ValidUnary(): Ast.UnaryExpr | ReturnType<typeof this.Call> {
         if (this.match(TOKEN.BANG, TOKEN.DASH)) {
             const operator = this.previous();
             const right = this.Unary();
-            return new Ast.Unary(operator, right);
+            return new Ast.UnaryExpr(operator, right);
         }
         return this.Call();
     }
 
     // call -> primary ("(" (expression ("," expression)*)? ")")*
-    Call(): ReturnType<typeof this.Primary> | Ast.Call {
-        let expr: Ast.Call | ReturnType<typeof this.Primary> = this.Primary();
+    Call(): ReturnType<typeof this.Primary> | Ast.CallExpr {
+        let expr: Ast.CallExpr | ReturnType<typeof this.Primary> = this.Primary();
         if (!this.check(TOKEN.LEFT_PAREN)) return expr
 
         while (true) {
@@ -360,18 +360,18 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
                 } while (this.match(TOKEN.COMMA))
             }
             const paren = this.consume(TOKEN.RIGHT_PAREN, "Expected ) after arguments")
-            expr = new Ast.Call(expr, args, paren)
+            expr = new Ast.CallExpr(expr, args, paren)
         }
         return expr
     }
 
     // primary    -> IDENTIFIER | NUMBER | STRING | TRUE | FALSE | NIL | "(" expression ")" | "fun" function
-    Primary(): Ast.Literal | Ast.Variable | Ast.Grouping | Ast.Function {
+    Primary(): Ast.LiteralExpr | Ast.VariableExpr | Ast.GroupExpr | Ast.FunctionExpr {
         if (this.match(TOKEN.NUMBER)) {
             const numStr = this.previous<'NUMBER'>().text
             const value = parseFloat(numStr)
             const precision = `${numStr}.`.split('.')[1].length
-            return new Ast.Literal([value, precision])
+            return new Ast.LiteralExpr([value, precision])
         }
         if (this.match(TOKEN.STRING)) {
             const str = this.previous<'STRING'>().text
@@ -380,24 +380,24 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
                 value = str.replace(/^.(.*).$/, "$1")
             else
                 value = str.replace(/^.(.*)$/, "$1")
-            return new Ast.Literal(value);
+            return new Ast.LiteralExpr(value);
         }
         if (this.match(TOKEN.TRUE)) {
-            return new Ast.Literal(true);
+            return new Ast.LiteralExpr(true);
         }
         if (this.match(TOKEN.FALSE)) {
-            return new Ast.Literal(false);
+            return new Ast.LiteralExpr(false);
         }
         if (this.match(TOKEN.NIL)) {
-            return new Ast.Literal(undefined);
+            return new Ast.LiteralExpr(undefined);
         }
         if (this.match(TOKEN.IDENTIFIER)) {
-            return new Ast.Variable(this.previous());
+            return new Ast.VariableExpr(this.previous());
         }
         if (this.match(TOKEN.LEFT_PAREN)) {
             const expr = this.Expression();
             this.consume(TOKEN.RIGHT_PAREN, 'Expected ")" after expression');
-            return new Ast.Grouping(expr);
+            return new Ast.GroupExpr(expr);
         }
         if (this.match(TOKEN.FUN)) {
             return this.Function()

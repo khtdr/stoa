@@ -46,7 +46,7 @@ export class Function implements Callable {
     ) { }
 }
 
-export type Result = Ast.Scalar | Callable
+export type Result = Ast.LiteralExpr['value'] | Callable
 export class RuntimeError extends Error { }
 export class ReturnException extends Error { value: Result = undefined }
 export class JumpException extends Error { distance = 1 }
