@@ -31,7 +31,7 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
         }
     }
 
-    // fun_declaration -> "fun" IDENTIFIER function
+    // fun_declaration -> "fun" IDENTIFIER function ";"
     FunDeclaration(): Ast.FunctionDeclaration | void {
         if (this.peek(1)?.name == TOKEN.FUN && this.peek(2)?.name == TOKEN.IDENTIFIER) {
             this.match(TOKEN.FUN)
@@ -64,7 +64,7 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.AstNode> {
         return params
     }
 
-    // var_declaration -> "var" IDENTIFIER ("=" expression ";")
+    // var_declaration -> "var" IDENTIFIER ("=" expression)? ";"
     VarDeclaration(): Ast.VarDeclaration | void {
         if (this.match(TOKEN.VAR)) {
             const ident = this.consume("IDENTIFIER", "Expected identifier")
