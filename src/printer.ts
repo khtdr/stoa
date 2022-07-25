@@ -29,8 +29,8 @@ export class Printer extends Ast.Visitor<string> {
         return `(let [${params}] ${body})`
     }
     FunctionDecl(decl: Ast.FunctionDecl): string {
-        const name = decl.ident.text
-        const val = this.visit(decl.fun)
+        const name = decl.name.text
+        const val = this.visit(decl.func)
         return `(fun ${name} ${val})`
     }
     GroupExpr(expr: Ast.GroupExpr): string {
@@ -45,7 +45,7 @@ export class Printer extends Ast.Visitor<string> {
         return `(if ${cond} \n${indent(stmtTrue)} \n${indent(stmtFalse)})`
     }
     JumpStmt(statement: Ast.JumpStmt): string {
-        const dest = statement.destination.name
+        const dest = statement.keyword.name
         const dist = this.visit(statement.distance || new Ast.LiteralExpr([1, 0]))
         return `(${dest} ${dist})`
     }
@@ -77,7 +77,7 @@ export class Printer extends Ast.Visitor<string> {
         return `(${operator} ${operand})`
     }
     VariableDecl(declaration: Ast.VariableDecl): string {
-        const decl = `(var ${declaration.ident.text}`
+        const decl = `(var ${declaration.name.text}`
         const init = declaration.expr ? ` ${this.visit(declaration.expr)}` : ''
         return `${decl}${init})`
     }

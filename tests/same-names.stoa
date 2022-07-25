@@ -1,0 +1,10 @@
+#!/usr/bin/env stoa
+
+var a = "a";
+var a = "A";
+
+{
+  var a = "Eh.";
+  var b = "Be";
+  var b = "bee";
+}

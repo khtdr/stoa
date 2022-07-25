@@ -1,8 +1,8 @@
 import { Token } from './ast'
 
 export class Reporter {
-    private _errors: [Token<any>, string][] = []
-    error(token: Token<any>, message: string) {
+    private _errors: [Token, string][] = []
+    error(token: Token, message: string) {
         this._errors.push([token, message])
     }
     get errors(): false | typeof this._errors {

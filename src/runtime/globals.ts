@@ -1,9 +1,8 @@
 import { Interpreter } from "./interpreter"
-import { Token } from "./ast"
 
 export function registerGlobals(evaluator: Interpreter) {
-    evaluator.globals.init({ text: "clock" } as Token<'IDENTIFIER'>)
-    evaluator.globals.set({ text: 'clock' } as Token<'IDENTIFIER'>, {
+    evaluator.globals.init("clock")
+    evaluator.globals.set("clock", {
         arity: 0, call() { return new Date().toLocaleString() }
     })
 }

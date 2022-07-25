@@ -66,7 +66,7 @@ export class Scanner extends Lib.TokenStream<typeof Scanner.lexicon> {
     }
 }
 
-export type TokenName = keyof typeof Scanner.lexicon
+type TokenName = keyof typeof Scanner.lexicon
 
 
 export const TOKEN = (Object.keys(Scanner.lexicon) as TokenName[])

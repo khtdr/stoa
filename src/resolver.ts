@@ -3,11 +3,14 @@ import * as Ast from './ast'
 import { Interpreter } from './interpreter'
 import { Reporter } from './errors'
 
+enum FunctionType { NONE, FUNCTION }
+
 export class Resolver extends Ast.Visitor<void> {
     constructor(
         readonly evaluator: Interpreter,
         readonly reporter: Reporter
     ) { super() }
+    currentFunction = FunctionType.NONE
     scopes: Record<string, boolean>[] = []
     beginScope() {
         this.scopes.unshift({})
@@ -34,7 +37,9 @@ export class Resolver extends Ast.Visitor<void> {
             return false
         })
     }
-    resolveFunction(fun: Ast.FunctionExpr) {
+    resolveFunction(fun: Ast.FunctionExpr, ft: FunctionType) {
+        const encFunction = this.currentFunction
+        this.currentFunction = ft
         this.beginScope()
         for (const param of fun.params) {
             this.declare(param)
@@ -42,6 +47,7 @@ export class Resolver extends Ast.Visitor<void> {
         }
         this.visit(fun.block)
         this.endScope()
+        this.currentFunction = encFunction
     }
 
     AssignExpr(expr: Ast.AssignExpr) {
@@ -64,12 +70,12 @@ export class Resolver extends Ast.Visitor<void> {
         this.visit(stmt.expr)
     }
     FunctionExpr(expr: Ast.FunctionExpr) {
-        this.resolveFunction(expr)
+        this.resolveFunction(expr, FunctionType.FUNCTION)
     }
     FunctionDecl(decl: Ast.FunctionDecl) {
-        this.declare(decl.ident)
-        this.define(decl.ident)
-        this.resolveFunction(decl.fun)
+        this.declare(decl.name)
+        this.define(decl.name)
+        this.resolveFunction(decl.func, FunctionType.FUNCTION)
     }
     GroupExpr(expr: Ast.GroupExpr) {
         this.visit(expr.inner)
@@ -95,6 +101,8 @@ export class Resolver extends Ast.Visitor<void> {
         for (const decl of program.code) this.visit(decl)
     }
     ReturnStmt(stmt: Ast.ReturnStmt) {
+        if (this.currentFunction == FunctionType.NONE)
+            this.reporter.error(stmt.keyword, 'No return from top-level allowed')
         this.visit(stmt.expr)
     }
     TernaryExpr(expr: Ast.TernaryExpr) {
@@ -106,11 +114,11 @@ export class Resolver extends Ast.Visitor<void> {
         this.visit(expr.operand)
     }
     VariableDecl(decl: Ast.VariableDecl) {
-        this.declare(decl.ident)
+        this.declare(decl.name)
         if (decl.expr) {
             this.visit(decl.expr)
         }
-        this.define(decl.ident)
+        this.define(decl.name)
     }
     VariableExpr(expr: Ast.VariableExpr) {
         const scope = this.scopes[0]

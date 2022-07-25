@@ -92,12 +92,13 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.Visitable> {
 
     ReturnStatement(): Ast.ReturnStmt | void {
         if (this.match(TOKEN.RETURN)) {
+            const keyword = this.previous<'RETURN'>()
             let expr: Ast.Expression = new Ast.LiteralExpr(undefined)
             if (!this.match(TOKEN.SEMICOLON)) {
                 expr = this.Expression()
                 this.consume(TOKEN.SEMICOLON, "Expected ;");
             }
-            return new Ast.ReturnStmt(expr)
+            return new Ast.ReturnStmt(expr, keyword)
         }
     }
 

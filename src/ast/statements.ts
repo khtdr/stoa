@@ -22,8 +22,8 @@ export class IfStmt implements Ast.Statement {
 
 export class JumpStmt implements Ast.Statement {
     constructor(
-        readonly destination: Ast.Token<'BREAK' | 'CONTINUE'>,
-        readonly distance: Ast.Expression
+        readonly keyword: Ast.Token<'BREAK' | 'CONTINUE'>,
+        readonly distance: Ast.Expression,
     ) { }
 }
 
@@ -35,7 +35,8 @@ export class PrintStmt implements Ast.Statement {
 
 export class ReturnStmt implements Ast.Statement {
     constructor(
-        readonly expr: Ast.Expression
+        readonly expr: Ast.Expression,
+        readonly keyword: Ast.Token<'RETURN'>
     ) { }
 }
 

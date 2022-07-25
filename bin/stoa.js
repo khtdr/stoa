@@ -4212,16 +4212,16 @@ var TOKEN = Object.keys(Scanner.lexicon).reduce((a, c) => (a[c] = c, a), {});
 
 // src/ast/declarations.ts
 var VariableDecl = class {
-  constructor(ident, expr) {
-    this.ident = ident;
+  constructor(name, expr) {
+    this.name = name;
     this.expr = expr;
   }
 };
 __name(VariableDecl, "VariableDecl");
 var FunctionDecl = class {
-  constructor(ident, fun) {
-    this.ident = ident;
-    this.fun = fun;
+  constructor(name, func) {
+    this.name = name;
+    this.func = func;
   }
 };
 __name(FunctionDecl, "FunctionDecl");
@@ -4333,8 +4333,8 @@ var IfStmt = class {
 };
 __name(IfStmt, "IfStmt");
 var JumpStmt = class {
-  constructor(destination, distance) {
-    this.destination = destination;
+  constructor(keyword, distance) {
+    this.keyword = keyword;
     this.distance = distance;
   }
 };
@@ -4346,8 +4346,9 @@ var PrintStmt = class {
 };
 __name(PrintStmt, "PrintStmt");
 var ReturnStmt = class {
-  constructor(expr) {
+  constructor(expr, keyword) {
     this.expr = expr;
+    this.keyword = keyword;
   }
 };
 __name(ReturnStmt, "ReturnStmt");
@@ -4446,12 +4447,13 @@ var Parser2 = class extends Parser {
   }
   ReturnStatement() {
     if (this.match(TOKEN.RETURN)) {
+      const keyword = this.previous();
       let expr = new LiteralExpr(void 0);
       if (!this.match(TOKEN.SEMICOLON)) {
         expr = this.Expression();
         this.consume(TOKEN.SEMICOLON, "Expected ;");
       }
-      return new ReturnStmt(expr);
+      return new ReturnStmt(expr, keyword);
     }
   }
   Block() {
@@ -4729,7 +4731,7 @@ var Parser2 = class extends Parser {
 };
 __name(Parser2, "Parser");
 
-// src/runtime.ts
+// src/runtime/environment.ts
 var Environment = class {
   constructor(enclosure) {
     this.enclosure = enclosure;
@@ -4737,37 +4739,51 @@ var Environment = class {
   }
   has(name) {
     var _a;
-    return this.table.has(name) || !!((_a = this.enclosure) == null ? void 0 : _a.has(name));
+    return this.table.has(name.text) || !!((_a = this.enclosure) == null ? void 0 : _a.has(name));
   }
   init(name) {
-    if (!this.table.has(name))
-      this.table.set(name, void 0);
+    if (!this.table.has(name.text))
+      this.table.set(name.text, void 0);
     else
-      throw new RuntimeError(`Variable already defined: ${name}`);
+      throw new RuntimeError(name, `Variable already defined: ${name.text}`);
   }
   set(name, value, distance = 0) {
     var _a;
     if (distance > 0 && this.enclosure)
       return this.enclosure.set(name, value, distance - 1);
-    if (this.table.has(name))
-      this.table.set(name, value);
+    if (this.table.has(name.text))
+      this.table.set(name.text, value);
     else if ((_a = this.enclosure) == null ? void 0 : _a.has(name))
       this.enclosure.set(name, value);
     else
-      throw new RuntimeError(`No such variable: ${name}`);
+      throw new RuntimeError(name, `No such variable: ${name.text}`);
   }
   get(name, distance = 0) {
     var _a;
     if (distance > 0 && this.enclosure)
       return this.enclosure.get(name, distance - 1);
-    if (this.table.has(name))
-      return this.table.get(name);
+    if (this.table.has(name.text))
+      return this.table.get(name.text);
     if ((_a = this.enclosure) == null ? void 0 : _a.has(name))
       return this.enclosure.get(name);
-    throw new RuntimeError(`Undefined variable: ${name}`);
+    throw new RuntimeError(name, `Undefined variable: ${name.text}`);
   }
 };
 __name(Environment, "Environment");
+
+// src/runtime/globals.ts
+function registerGlobals(evaluator) {
+  evaluator.globals.init("clock");
+  evaluator.globals.set("clock", {
+    arity: 0,
+    call() {
+      return new Date().toLocaleString();
+    }
+  });
+}
+__name(registerGlobals, "registerGlobals");
+
+// src/runtime/values.ts
 function isNumber(val) {
   return Array.isArray(val) && val.length == 2;
 }
@@ -4784,6 +4800,8 @@ function truthy(val) {
   return true;
 }
 __name(truthy, "truthy");
+
+// src/runtime.ts
 var Function2 = class {
   constructor(arity, call) {
     this.arity = arity;
@@ -4792,19 +4810,21 @@ var Function2 = class {
 };
 __name(Function2, "Function");
 var RuntimeError = class extends Error {
+  constructor(token, message) {
+    super(message);
+    this.token = token;
+  }
 };
 __name(RuntimeError, "RuntimeError");
-var ReturnException = class extends Error {
-  constructor() {
-    super(...arguments);
-    this.value = void 0;
+var ReturnException = class {
+  constructor(value = void 0) {
+    this.value = value;
   }
 };
 __name(ReturnException, "ReturnException");
-var JumpException = class extends Error {
-  constructor() {
-    super(...arguments);
-    this.distance = 1;
+var JumpException = class {
+  constructor(distance = 1) {
+    this.distance = distance;
   }
 };
 __name(JumpException, "JumpException");
@@ -4820,18 +4840,6 @@ function isCallable(val) {
   return !!val.call;
 }
 __name(isCallable, "isCallable");
-
-// src/globals.ts
-function registerGlobals(evaluator) {
-  evaluator.globals.init("clock");
-  evaluator.globals.set("clock", {
-    arity: 0,
-    call() {
-      return new Date().toLocaleString();
-    }
-  });
-}
-__name(registerGlobals, "registerGlobals");
 
 // src/interpreter.ts
 var Interpreter = class extends Visitor2 {
@@ -4849,16 +4857,16 @@ var Interpreter = class extends Visitor2 {
   lookUpVariable(name, expr) {
     const distance = this.locals.get(expr);
     if (distance !== void 0)
-      return this.env.get(name.text, distance);
-    return this.globals.get(name.text);
+      return this.env.get(name, distance);
+    return this.globals.get(name);
   }
   AssignExpr(expr) {
     const value = this.visit(expr.value);
     const distance = this.locals.get(expr);
     if (distance !== void 0)
-      this.env.set(expr.name.text, value, distance);
+      this.env.set(expr.name, value, distance);
     else
-      this.globals.set(expr.name.text, value);
+      this.globals.set(expr.name, value);
     return value;
   }
   BinaryExpr(expr) {
@@ -4875,7 +4883,7 @@ var Interpreter = class extends Visitor2 {
       }
     }
     if (!isNumber(left) || !isNumber(right))
-      throw new RuntimeError("number values expected");
+      throw new RuntimeError(expr.operator, "number values expected");
     if (op == TOKEN.PLUS)
       return [left[0] + right[0], Math.max(left[1], right[1])];
     if (op == TOKEN.DASH)
@@ -4892,7 +4900,7 @@ var Interpreter = class extends Visitor2 {
       return left[0] < right[0];
     if (op == TOKEN.LESS_EQUAL)
       return left[0] <= right[0];
-    throw new RuntimeError("Unexpected binary expression");
+    throw new RuntimeError(expr.operator, "Unexpected binary expression");
   }
   BlockStmt(block) {
     const previous = this.env;
@@ -4906,9 +4914,9 @@ var Interpreter = class extends Visitor2 {
   CallExpr(call) {
     const callee = this.visit(call.callee);
     if (!isCallable(callee))
-      throw new RuntimeError("uncallable target");
+      throw new RuntimeError(call.end, "uncallable target");
     if (callee.arity != call.args.length)
-      throw new RuntimeError("wrong number of args");
+      throw new RuntimeError(call.end, "wrong number of args");
     return callee.call(call.args.map((arg2) => this.visit(arg2)));
   }
   ExpressionStmt(statement) {
@@ -4921,7 +4929,7 @@ var Interpreter = class extends Visitor2 {
       this.env = new Environment(closure);
       try {
         args.map((arg2, i) => {
-          const param = fun.params[i].text;
+          const param = fun.params[i];
           this.env.init(param);
           this.env.set(param, arg2);
         });
@@ -4937,9 +4945,9 @@ var Interpreter = class extends Visitor2 {
     });
   }
   FunctionDecl(decl) {
-    const func = this.FunctionExpr(decl.fun);
-    this.env.init(decl.ident.text);
-    this.env.set(decl.ident.text, func);
+    const func = this.FunctionExpr(decl.func);
+    this.env.init(decl.name);
+    this.env.set(decl.name, func);
   }
   GroupExpr(expr) {
     return this.visit(expr.inner);
@@ -4951,13 +4959,11 @@ var Interpreter = class extends Visitor2 {
     else if (statement.falseStatement)
       this.visit(statement.falseStatement);
   }
-  JumpStmt(statement) {
-    const jump = statement.destination.name == TOKEN.BREAK ? new BreakException() : new ContinueException();
-    const distance = this.visit(statement.distance || new LiteralExpr([1, 0]));
+  JumpStmt(stmt) {
+    const distance = this.visit(stmt.distance || new LiteralExpr([1, 0]));
     if (!isNumber(distance))
-      throw new RuntimeError("expected numerical distance");
-    jump.distance = distance[0];
-    throw jump;
+      throw new RuntimeError(stmt.keyword, "expected numerical distance");
+    throw stmt.keyword.name == TOKEN.BREAK ? new BreakException(distance[0]) : new ContinueException(distance[0]);
   }
   LiteralExpr(expr) {
     return expr.value;
@@ -4981,16 +4987,23 @@ var Interpreter = class extends Visitor2 {
     console.log(str + "");
   }
   Program(program) {
-    const statements = program.code.map((stmt) => this.visit(stmt));
-    const last = statements[statements.length - 1];
-    if (isCallable(last))
-      return `${last}`;
-    return new LiteralExpr(last).toString();
+    try {
+      const statements = program.code.map((stmt) => this.visit(stmt));
+      const last = statements[statements.length - 1];
+      if (isCallable(last))
+        return `${last}`;
+      return new LiteralExpr(last).toString();
+    } catch (e) {
+      if (!(e instanceof RuntimeError)) {
+        this.reporter.error(void 0, e.message);
+      } else {
+        this.reporter.error(e.token, e.message);
+      }
+    }
   }
   ReturnStmt(ret) {
-    const ex = new ReturnException();
-    ex.value = this.visit(ret.expr);
-    throw ex;
+    const value = this.visit(ret.expr);
+    throw new ReturnException(value);
   }
   TernaryExpr(expr) {
     const { op1: { name: op1 }, op2: { name: op2 } } = expr;
@@ -5000,7 +5013,7 @@ var Interpreter = class extends Visitor2 {
         return this.visit(expr.middle);
       return this.visit(expr.right);
     }
-    throw new RuntimeError("Unexpected ternary expression");
+    throw new RuntimeError(op1, "Unexpected ternary expression");
   }
   UnaryExpr(expr) {
     const { operator: { name: op } } = expr;
@@ -5008,15 +5021,15 @@ var Interpreter = class extends Visitor2 {
     if (op == TOKEN.BANG)
       return !truthy(value);
     if (!isNumber(value))
-      throw new RuntimeError("must negate a number value");
+      throw new RuntimeError(op, "must negate a number value");
     if (op == TOKEN.DASH)
       return [-value[0], value[1]];
-    throw new RuntimeError("Unexpected unary expression");
+    throw new RuntimeError(op, "Unexpected unary expression");
   }
   VariableDecl(declaration) {
-    this.env.init(declaration.ident.text);
+    this.env.init(declaration.name);
     const val = declaration.expr ? this.visit(declaration.expr) : void 0;
-    this.env.set(declaration.ident.text, val);
+    this.env.set(declaration.name, val);
   }
   VariableExpr(expr) {
     return this.lookUpVariable(expr.name, expr);
@@ -5048,6 +5061,7 @@ var Resolver = class extends Visitor2 {
     super();
     this.evaluator = evaluator;
     this.reporter = reporter2;
+    this.currentFunction = 0 /* NONE */;
     this.scopes = [];
   }
   beginScope() {
@@ -5077,7 +5091,9 @@ var Resolver = class extends Visitor2 {
       return false;
     });
   }
-  resolveFunction(fun) {
+  resolveFunction(fun, ft) {
+    const encFunction = this.currentFunction;
+    this.currentFunction = ft;
     this.beginScope();
     for (const param of fun.params) {
       this.declare(param);
@@ -5085,6 +5101,7 @@ var Resolver = class extends Visitor2 {
     }
     this.visit(fun.block);
     this.endScope();
+    this.currentFunction = encFunction;
   }
   AssignExpr(expr) {
     this.visit(expr.value);
@@ -5109,12 +5126,12 @@ var Resolver = class extends Visitor2 {
     this.visit(stmt.expr);
   }
   FunctionExpr(expr) {
-    this.resolveFunction(expr);
+    this.resolveFunction(expr, 1 /* FUNCTION */);
   }
   FunctionDecl(decl) {
-    this.declare(decl.ident);
-    this.define(decl.ident);
-    this.resolveFunction(decl.fun);
+    this.declare(decl.name);
+    this.define(decl.name);
+    this.resolveFunction(decl.func, 1 /* FUNCTION */);
   }
   GroupExpr(expr) {
     this.visit(expr.inner);
@@ -5142,6 +5159,8 @@ var Resolver = class extends Visitor2 {
       this.visit(decl);
   }
   ReturnStmt(stmt) {
+    if (this.currentFunction == 0 /* NONE */)
+      this.reporter.error(stmt.keyword, "No return from top-level allowed");
     this.visit(stmt.expr);
   }
   TernaryExpr(expr) {
@@ -5153,11 +5172,11 @@ var Resolver = class extends Visitor2 {
     this.visit(expr.operand);
   }
   VariableDecl(decl) {
-    this.declare(decl.ident);
+    this.declare(decl.name);
     if (decl.expr) {
       this.visit(decl.expr);
     }
-    this.define(decl.ident);
+    this.define(decl.name);
   }
   VariableExpr(expr) {
     const scope = this.scopes[0];
@@ -5195,12 +5214,27 @@ var reporter = new Reporter();
 var source = import_fs.default.readFileSync(fileName).toString();
 var scanner = new Scanner(source, reporter);
 var tokens = scanner.drain();
+if (reporter.errors) {
+  console.log(JSON.stringify(reporter.errors), null, 2);
+}
 var parser = new Parser2(tokens, reporter);
 var interpreter = new Interpreter(reporter);
 var resolver = new Resolver(interpreter, reporter);
 var ast = parser.parse();
+if (reporter.errors) {
+  console.log(JSON.stringify(reporter.errors), null, 2);
+  process.exit(1);
+}
 resolver.visit(ast);
+if (reporter.errors) {
+  console.log(JSON.stringify(reporter.errors), null, 2);
+  process.exit(1);
+}
 interpreter.visit(ast);
+if (reporter.errors) {
+  console.log(JSON.stringify(reporter.errors), null, 2);
+  process.exit(1);
+}
 /*!
  * Determine if an object is a Buffer
  *
