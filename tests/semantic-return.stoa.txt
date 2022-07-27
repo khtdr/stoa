@@ -1,1 +1,4 @@
-NOPE~
+Parse error in ./semantic-return.stoa at line,col 4,3
+4.   return;
+     ↑
+No return from top-level allowed

@@ -5074,6 +5074,8 @@ var Resolver = class extends Visitor2 {
     const scope = this.scopes[0];
     if (!scope)
       return;
+    if ([true, false].includes(scope[ident.text]))
+      this.reporter.error(ident, "Variable is already defined");
     scope[ident.text] = false;
   }
   define(ident) {
@@ -5215,26 +5217,37 @@ var source = import_fs.default.readFileSync(fileName).toString();
 var scanner = new Scanner(source, reporter);
 var tokens = scanner.drain();
 if (reporter.errors) {
-  console.log(JSON.stringify(reporter.errors), null, 2);
+  console.log(JSON.stringify(reporter.errors, null, 2));
 }
 var parser = new Parser2(tokens, reporter);
 var interpreter = new Interpreter(reporter);
 var resolver = new Resolver(interpreter, reporter);
 var ast = parser.parse();
-if (reporter.errors) {
-  console.log(JSON.stringify(reporter.errors), null, 2);
-  process.exit(1);
-}
+if (reporter.errors)
+  error("Parse", reporter);
 resolver.visit(ast);
-if (reporter.errors) {
-  console.log(JSON.stringify(reporter.errors), null, 2);
-  process.exit(1);
-}
+if (reporter.errors)
+  error("Parse", reporter);
 interpreter.visit(ast);
-if (reporter.errors) {
-  console.log(JSON.stringify(reporter.errors), null, 2);
+if (reporter.errors)
+  error("Runtime", reporter);
+function error(type, reporter2) {
+  if (!reporter2.errors)
+    return;
+  const lines = source.split("\n");
+  for (const [token, message] of reporter2.errors) {
+    console.log(`${type} error in ${fileName} at line,col ${token.pos.line},${token.pos.column}`);
+    const prefix = `${token.pos.line}. `;
+    const code = `${lines[token.pos.line - 1]}`;
+    console.log(`${prefix}${code}`);
+    const spaces = `${prefix}${code}`.replace(/./g, " ");
+    const arr = spaces.substring(0, prefix.length + token.pos.column - 1);
+    console.log(`${arr}\u2191`);
+    console.log(`${message}`);
+  }
   process.exit(1);
 }
+__name(error, "error");
 /*!
  * Determine if an object is a Buffer
  *

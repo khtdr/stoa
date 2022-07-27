@@ -21,6 +21,8 @@ export class Resolver extends Ast.Visitor<void> {
     declare(ident: Lib.Token<'IDENTIFIER'>) {
         const scope = this.scopes[0]
         if (!scope) return
+        if ([true, false].includes(scope[ident.text]))
+            this.reporter.error(ident, 'Variable is already defined')
         scope[ident.text] = false
     }
     define(ident: Lib.Token<'IDENTIFIER'>) {
