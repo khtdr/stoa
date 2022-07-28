@@ -4744,8 +4744,6 @@ var Environment = class {
   init(name) {
     if (!this.table.has(name.text))
       this.table.set(name.text, void 0);
-    else
-      throw new RuntimeError(name, `Variable already defined: ${name.text}`);
   }
   set(name, value, distance = 0) {
     var _a;

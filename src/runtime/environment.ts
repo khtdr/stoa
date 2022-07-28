@@ -9,7 +9,6 @@ export class Environment {
     }
     init(name: Token<'IDENTIFIER'>) {
         if (!this.table.has(name.text)) this.table.set(name.text, undefined)
-        else throw new RuntimeError(name, `Variable already defined: ${name.text}`)
     }
     set(name: Token<'IDENTIFIER'>, value: any, distance = 0): void {
         if (distance > 0 && this.enclosure) return this.enclosure.set(name, value, distance - 1)
