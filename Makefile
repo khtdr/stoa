@@ -43,6 +43,9 @@ repl:
 lint:
 	npx tsc --noEmit
 
+graph:
+	npx depcruise --include-only "^src" --output-type dot src | dot -T png > dependency-graph.png
+
 deps: Makefile node_modules
 
 node_modules: package.json

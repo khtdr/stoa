@@ -10,6 +10,7 @@
   "devDependencies": {
     "@types/node": "14",
     "chalk": "4",
+    "dependency-cruiser": "^11.13.0",
     "nodemon": "2",
     "opts": "2",
     "readline-ui": "2",
