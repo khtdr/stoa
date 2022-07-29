@@ -5,8 +5,8 @@
       (fun p (let [] (block 
          (print a)
       )))
-      (p)
+      (call p)
       (var a BBB)
-      (p)
+      (call p)
    )
 )

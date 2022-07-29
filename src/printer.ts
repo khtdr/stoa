@@ -15,7 +15,7 @@ export class Printer extends Ast.Visitor<string> {
         return `(block \n${indent(blocks)}\n)`
     }
     CallExpr(call: Ast.CallExpr): string {
-        const callee = `(${this.visit(call.callee)}`
+        const callee = `(call ${this.visit(call.callee)}`
         if (!call.args.length) return `${callee})`
         const args = call.args.map(arg => this.visit(arg)).join(' ')
         return `${callee} ${args})`

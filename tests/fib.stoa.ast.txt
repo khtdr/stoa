@@ -16,7 +16,7 @@
    )
    (fun fib (let [n] (block 
       (if (<= n 1) (return n))
-      (return (+ (fib (- n 2)) (fib (- n 1))))
+      (return (+ (call fib (- n 2)) (call fib (- n 1))))
    )))
-   (print (fib 20))
+   (print (call fib 20))
 )

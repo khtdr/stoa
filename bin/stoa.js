@@ -5074,7 +5074,7 @@ ${indent(blocks)}
 )`;
   }
   CallExpr(call) {
-    const callee = `(${this.visit(call.callee)}`;
+    const callee = `(call ${this.visit(call.callee)}`;
     if (!call.args.length)
       return `${callee})`;
     const args = call.args.map((arg2) => this.visit(arg2)).join(" ");
