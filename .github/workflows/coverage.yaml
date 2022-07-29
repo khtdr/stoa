@@ -1,0 +1,25 @@
+name: Test Coverage
+
+on:
+  push:
+    branches: [ sage ]
+  pull_request:
+    branches: [ sage ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test Coverage ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: make build
+      - run: make coverage

@@ -4,3 +4,6 @@ node_modules
 .cache
 .tests
 yarn-error.log
+coverage
+.nyc_output
+bin/stoa.js.map

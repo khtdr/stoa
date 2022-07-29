@@ -8,10 +8,12 @@
   "license": "UNLICENSED",
   "private": "true",
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@types/node": "14",
     "chalk": "4",
     "dependency-cruiser": "^11.13.0",
     "nodemon": "2",
+    "nyc": "^15.1.0",
     "opts": "2",
     "readline-ui": "2",
     "tsup": "6",

@@ -5457,3 +5457,4 @@ process.exit(0);
  * Copyright (c) 2014-2017, Jon Schlinkert.
  * Released under the MIT License.
  */
+//# sourceMappingURL=stoa.js.map

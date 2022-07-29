@@ -11,7 +11,8 @@ help:
 
 build: deps
 	npx tsup --keep-names --no-splitting \
-	         --out-dir ./bin src/stoa.ts
+	         --out-dir ./bin src/stoa.ts \
+	         --sourcemap
 
 build-watch: deps
 	npx tsup --watch \
@@ -39,6 +40,9 @@ install: build
 	cp bin/stoa ~/bin
 	chmod +x ~/bin/stoa
 	stoa -v
+
+coverage: build
+	npx nyc make test
 
 repl:
 	@make build >/dev/null
