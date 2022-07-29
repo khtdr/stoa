@@ -4771,8 +4771,8 @@ __name(Environment, "Environment");
 
 // src/runtime/globals.ts
 function registerGlobals(evaluator) {
-  evaluator.globals.init("clock");
-  evaluator.globals.set("clock", {
+  evaluator.globals.init({ text: "clock" });
+  evaluator.globals.set({ text: "clock" }, {
     arity: 0,
     call() {
       return new Date().toLocaleString();
