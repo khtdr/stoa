@@ -1,5 +1,0 @@
-{
-  "extends": "@istanbuljs/nyc-config-typescript",
-  "exclude-after-remap": true,
-  "reporter": ["html", "text","text-summary"]
-}

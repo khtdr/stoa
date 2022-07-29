@@ -13,6 +13,8 @@ build: deps
 	npx tsup --keep-names --no-splitting \
 	         --out-dir ./bin src/stoa.ts \
 	         --sourcemap
+silent-build: deps
+	@make build &>/dev/null
 
 build-watch: deps
 	npx tsup --watch \
@@ -26,6 +28,9 @@ test:
 	./bin/test-parser.sh
 	@echo
 	./bin/test-evaluator.sh
+
+silent-test:
+	@make test &>/dev/null
 
 test-watch: build
 	npx nodemon -e sh,stoa,txt,js -w tests -w bin/stoa.js -x './tests/run.sh'
@@ -41,8 +46,11 @@ install: build
 	chmod +x ~/bin/stoa
 	stoa -v
 
-coverage: build
-	npx nyc make test
+coverage: silent-build
+	npx nyc --extends "@istanbuljs/nyc-config-typescript" \
+	        --exclude-after-remap \
+	        --reporter html --reporter text --reporter text-summary \
+            make silent-test
 
 repl:
 	@make build >/dev/null
