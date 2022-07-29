@@ -19,7 +19,7 @@ make build
 : CLI Target: node14
 : CJS Build start
 : CJS ⚡️ Build success in 62ms
-: CJS bin/stoa.js 161.49 KB
+: CJS bin/stoa.js 161.69 KB
 
 ** Usage Documentation
 #+begin_src sh :exports both :results verbatim
@@ -27,14 +27,18 @@ make build
 #+end_src
 
 #+RESULTS:
-: Usage: node ./bin/stoa.js [options] [file]
-: Show this help message
-:     --help
-: prints parse tree and exits
-:     -p
-: prints tokens and exits
-:     -t
-:
+#+begin_example
+Usage: node ./bin/stoa.js [options] [file]
+Show this help message
+    --help
+prints version info and exits
+    -v
+prints parse tree and exits
+    -p
+prints tokens and exits
+    -t
+
+#+end_example
 
 ** Current Version
 #+begin_src sh :exports both :results verbatim
@@ -42,6 +46,15 @@ make build
 #+end_src
 
 #+RESULTS:
+: stoa-2022.07.20
+
+** Code Structure
+#+begin_src shell :results none
+make graph
+#+end_src
+
+[[./dependency-graph.png]]
+
 
 ** Test Suite Status
 #+begin_src sh :exports both :results verbatim
@@ -98,13 +111,6 @@ Testing the evaluator (with parse errors)
 ✔ sticky-precision.stoa
 Passing: 12 Failing: 0
 #+end_example
-
-** Code Structure
-#+begin_src shell :results none
-make graph
-#+end_src
-
-[[./dependency-graph.png]]
 
 ** Potential Goals
 - full stack from sql to hover effects

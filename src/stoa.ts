@@ -1,5 +1,6 @@
 import fs from 'fs'
 import opts from 'opts'
+import { version } from '../package.json'
 import { Scanner, Token } from './scanner'
 import { Parser } from './parser'
 import { Interpreter } from './interpreter';
@@ -9,8 +10,15 @@ import { Reporter } from './errors';
 
 opts.parse([
     { short: 't', description: 'prints tokens and exits ' },
-    { short: 'p', description: 'prints parse tree and exits ' }
+    { short: 'p', description: 'prints parse tree and exits ' },
+    { short: 'v', description: 'prints version info and exits ' },
 ], [{ name: "file" }], true);
+
+if (opts.get('v')) {
+    console.log(`stoa-${version}`)
+    process.exit(0)
+}
+
 const fileName = opts.arg("file") ?? "/dev/stdin"
 
 const source = fs.readFileSync(fileName).toString()

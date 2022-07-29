@@ -3524,10 +3524,10 @@ var require_supports_color = __commonJS({
         return 3;
       }
       if ("TERM_PROGRAM" in env) {
-        const version = parseInt((env.TERM_PROGRAM_VERSION || "").split(".")[0], 10);
+        const version2 = parseInt((env.TERM_PROGRAM_VERSION || "").split(".")[0], 10);
         switch (env.TERM_PROGRAM) {
           case "iTerm.app":
-            return version >= 3 ? 3 : 2;
+            return version2 >= 3 ? 3 : 2;
           case "Apple_Terminal":
             return 2;
         }
@@ -3894,6 +3894,9 @@ var require_source = __commonJS({
 // src/stoa.ts
 var import_fs = __toESM(require("fs"));
 var import_opts = __toESM(require_opts());
+
+// package.json
+var version = "2022.07.20";
 
 // src/lib/cli.ts
 var opts = __toESM(require_opts());
@@ -5343,8 +5346,13 @@ __name(Reporter, "Reporter");
 // src/stoa.ts
 import_opts.default.parse([
   { short: "t", description: "prints tokens and exits " },
-  { short: "p", description: "prints parse tree and exits " }
+  { short: "p", description: "prints parse tree and exits " },
+  { short: "v", description: "prints version info and exits " }
 ], [{ name: "file" }], true);
+if (import_opts.default.get("v")) {
+  console.log(`stoa-${version}`);
+  process.exit(0);
+}
 var fileName = import_opts.default.arg("file") ?? "/dev/stdin";
 var source = import_fs.default.readFileSync(fileName).toString();
 var reporter = new Reporter();
