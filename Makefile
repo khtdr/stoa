@@ -41,10 +41,10 @@ repl:
 	@bin/stoa --repl
 
 lint:
-	npx tsc --noEmit
+	@npx tsc --noEmit
 
 graph:
-	npx depcruise --include-only "^src" --output-type dot src | dot -T png > dependency-graph.png
+	@npx depcruise --include-only "^src" --output-type dot src | dot -T png > dependency-graph.png
 
 deps: Makefile node_modules
 

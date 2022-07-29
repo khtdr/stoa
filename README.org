@@ -1,15 +1,9 @@
 * Project Stoa
-** Goals
-- full stack from sql to hover effects
-- self-containing state?
-- lsp compatible
-- actually use it to create
-- minimize user function writing with string/date/number primitives
 
 ** Project Status
-🤣 if you aren't me, why are you here?
-*** create a malleable language
+*** [ ] create a malleable language framework for exploring language ideas
 :in-progress:
+🤣 if you aren't me, why are you here?
 
 ** Build Status
 #+begin_src sh :exports both :results verbatim
@@ -24,7 +18,7 @@ make build
 : CLI tsup v6.1.2
 : CLI Target: node14
 : CJS Build start
-: CJS ⚡️ Build success in 187ms
+: CJS ⚡️ Build success in 63ms
 : CJS bin/stoa.js 157.88 KB
 
 ** Usage Documentation
@@ -69,11 +63,21 @@ Passing: 12 Failing: 0
 #+end_example
 
 ** Code Structure
-#+begin_src shell :results none
+#+begin_src shell :results drawer
 make graph
+echo "[[./dependency-graph.png]]"
 #+end_src
 
+#+RESULTS:
+:results:
 [[./dependency-graph.png]]
+:end:
+
+** Potential Goals
+- full stack from sql to hover effects
+- lsp compatible
+- actually use it to create
+- minimize user function writing with string/date/number primitives
 
 * ...
 ** build
