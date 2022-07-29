@@ -43,6 +43,8 @@ export class Interpreter extends Ast.Visitor<Runtime.Result> {
         }
         if (!Runtime.isNumber(left) || !Runtime.isNumber(right))
             throw new Runtime.RuntimeError(expr.operator, "number values expected")
+        if (right[0] == 0) throw new Runtime.RuntimeError(expr.operator, "divide by zero")
+
         if (op == Ast.TOKEN.PLUS) return [left[0] + right[0], Math.max(left[1], right[1])];
         if (op == Ast.TOKEN.DASH) return [left[0] - right[0], Math.max(left[1], right[1])];
         if (op == Ast.TOKEN.STAR) return [left[0] * right[0], Math.max(left[1], right[1])];

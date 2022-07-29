@@ -4885,6 +4885,8 @@ var Interpreter = class extends Visitor2 {
     }
     if (!isNumber(left) || !isNumber(right))
       throw new RuntimeError(expr.operator, "number values expected");
+    if (right[0] == 0)
+      throw new RuntimeError(expr.operator, "divide by zero");
     if (op == TOKEN.PLUS)
       return [left[0] + right[0], Math.max(left[1], right[1])];
     if (op == TOKEN.DASH)
