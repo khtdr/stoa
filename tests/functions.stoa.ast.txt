@@ -1,0 +1,33 @@
+(program 
+   (fun makeCounter (let [start] (block 
+      (var n start)
+      (return (let [] (block 
+         (= n (+ n 1))
+         (return n)
+      )))
+   )))
+   (print ((makeCounter 212)))
+   (let [] (block 
+      
+   ))
+   (fun forkCounter (let [counter] (block 
+      (return (makeCounter (counter)))
+   )))
+   (fun diffCounter (let [counter] (block 
+      (var e (makeCounter (counter)))
+      (return (let [] (block 
+         (var cv (counter))
+         (var ev (e))
+         (return (- cv ev))
+      )))
+   )))
+   (var c (makeCounter 100))
+   (var d (forkCounter c))
+   (print (+ (+ (c) ,) (d)))
+   (var e (diffCounter c))
+   (e)
+   (e)
+   (e)
+   (print (+ (+ (+ (+ (c) ,) (d)) ,) (e)))
+   (print done)
+)

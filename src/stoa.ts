@@ -3,10 +3,14 @@ import opts from 'opts'
 import { Scanner, Token } from './scanner'
 import { Parser } from './parser'
 import { Interpreter } from './interpreter';
+import { Printer } from './printer';
 import { Resolver } from './resolver';
 import { Reporter } from './errors';
 
-opts.parse([{ short: 't', description: 'prints tokens and exits ' }], [{ name: "file" }], true);
+opts.parse([
+    { short: 't', description: 'prints tokens and exits ' },
+    { short: 'p', description: 'prints parse tree and exits ' }
+], [{ name: "file" }], true);
 const fileName = opts.arg("file") ?? "/dev/stdin"
 
 const source = fs.readFileSync(fileName).toString()
@@ -35,6 +39,11 @@ if (reporter.errors) {
 }
 
 resolver.visit(ast)
+if (opts.get('p')) {
+    console.log(new Printer().visit(ast))
+    process.exit(0)
+}
+
 if (reporter.errors) {
     reporter.parseError()
     process.exit(1)

@@ -1,0 +1,12 @@
+(program 
+   (print Scope Test)
+   (var a AAA)
+   (block 
+      (fun p (let [] (block 
+         (print a)
+      )))
+      (p)
+      (var a BBB)
+      (p)
+   )
+)

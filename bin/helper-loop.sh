@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd "$(dirname "$0")" || exit
+cd "$(dirname "$0")/../tests" || exit
 export PATH=../bin:$PATH
 
 for test_script in *.stoa; do

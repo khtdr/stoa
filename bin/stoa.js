@@ -5053,6 +5053,114 @@ var Interpreter = class extends Visitor2 {
 };
 __name(Interpreter, "Interpreter");
 
+// src/printer.ts
+var Printer = class extends Visitor2 {
+  AssignExpr(assign) {
+    return `(= ${assign.name.text} ${this.visit(assign.value)})`;
+  }
+  BinaryExpr(expr) {
+    const operator = expr.operator.text;
+    const left = this.visit(expr.left);
+    const right = this.visit(expr.right);
+    return `(${operator} ${left} ${right})`;
+  }
+  BlockStmt(block) {
+    const blocks = block.statements.map((stmt) => this.visit(stmt)).join("\n");
+    return `(block 
+${indent(blocks)}
+)`;
+  }
+  CallExpr(call) {
+    const callee = `(${this.visit(call.callee)}`;
+    if (!call.args.length)
+      return `${callee})`;
+    const args = call.args.map((arg2) => this.visit(arg2)).join(" ");
+    return `${callee} ${args})`;
+  }
+  ExpressionStmt(statement) {
+    return this.visit(statement.expr);
+  }
+  FunctionExpr(fun) {
+    const params = fun.params.map((p) => p.text).join(" ");
+    const body = this.visit(fun.block);
+    return `(let [${params}] ${body})`;
+  }
+  FunctionDecl(decl) {
+    const name = decl.name.text;
+    const val = this.visit(decl.func);
+    return `(fun ${name} ${val})`;
+  }
+  GroupExpr(expr) {
+    const operand = this.visit(expr.inner);
+    return `(group ${operand})`;
+  }
+  IfStmt(statement) {
+    const cond = this.visit(statement.condition);
+    const stmtTrue = this.visit(statement.trueStatement);
+    if (!statement.falseStatement)
+      return `(if ${cond} ${stmtTrue})`;
+    const stmtFalse = this.visit(statement.falseStatement);
+    return `(if ${cond} 
+${indent(stmtTrue)} 
+${indent(stmtFalse)})`;
+  }
+  JumpStmt(statement) {
+    const dest = statement.keyword.name;
+    const dist = this.visit(statement.distance || new LiteralExpr([1, 0]));
+    return `(${dest} ${dist})`;
+  }
+  LiteralExpr(expr) {
+    return expr.toString();
+  }
+  LogicalExpr(expr) {
+    return this.BinaryExpr(expr);
+  }
+  PrintStmt(statement) {
+    return `(print ${this.visit(statement.expr)})`;
+  }
+  Program(program) {
+    const decls = program.code.map((decl) => this.visit(decl)).join("\n");
+    return `(program 
+${indent(decls)}
+)`;
+  }
+  ReturnStmt(ret) {
+    return `(return ${this.visit(ret.expr)})`;
+  }
+  TernaryExpr(expr) {
+    const left = this.visit(expr.left);
+    const middle = this.visit(expr.middle);
+    const right = this.visit(expr.right);
+    return `(?: ${left} ${middle} ${right})`;
+  }
+  UnaryExpr(expr) {
+    const operator = expr.operator.text;
+    const operand = this.visit(expr.operand);
+    return `(${operator} ${operand})`;
+  }
+  VariableDecl(declaration) {
+    const decl = `(var ${declaration.name.text}`;
+    const init = declaration.expr ? ` ${this.visit(declaration.expr)}` : "";
+    return `${decl}${init})`;
+  }
+  VariableExpr(expr) {
+    return `${expr.name.text}`;
+  }
+  WhileStmt(statement) {
+    const cond = this.visit(statement.condition);
+    const body = this.visit(statement.body);
+    return `(while ${cond} 
+${indent(body)}
+)`;
+  }
+};
+__name(Printer, "Printer");
+function indent(text) {
+  const pad = new Array(3).fill(" ").join("");
+  return text.replace(/^/mg, pad);
+}
+__name(indent, "indent");
+
 // src/resolver.ts
 var Resolver = class extends Visitor2 {
   constructor(evaluator, reporter2) {
@@ -5233,7 +5341,10 @@ var Reporter = class {
 __name(Reporter, "Reporter");
 
 // src/stoa.ts
-import_opts.default.parse([{ short: "t", description: "prints tokens and exits " }], [{ name: "file" }], true);
+import_opts.default.parse([
+  { short: "t", description: "prints tokens and exits " },
+  { short: "p", description: "prints parse tree and exits " }
+], [{ name: "file" }], true);
 var fileName = import_opts.default.arg("file") ?? "/dev/stdin";
 var source = import_fs.default.readFileSync(fileName).toString();
 var reporter = new Reporter();
@@ -5256,6 +5367,10 @@ if (reporter.errors) {
   process.exit(1);
 }
 resolver.visit(ast);
+if (import_opts.default.get("p")) {
+  console.log(new Printer().visit(ast));
+  process.exit(0);
+}
 if (reporter.errors) {
   reporter.parseError();
   process.exit(1);
