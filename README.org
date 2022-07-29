@@ -2,8 +2,6 @@
 
 ** Project Status
 *** [ ] create a malleable language framework for exploring language ideas
-:in-progress:
-🤣 if you aren't me, why are you here?
 
 ** Build Status
 #+begin_src sh :exports both :results verbatim

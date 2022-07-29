@@ -38,7 +38,7 @@ install: build
 	cp bin/stoa.js ~/bin
 	cp bin/stoa ~/bin
 	chmod +x ~/bin/stoa
-	stoa --version
+	stoa -v
 
 repl:
 	@make build >/dev/null
