@@ -1,0 +1,8 @@
+.DS_Store
+node_modules
+*.log
+.cache
+.tests
+yarn-error.log
+.nyc_output
+bin/stoa.js.map
