@@ -5197,6 +5197,8 @@ __name(Resolver, "Resolver");
 var Reporter = class {
   constructor() {
     this._errors = [];
+    this.fileName = "";
+    this.source = "";
   }
   error(token, message) {
     this._errors.push([token, message]);
@@ -5204,48 +5206,66 @@ var Reporter = class {
   get errors() {
     return !this._errors.length ? false : this._errors;
   }
+  addSource(name, source2) {
+    this.fileName = name;
+    this.source = source2;
+  }
+  parseError() {
+    this.report("Parse");
+  }
+  runtimeError() {
+    this.report("Runtime");
+  }
+  report(type) {
+    const lines = this.source.split("\n");
+    for (const [token, message] of this._errors) {
+      console.log(`${type} error in ${this.fileName} at line,col ${token.pos.line},${token.pos.column}`);
+      const prefix = `${token.pos.line}. `;
+      const code = `${lines[token.pos.line - 1]}`;
+      console.log(`${prefix}${code}`);
+      const spaces = `${prefix}${code}`.replace(/./g, " ");
+      const arr = spaces.substring(0, prefix.length + token.pos.column - 1);
+      console.log(`${arr}\u2191`);
+      console.log(`${message}`);
+    }
+  }
 };
 __name(Reporter, "Reporter");
 
 // src/stoa.ts
-import_opts.default.parse([], [{ name: "file" }], true);
+import_opts.default.parse([{ short: "t", description: "prints tokens and exits " }], [{ name: "file" }], true);
 var fileName = import_opts.default.arg("file") ?? "/dev/stdin";
-var reporter = new Reporter();
 var source = import_fs.default.readFileSync(fileName).toString();
+var reporter = new Reporter();
+reporter.addSource(fileName, source);
 var scanner = new Scanner(source, reporter);
 var tokens = scanner.drain();
 if (reporter.errors) {
   console.log(JSON.stringify(reporter.errors, null, 2));
 }
+if (import_opts.default.get("t")) {
+  console.log(tokens.map((token) => token.toString()).join("\n"));
+  process.exit(0);
+}
 var parser = new Parser2(tokens, reporter);
 var interpreter = new Interpreter(reporter);
 var resolver = new Resolver(interpreter, reporter);
 var ast = parser.parse();
-if (reporter.errors)
-  error("Parse", reporter);
-resolver.visit(ast);
-if (reporter.errors)
-  error("Parse", reporter);
-interpreter.visit(ast);
-if (reporter.errors)
-  error("Runtime", reporter);
-function error(type, reporter2) {
-  if (!reporter2.errors)
-    return;
-  const lines = source.split("\n");
-  for (const [token, message] of reporter2.errors) {
-    console.log(`${type} error in ${fileName} at line,col ${token.pos.line},${token.pos.column}`);
-    const prefix = `${token.pos.line}. `;
-    const code = `${lines[token.pos.line - 1]}`;
-    console.log(`${prefix}${code}`);
-    const spaces = `${prefix}${code}`.replace(/./g, " ");
-    const arr = spaces.substring(0, prefix.length + token.pos.column - 1);
-    console.log(`${arr}\u2191`);
-    console.log(`${message}`);
-  }
+if (reporter.errors) {
+  reporter.parseError();
   process.exit(1);
 }
-__name(error, "error");
+resolver.visit(ast);
+if (reporter.errors) {
+  reporter.parseError();
+  process.exit(1);
+}
+interpreter.visit(ast);
+if (reporter.errors) {
+  reporter.runtimeError();
+  process.exit(1);
+}
+process.exit(0);
 /*!
  * Determine if an object is a Buffer
  *

@@ -20,7 +20,9 @@ build-watch: deps
 
 test:
 	@make build >/dev/null
-	./tests/run.sh
+	@./tests/tokenizer.sh
+	@echo
+	@./tests/evaluator.sh
 
 test-watch: build
 	npx nodemon -e sh,stoa,txt,js -w tests -w bin/stoa.js -x './tests/run.sh'
