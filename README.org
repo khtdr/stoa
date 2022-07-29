@@ -101,12 +101,7 @@ Passing: 13 Failing: 0
 Testing the evaluator (with parse errors)
 ✔ arithmetic.stoa
 ✔ closures.stoa
-❌ divide-by-zero.stoa
-diff <(divide-by-zero.stoa) divide-by-zero.stoa.stdout.txt
-1c1
-< Runtime error in ./divide-by-zero.stoa at line,col 3,9
----
-> Runtime error in ./tests/divide-by-zero.stoa at line,col 3,9
+✔ divide-by-zero.stoa
 ✔ fib.stoa
 ✔ functions.stoa
 ✔ global-redefine.stoa
@@ -117,7 +112,7 @@ diff <(divide-by-zero.stoa) divide-by-zero.stoa.stdout.txt
 ✔ scope.stoa
 ✔ semantic-return.stoa
 ✔ sticky-precision.stoa
-Passing: 12 Failing: 1
+Passing: 13 Failing: 0
 #+end_example
 
 ** Potential Goals
