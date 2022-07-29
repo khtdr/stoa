@@ -16,6 +16,8 @@ jobs:
         node-version: [14.x]
 
     steps:
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.2
       - uses: actions/checkout@v3
       - name: Test Coverage ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -23,3 +25,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: make build
       - run: make coverage
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: coverage
