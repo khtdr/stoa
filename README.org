@@ -18,8 +18,8 @@ make build
 : CLI tsup v6.1.2
 : CLI Target: node14
 : CJS Build start
-: CJS ⚡️ Build success in 62ms
-: CJS bin/stoa.js 161.69 KB
+: CJS ⚡️ Build success in 63ms
+: CJS bin/stoa.js 161.78 KB
 
 ** Usage Documentation
 #+begin_src sh :exports both :results verbatim
@@ -67,6 +67,7 @@ make test
 Testing tokenizer snapshots
 ✔ arithmetic.stoa
 ✔ closures.stoa
+✔ divide-by-zero.stoa
 ✔ fib.stoa
 ✔ functions.stoa
 ✔ global-redefine.stoa
@@ -77,12 +78,13 @@ Testing tokenizer snapshots
 ✔ scope.stoa
 ✔ semantic-return.stoa
 ✔ sticky-precision.stoa
-Passing: 12 Failing: 0
+Passing: 13 Failing: 0
 
 ./bin/test-parser.sh
 Snapshotting the parse tree
 ✔ arithmetic.stoa
 ✔ closures.stoa
+✔ divide-by-zero.stoa
 ✔ fib.stoa
 ✔ functions.stoa
 ✔ global-redefine.stoa
@@ -93,12 +95,18 @@ Snapshotting the parse tree
 ✔ scope.stoa
 ✔ semantic-return.stoa
 ✔ sticky-precision.stoa
-Passing: 12 Failing: 0
+Passing: 13 Failing: 0
 
 ./bin/test-evaluator.sh
 Testing the evaluator (with parse errors)
 ✔ arithmetic.stoa
 ✔ closures.stoa
+❌ divide-by-zero.stoa
+diff <(divide-by-zero.stoa) divide-by-zero.stoa.stdout.txt
+1c1
+< Runtime error in ./divide-by-zero.stoa at line,col 3,9
+---
+> Runtime error in ./tests/divide-by-zero.stoa at line,col 3,9
 ✔ fib.stoa
 ✔ functions.stoa
 ✔ global-redefine.stoa
@@ -109,7 +117,7 @@ Testing the evaluator (with parse errors)
 ✔ scope.stoa
 ✔ semantic-return.stoa
 ✔ sticky-precision.stoa
-Passing: 12 Failing: 0
+Passing: 12 Failing: 1
 #+end_example
 
 ** Potential Goals
