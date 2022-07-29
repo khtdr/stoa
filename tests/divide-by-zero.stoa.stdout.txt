@@ -1,0 +1,4 @@
+Runtime error in ./tests/divide-by-zero.stoa at line,col 3,9
+3. print 1 / 0;
+           ↑
+divide by zero
