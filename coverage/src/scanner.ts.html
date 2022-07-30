@@ -140,7 +140,6 @@
 <a name='L75'></a><a href='#L75'>75</a>
 <a name='L76'></a><a href='#L76'>76</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">90x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -203,7 +202,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">90x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -213,81 +211,83 @@
 <span class="cline-any cline-yes">4230x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Reporter } from "./errors";
-import * as Lib from "./lib";
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import * as Lib from "./lib";
 &nbsp;
 export class Scanner extends Lib.TokenStream&lt;typeof Scanner.lexicon&gt; {
-    static readonly lexicon = {
-        // literals
-        FALSE: /false/i,
-        NIL: /nil/,
-        NUMBER: /\d+(\.\d+)?/,
-        STRING: Lib.Tokens.STRINGS.STD,
-        TRUE: /true/i,
-        IDENTIFIER: /[a-z][a-z\d]*/i,
+        static readonly lexicon = {
+                // literals
+                FALSE: /false/i,
+                NIL: /nil/,
+                NUMBER: /\d+(\.\d+)?/,
+                STRING: Lib.Tokens.STRINGS.STD,
+                TRUE: /true/i,
+                IDENTIFIER: /[a-z][a-z\d]*/i,
 &nbsp;
-        // operators
-        AND: /and/i,
-        BANG: "!",
-        BANG_EQUAL: "!=",
-        DASH: "-",
-        EQUAL: "=",
-        EQUAL_EQUAL: "==",
-        GREATER: "&gt;",
-        GREATER_EQUAL: "&gt;=",
-        LESS: "&lt;",
-        LESS_EQUAL: "&lt;=",
-        NOT: /not/i,
-        OR: /or/i,
-        PLUS: "+",
-        SLASH: "/",
-        STAR: "*",
+                // operators
+                AND: /and/i,
+                BANG: "!",
+                BANG_EQUAL: "!=",
+                DASH: "-",
+                EQUAL: "=",
+                EQUAL_EQUAL: "==",
+                GREATER: "&gt;",
+                GREATER_EQUAL: "&gt;=",
+                LESS: "&lt;",
+                LESS_EQUAL: "&lt;=",
+                NOT: /not/i,
+                OR: /or/i,
+                PLUS: "+",
+                SLASH: "/",
+                STAR: "*",
 &nbsp;
-        // puncuation
-        COLON: ":",
-        COMMA: ",",
-        DOT: ".",
-        LEFT_CURL: "{",
-        LEFT_PAREN: "(",
-        QUESTION: "?",
-        RIGHT_CURL: "}",
-        RIGHT_PAREN: ")",
-        SEMICOLON: ";",
+                // puncuation
+                COLON: ":",
+                COMMA: ",",
+                DOT: ".",
+                LEFT_CURL: "{",
+                LEFT_PAREN: "(",
+                QUESTION: "?",
+                RIGHT_CURL: "}",
+                RIGHT_PAREN: ")",
+                SEMICOLON: ";",
 &nbsp;
-        // keywords
-        BREAK: /break/i,
-        CLASS: /class/i,
-        CONTINUE: /continue/i,
-        ELSE: /else/i,
-        FOR: /for/i,
-        FUN: /fun/i,
-        IF: /if/i,
-        PRINT: /print/i,
-        RETURN: /return/i,
-        SUPER: /super/i,
-        THIS: /this/i,
-        VAR: /var/i,
-        WHILE: /while/i,
+                // keywords
+                BREAK: /break/i,
+                CLASS: /class/i,
+                CONTINUE: /continue/i,
+                ELSE: /else/i,
+                FOR: /for/i,
+                FUN: /fun/i,
+                IF: /if/i,
+                PRINT: /print/i,
+                RETURN: /return/i,
+                SUPER: /super/i,
+                THIS: /this/i,
+                VAR: /var/i,
+                WHILE: /while/i,
 &nbsp;
-        // discarded
-        _SHEBANG_COMMENT: Lib.Tokens.COMMENTS.SHEBANG,
-        _MULTI_LINE_COMMENT: Lib.Tokens.COMMENTS.C_STYLE,
-        _SINGLE_LINE_COMMENT: Lib.Tokens.COMMENTS.DOUBLE_SLASH,
-        _SPACE: Lib.Tokens.SPACE.ALL
-    };
+                // discarded
+                _SHEBANG_COMMENT: Lib.Tokens.COMMENTS.SHEBANG,
+                _MULTI_LINE_COMMENT: Lib.Tokens.COMMENTS.C_STYLE,
+                _SINGLE_LINE_COMMENT: Lib.Tokens.COMMENTS.DOUBLE_SLASH,
+                _SPACE: Lib.Tokens.SPACE.ALL,
+        };
 &nbsp;
-    constructor(source: string, reporter: Reporter) {
-        super(source, Scanner.lexicon, reporter)
-    }
+        constructor(source: string, reporter: Lib.Reporter) {
+                super(source, Scanner.lexicon, reporter);
+        }
 }
 &nbsp;
-type TokenName = keyof typeof Scanner.lexicon
+type TokenName = keyof typeof Scanner.lexicon;
 &nbsp;
+export const TOKEN = (Object.keys(Scanner.lexicon) as TokenName[]).reduce(
+        (a, c) =&gt; ((a[c] = c), a),
+        {} as Record&lt;string, string&gt;
+) as { [key in TokenName]: key };
 &nbsp;
-export const TOKEN = (Object.keys(Scanner.lexicon) as TokenName[])
-    .reduce((a, c) =&gt; (a[c] = c, a), {} as Record&lt;string, string&gt;) as { [key in TokenName]: key }
-&nbsp;
-export type Token&lt;T extends TokenName = TokenName&gt; = Lib.Token&lt;T&gt;
+export type Token&lt;T extends TokenName = TokenName&gt; = Lib.Token&lt;T&gt;;
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -295,7 +295,7 @@ export type Token&lt;T extends TokenName = TokenName&gt; = Lib.Token&lt;T&gt;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-07-30T04:10:38.284Z
+                at 2022-07-30T22:43:45.658Z
             </div>
         <script src="../prettify.js"></script>
         <script>

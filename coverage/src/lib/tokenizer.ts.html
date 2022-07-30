@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">91.89% </span>
+                <span class="strong">92.03% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>102/111</span>
+                <span class='fraction'>104/113</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">85.71% </span>
+                <span class="strong">84.48% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>48/56</span>
+                <span class='fraction'>49/58</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">93.75% </span>
+                <span class="strong">94.44% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>15/16</span>
+                <span class='fraction'>17/18</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">92.7% </span>
+                <span class="strong">92.78% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>89/96</span>
+                <span class='fraction'>90/97</span>
             </div>
         
             
@@ -249,7 +249,19 @@
 <a name='L184'></a><a href='#L184'>184</a>
 <a name='L185'></a><a href='#L185'>185</a>
 <a name='L186'></a><a href='#L186'>186</a>
-<a name='L187'></a><a href='#L187'>187</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a>
+<a name='L199'></a><a href='#L199'>199</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -274,6 +286,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">16818x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">16818x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -293,6 +306,9 @@
 <span class="cline-any cline-yes">90x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1624x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">16818x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">24624x</span>
@@ -317,6 +333,14 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -438,7 +462,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import * as Lib from ".";
 &nbsp;
 export type Lexeme = string | RegExp |
-    ((text: string, reporter: Lib.StdReporter, line: number, column: number) =&gt; undefined | string);
+    ((text: string, reporter: Lib.Reporter, line: number, column: number) =&gt; undefined | string);
 export type Lexicon = Record&lt;string, Lexeme&gt;;
 const ERROR_TOKEN = "__stoa__::error";
 &nbsp;
@@ -459,7 +483,8 @@ export class TokenStream&lt;Lx extends Lexicon&gt; {
     constructor(
         source: string,
         lexicon: Lx,
-        readonly reporter: Lib.Reporter, line = 1, column = 1
+        readonly reporter: Lib.Reporter,
+        line = 1, column = 1
     ) {
         this.generator = tokenGenerator(source, lexicon, reporter, line, column);
     }
@@ -477,6 +502,9 @@ export class TokenStream&lt;Lx extends Lexicon&gt; {
         let token, tokens = [];
         while ((token = this.take())) tokens.push(token);
         return tokens;
+    }
+    print(tokens = <span class="branch-0 cbranch-no" title="branch not covered" >this.buffer, l</span>evel: 'error' | 'log' = 'log') {
+        console[level](tokens.map(t =&gt; `${t}`).join('\n'))
     }
 &nbsp;
     private eof = false
@@ -508,6 +536,14 @@ export class TokenStream&lt;Lx extends Lexicon&gt; {
         );
     }
 }
+&nbsp;
+export class TokenStreamClass&lt;Lx extends Lexicon&gt; extends TokenStream&lt;Lx&gt; {
+    constructor(
+        source: string,
+        reporter: Lib.Reporter
+    ) { super(source, {} as Lx, reporter) }
+}
+&nbsp;
 &nbsp;
 function* tokenGenerator&lt;Lx extends Lexicon&gt;(
     source: string,
@@ -628,7 +664,7 @@ function stringScanner(value: string, reporter: Lib.Reporter, line: number, colu
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-07-30T04:10:38.284Z
+                at 2022-07-30T22:43:45.658Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

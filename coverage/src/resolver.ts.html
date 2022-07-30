@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">96.2% </span>
+                <span class="strong">95.06% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>76/79</span>
+                <span class='fraction'>77/81</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90% </span>
+                <span class="strong">85% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>18/20</span>
+                <span class='fraction'>17/20</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">97.14% </span>
+                <span class="strong">95.89% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>68/70</span>
+                <span class='fraction'>70/73</span>
             </div>
         
             
@@ -201,7 +201,34 @@
 <a name='L136'></a><a href='#L136'>136</a>
 <a name='L137'></a><a href='#L137'>137</a>
 <a name='L138'></a><a href='#L138'>138</a>
-<a name='L139'></a><a href='#L139'>139</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a>
+<a name='L149'></a><a href='#L149'>149</a>
+<a name='L150'></a><a href='#L150'>150</a>
+<a name='L151'></a><a href='#L151'>151</a>
+<a name='L152'></a><a href='#L152'>152</a>
+<a name='L153'></a><a href='#L153'>153</a>
+<a name='L154'></a><a href='#L154'>154</a>
+<a name='L155'></a><a href='#L155'>155</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -212,7 +239,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">90x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">60x</span>
+<span class="cline-any cline-yes">60x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">60x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">60x</span>
@@ -226,6 +256,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">204x</span>
 <span class="cline-any cline-yes">204x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">100x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">100x</span>
@@ -342,38 +374,54 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import * as Lib from "./lib";
 import * as Ast from "./ast";
 import { Interpreter } from "./interpreter";
-import { Reporter } from "./errors";
-&nbsp;
 enum FunctionType {
     NONE,
     FUNCTION,
 }
 &nbsp;
+enum VariableType {
+    DECLARED,
+    DEFINED,
+}
+&nbsp;
+/**
+ * Lexical bindings and scope *   is static scope
+ * which means static/semantic analysis and
+ * an extra pass called "Resolver".
+ *
+ * And other static analysis checks.
+ */
+&nbsp;
 export class Resolver extends Ast.Visitor&lt;void&gt; {
-    constructor(readonly evaluator: Interpreter, readonly reporter: Reporter) {
+    constructor(
+        readonly reporter: Lib.Reporter,
+        readonly evaluator: Interpreter
+    ) {
         super();
     }
-    currentFunction = FunctionType.NONE;
-    scopes: Record&lt;string, boolean&gt;[] = [];
-    beginScope() {
+    private currentFunction = FunctionType.NONE;
+    private scopes: Record&lt;string, VariableType&gt;[] = [];
+    private beginScope() {
         this.scopes.unshift({});
     }
-    endScope() {
+    private endScope() {
         this.scopes.shift();
     }
-    declare(ident: Lib.Token&lt;"IDENTIFIER"&gt;) {
+    private declare(ident: Lib.Token&lt;"IDENTIFIER"&gt;) {
         const scope = this.scopes[0];
         if (!scope) return;
-        if ([true, false].includes(scope[ident.text]))
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (scope[ident.text] === VariableType.DECLARED)
+<span class="cstat-no" title="statement not covered" >            this.reporter.error(ident, "Variable is already declared");</span>
+        if (scope[ident.text] === VariableType.DEFINED)
             this.reporter.error(ident, "Variable is already defined");
-        scope[ident.text] = false;
+        scope[ident.text] = VariableType.DECLARED;
     }
-    define(ident: Lib.Token&lt;"IDENTIFIER"&gt;) {
+    private define(ident: Lib.Token&lt;"IDENTIFIER"&gt;) {
         const scope = this.scopes[0];
         if (!scope) return;
-        scope[ident.text] = true;
+        scope[ident.text] = VariableType.DEFINED;
     }
-    resolveLocal(expr: Ast.Expression, token: Lib.Token&lt;"IDENTIFIER"&gt;) {
+    private resolveLocal(expr: Ast.Expression, token: Lib.Token&lt;"IDENTIFIER"&gt;) {
         this.scopes.find((scope, i) =&gt; {
             if (scope[token.text]) {
                 this.evaluator.resolve(expr, i);
@@ -382,7 +430,7 @@ export class Resolver extends Ast.Visitor&lt;void&gt; {
             return false;
         });
     }
-    resolveFunction(fun: Ast.FunctionExpr, ft: FunctionType) {
+    private resolveFunction(fun: Ast.FunctionExpr, ft: FunctionType) {
         const encFunction = this.currentFunction;
         this.currentFunction = ft;
         this.beginScope();
@@ -467,9 +515,9 @@ export class Resolver extends Ast.Visitor&lt;void&gt; {
     }
     VariableExpr(expr: Ast.VariableExpr) {
         const scope = this.scopes[0];
-        if (!scope) return; // the following ex needs reported, not thrown
-        <span class="missing-if-branch" title="if path not taken" >I</span>if (Object.keys(scope).includes(expr.name.text) &amp;&amp; !scope[expr.name.text])
-<span class="cstat-no" title="statement not covered" >            throw new Lib.ParseError("cant reference self in initializer");</span>
+        if (!scope) return;
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (scope[expr.name.text] === VariableType.DECLARED)
+<span class="cstat-no" title="statement not covered" >            this.reporter.error(expr.name, "Reference to uninitialized variable");</span>
         this.resolveLocal(expr, expr.name);
     }
     WhileStmt(stmt: Ast.WhileStmt) {
@@ -484,7 +532,7 @@ export class Resolver extends Ast.Visitor&lt;void&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-07-30T04:10:38.284Z
+                at 2022-07-30T22:43:45.658Z
             </div>
         <script src="../prettify.js"></script>
         <script>

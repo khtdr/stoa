@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">84.37% </span>
+                <span class="strong">82.85% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>27/32</span>
+                <span class='fraction'>29/35</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60% </span>
+                <span class="strong">52.63% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>9/15</span>
+                <span class='fraction'>10/19</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">81.81% </span>
+                <span class="strong">76.92% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>9/11</span>
+                <span class='fraction'>10/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">80.76% </span>
+                <span class="strong">79.31% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>21/26</span>
+                <span class='fraction'>23/29</span>
             </div>
         
             
@@ -136,22 +136,16 @@
 <a name='L71'></a><a href='#L71'>71</a>
 <a name='L72'></a><a href='#L72'>72</a>
 <a name='L73'></a><a href='#L73'>73</a>
-<a name='L74'></a><a href='#L74'>74</a>
-<a name='L75'></a><a href='#L75'>75</a>
-<a name='L76'></a><a href='#L76'>76</a>
-<a name='L77'></a><a href='#L77'>77</a>
-<a name='L78'></a><a href='#L78'>78</a>
-<a name='L79'></a><a href='#L79'>79</a>
-<a name='L80'></a><a href='#L80'>80</a>
-<a name='L81'></a><a href='#L81'>81</a>
-<a name='L82'></a><a href='#L82'>82</a>
-<a name='L83'></a><a href='#L83'>83</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L74'></a><a href='#L74'>74</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">90x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">60x</span>
 <span class="cline-any cline-yes">60x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -203,6 +197,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">90x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">146x</span>
+<span class="cline-any cline-yes">146x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">530528x</span>
 <span class="cline-any cline-yes">530528x</span>
 <span class="cline-any cline-yes">530528x</span>
@@ -211,32 +209,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">90x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import * as Lib from ".";
 &nbsp;
 export class Parser&lt;Lx extends Lib.Lexicon, Ast extends object&gt; {
     constructor(
         private readonly tokens: Lib.Token&lt;keyof Lx&gt;[],
-        protected reporter = <span class="branch-0 cbranch-no" title="branch not covered" >new Lib.StdReporter()</span>
+        protected reporter: Lib.Reporter = <span class="branch-0 cbranch-no" title="branch not covered" >new Lib.StdErrReporter()</span>
     ) { }
 &nbsp;
 <span class="fstat-no" title="function not covered" >    parse(): Ast | undefined {</span>
 <span class="cstat-no" title="statement not covered" >        return undefined;</span>
+    }
+<span class="fstat-no" title="function not covered" >    print(a</span>st?: Ast, level: 'error' | 'log' = <span class="branch-0 cbranch-no" title="branch not covered" >'log') {</span>
+<span class="cstat-no" title="statement not covered" >        console[level](`${ast ?? ''}`)</span>
     }
 &nbsp;
     private current = 0;
@@ -284,31 +269,19 @@ export class Parser&lt;Lx extends Lib.Lexicon, Ast extends object&gt; {
 }
 &nbsp;
 export class Visitor&lt;Ast extends object, Result = string&gt; {
+    constructor(
+        readonly reporter: Lib.Reporter = new Lib.StdErrReporter(),
+        readonly interpreter?: any
+    ) { }
     visit(node: Ast): Result {
         const name = node.constructor.name
         const fn = this[name as keyof this]
         <span class="missing-if-branch" title="else path not taken" >E</span>if (typeof fn == 'function') return fn.bind(this)(node)
-<span class="cstat-no" title="statement not covered" >        throw new ParseError(`Unvisitable node: ${name}`)</span>
+<span class="cstat-no" title="statement not covered" >        throw new ParseError(`Unvisitable node: ${name} (UNIMPLEMENTED BY AUTHOR)`)</span>
     }
 }
 &nbsp;
 export class ParseError extends Error { }
-&nbsp;
-// Some stuff used as placeholders for the CLI, partially configured languages, etc.
-&nbsp;
-export class AnyTokenParser&lt;Lex extends Lib.Lexicon, Ast extends object&gt; extends Parser&lt;Lex, Ast&gt; {
-    parse() {
-        const tokens = []
-        while (!this.atEnd()) tokens.push(this.advance())
-        return tokens as unknown as Ast
-    }
-}
-&nbsp;
-export class AnyAstVisitor&lt;Ast extends object = any, Result extends string = string&gt; implements Visitor&lt;Ast, Result&gt; {
-    visit(node: Ast): Result {
-        return JSON.stringify(node) as Result
-    }
-}
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -316,7 +289,7 @@ export class AnyAstVisitor&lt;Ast extends object = any, Result extends string = 
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-07-30T04:10:38.284Z
+                at 2022-07-30T22:43:45.658Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
