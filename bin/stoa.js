@@ -4883,6 +4883,18 @@ var Interpreter = class extends Visitor2 {
         return `${lStr}${rStr}`;
       }
     }
+    if (op == TOKEN.EQUAL_EQUAL) {
+      if (isNumber(left) && isNumber(right))
+        return left[0] == right[0];
+      else
+        return left === right;
+    }
+    if (op == TOKEN.BANG_EQUAL) {
+      if (isNumber(left) && isNumber(right))
+        return left[0] != right[0];
+      else
+        return left !== right;
+    }
     if (!isNumber(left) || !isNumber(right))
       throw new RuntimeError(expr.operator, "number values expected");
     if (right[0] == 0)
