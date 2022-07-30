@@ -60,6 +60,8 @@ snapshots:
 
 graph:
 	@npx depcruise --include-only "^src" --output-type dot src | dot -T png > dependency-graph.png
+	@npx depcruise --include-only "^src" --output-type ddot src | dot -T png > ddot.png
+	@npx depcruise --include-only "^src" --output-type archi src | dot -T png > archi.png
 
 deps: Makefile node_modules
 

@@ -50,6 +50,11 @@ prints tokens and exits
 make graph
 #+end_src
 
+
+[[./ddot.png]]
+
+[[./archi.png]]
+
 [[./dependency-graph.png]]
 
 
