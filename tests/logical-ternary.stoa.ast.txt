@@ -1,0 +1,9 @@
+(program 
+   (var n 1)
+   (var b (group (, (= n (+ n 1)) n)))
+   (and (group (== n b)) (group (= n (+ n 1))))
+   (or (group (== n b)) (group (= n (+ n 1))))
+   (or (group (!= n b)) (group (= n (+ n 1))))
+   (print (+ (+ n  ) b))
+   (print (?: (== (group (+ (+ n :) b)) 4:2) yep! oh-no))
+)
