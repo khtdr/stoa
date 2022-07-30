@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>README.html</title>
+<meta http-equiv="Content-Type" content="application/xhtml+xml;charset=utf-8"/>
+<link rel="stylesheet" type="text/css" media="all" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css"  />
+<link rel="stylesheet" type="text/css" media="all" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/github.min.css"  /><meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'><style> body { box-sizing: border-box; max-width: 740px; width: 100%; margin: 40px auto; padding: 0 10px; } </style><script id='MathJax-script' async src='https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'></script><script src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js'></script><script>document.addEventListener('DOMContentLoaded', () => { document.body.classList.add('markdown-body'); document.querySelectorAll('pre[lang] > code').forEach((code) => { code.classList.add(code.parentElement.lang); }); document.querySelectorAll('pre > code').forEach((code) => { hljs.highlightBlock(code); }); });</script>
+</head>
+
+<body>
+
+<h1 id="table-of-contents">Table of Contents</h1>
+<ol type="1">
+<li><a href="#org60a3c30">Project Stoa</a>
+<ol type="1">
+<li><a href="#org3ded3e4">Project Status</a>
+<ol type="1">
+<li><a href="#org6db5509">create a malleable language framework for
+exploring language ideas</a></li>
+</ol></li>
+<li><a href="#orge0618bc">Build Status</a></li>
+<li><a href="#orgd0af5b6">Usage Documentation</a></li>
+<li><a href="#org54d51af">Current Version</a></li>
+<li><a href="#org49e2d82">Code Structure</a></li>
+<li><a href="#org4a351f4">Test Suite Status</a></li>
+<li><a href="#orge95985d">Code Coverage</a></li>
+<li><a href="#orga16c0ba">Potential Goals</a></li>
+</ol></li>
+<li><a href="#org7f584c8">…</a>
+<ol type="1">
+<li><a href="#orgdd3cb8b">build</a></li>
+<li><a href="#org8e20468">clean</a></li>
+</ol></li>
+</ol>
+<p><a id="org60a3c30"></a></p>
+<h1 id="project-stoa">Project Stoa</h1>
+<p><a id="org3ded3e4"></a></p>
+<h2 id="project-status">Project Status</h2>
+<p><a id="org6db5509"></a></p>
+<h3
+id="create-a-malleable-language-framework-for-exploring-language-ideas">[
+] create a malleable language framework for exploring language
+ideas</h3>
+<p><a id="orge0618bc"></a></p>
+<h2 id="build-status">Build Status</h2>
+<pre><code>make build
+
+npx tsup --keep-names --no-splitting \
+             --out-dir ./bin src/stoa.ts \
+             --sourcemap
+CLI Building entry: src/stoa.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v6.1.2
+CLI Target: node14
+CJS Build start
+CJS ⚡️ Build success in 89ms
+CJS bin/stoa.js     161.81 KB
+CJS bin/stoa.js.map 300.73 KB</code></pre>
+<p><a id="orgd0af5b6"></a></p>
+<h2 id="usage-documentation">Usage Documentation</h2>
+<pre><code>./bin/stoa --help
+
+Usage: node ./bin/stoa.js [options] [file]
+Show this help message
+    --help
+prints version info and exits 
+    -v
+prints parse tree and exits 
+    -p
+prints tokens and exits 
+    -t</code></pre>
+<p><a id="org54d51af"></a></p>
+<h2 id="current-version">Current Version</h2>
+<pre><code>./bin/stoa -v
+
+stoa-2022.07.20</code></pre>
+<p><a id="org49e2d82"></a></p>
+<h2 id="code-structure">Code Structure</h2>
+<pre><code>make graph</code></pre>
+<figure>
+<img src="./dependency-graph.png" alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p><a id="org4a351f4"></a></p>
+<h2 id="test-suite-status">Test Suite Status</h2>
+<pre><code>make test
+
+Testing tokenizer snapshots
+✔ arithmetic.stoa
+✔ closures.stoa
+✔ divide-by-zero.stoa
+✔ fib.stoa
+✔ functions.stoa
+✔ global-redefine.stoa
+✔ hello-world.stoa
+✔ literals.stoa
+✔ name.stoa
+✔ same-names.stoa
+✔ scope.stoa
+✔ semantic-return.stoa
+✔ sticky-precision.stoa
+Passing: 13 Failing: 0
+
+Snapshotting the parse tree
+✔ arithmetic.stoa
+✔ closures.stoa
+✔ divide-by-zero.stoa
+✔ fib.stoa
+✔ functions.stoa
+✔ global-redefine.stoa
+✔ hello-world.stoa
+✔ literals.stoa
+✔ name.stoa
+✔ same-names.stoa
+✔ scope.stoa
+✔ semantic-return.stoa
+✔ sticky-precision.stoa
+Passing: 13 Failing: 0
+
+Testing the evaluator (with parse errors)
+✔ arithmetic.stoa
+✔ closures.stoa
+✔ divide-by-zero.stoa
+✔ fib.stoa
+✔ functions.stoa
+✔ global-redefine.stoa
+✔ hello-world.stoa
+✔ literals.stoa
+✔ name.stoa
+✔ same-names.stoa
+✔ scope.stoa
+✔ semantic-return.stoa
+✔ sticky-precision.stoa
+Passing: 13 Failing: 0</code></pre>
+<p><a id="orge95985d"></a></p>
+<h2 id="code-coverage">Code Coverage</h2>
+<pre><code>make coverage
+
+npx nyc --extends &quot;@istanbuljs/nyc-config-typescript&quot; \
+            --exclude-after-remap \
+            --reporter html --reporter text --reporter text-summary \
+            make silent-test
+------------------|---------|----------|---------|---------|----------------------------------------
+File              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                      
+------------------|---------|----------|---------|---------|----------------------------------------
+All files         |   81.74 |    65.88 |   89.83 |   81.98 |                                        
+ src              |    80.3 |    62.08 |   91.47 |    81.4 |                                        
+  ast.ts          |     100 |      100 |     100 |     100 |                                        
+  errors.ts       |     100 |      100 |     100 |     100 |                                        
+  interpreter.ts  |   71.14 |       50 |   89.28 |   74.78 | ...116,124-131,148,159-165,173,188-194 
+  parser.ts       |   77.02 |    64.56 |   96.87 |   77.83 | ...259-264,273-275,329-334,383,406-424 
+  printer.ts      |   83.05 |     62.5 |      88 |   80.76 | 44-50,56,69-72                         
+  resolver.ts     |   89.87 |       90 |   89.28 |    91.3 | 91-97,111-113                          
+  runtime.ts      |   95.45 |       50 |      80 |     100 | 21-22                                  
+  scanner.ts      |     100 |      100 |     100 |     100 |                                        
+  stoa.ts         |   86.48 |       75 |     100 |   86.11 | 18-19,31,45-46                         
+ src/ast          |    88.5 |      100 |      85 |   84.37 |                                        
+  declarations.ts |     100 |      100 |     100 |     100 |                                        
+  expressions.ts  |   84.31 |      100 |   81.81 |   78.94 | 62-64,70-74                            
+  statements.ts   |    92.3 |      100 |   85.71 |   89.47 | 25-26                                  
+  visitor.ts      |     100 |      100 |     100 |     100 |                                        
+ src/lib          |   81.33 |    69.86 |   85.71 |   82.03 |                                        
+  cli.ts          |     100 |      100 |     100 |     100 |                                        
+  parser.ts       |   84.37 |       60 |   81.81 |   80.76 | 10,27,52-53,62                         
+  repl.ts         |     100 |      100 |     100 |     100 |                                        
+  reporter.ts     |      50 |        0 |       0 |   33.33 | 9-10                                   
+  tokenizer.ts    |   81.08 |       75 |   93.75 |   83.33 | 57-58,66-68,150-162,181-182            
+ src/runtime      |   91.42 |    79.41 |      90 |      88 |                                        
+  environment.ts  |   90.47 |       75 |     100 |   84.61 | 17,23                                  
+  globals.ts      |      75 |      100 |      50 |      75 | 7                                      
+  values.ts       |     100 |      100 |     100 |     100 |                                        
+------------------|---------|----------|---------|---------|----------------------------------------
+
+=============================== Coverage summary ===============================
+Statements   : 81.74% ( 712/871 )
+Branches     : 65.88% ( 253/384 )
+Functions    : 89.83% ( 168/187 )
+Lines        : 81.98% ( 610/744 )
+================================================================================</code></pre>
+<p>The latest uploaded report is at: <a
+href="https://khtdr.com/stoa/coverage/"
+class="uri">https://khtdr.com/stoa/coverage/</a></p>
+<p><a id="orga16c0ba"></a></p>
+<h2 id="potential-goals">Potential Goals</h2>
+<ul>
+<li>full stack from sql to hover effects</li>
+<li>lsp compatible</li>
+<li>actually use it to create</li>
+<li>minimize user function writing with string/date/number
+primitives</li>
+</ul>
+<p><a id="org7f584c8"></a></p>
+<h1 id="section">…</h1>
+<p><a id="orgdd3cb8b"></a></p>
+<h2 id="build">build</h2>
+<p><a id="org8e20468"></a></p>
+<h2 id="clean">clean</h2>
+
+</body>
+</html>
