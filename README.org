@@ -181,6 +181,6 @@ The latest uploaded report is at: https://khtdr.com/stoa/coverage/
 
 * ...
 ** build
-src_elisp[:results none]{(save-excursion (org-goto-line 1) (org-babel-execute-subtree))}
+src_elisp[:results none]{;(save-excursion (org-goto-line 1) (org-babel-execute-subtree))}
 ** clean
-src_elisp[:results none]{(save-excursion (org-goto-line 1) (+org/remove-result-blocks t))}
+src_elisp[:results none]{;(save-excursion (org-goto-line 1) (+org/remove-result-blocks t))}

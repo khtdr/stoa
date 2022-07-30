@@ -19,6 +19,7 @@ for test_script in *.stoa; do
     fi
 done
 echo Passing: $pass Failing: $fail
+echo
 
 
 # For recreating snapshots

@@ -8,6 +8,7 @@ help:
 	@echo make "repl      # Launch the REPL"
 	@echo make "install   # Builds and installs to ~/bin"
 	@echo make "test      # Builds, installs, and tests"
+	@echo make "coverage  # Builds coverage reports"
 
 build: deps
 	npx tsup --keep-names --no-splitting \
@@ -21,13 +22,10 @@ build-watch: deps
 	         --keep-names --no-splitting \
 	         --out-dir ./bin src/stoa.ts
 
-test:
-	@make build >/dev/null
-	./bin/test-tokenizer.sh
-	@echo
-	./bin/test-parser.sh
-	@echo
-	./bin/test-evaluator.sh
+test: silent-build
+	@./bin/test-tokenizer.sh
+	@./bin/test-parser.sh
+	@./bin/test-evaluator.sh
 
 silent-test:
 	@make test &>/dev/null
