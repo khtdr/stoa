@@ -9,14 +9,20 @@ make build
 #+end_src
 
 #+RESULTS:
-: CLI Building entry: src/stoa.ts
-: CLI Using tsconfig: tsconfig.json
-: CLI tsup v6.1.2
-: CLI Target: node14
-: CJS Build start
-: CJS ⚡️ Build success in 38ms
-: CJS bin/stoa.js     47.07 KB
-: CJS bin/stoa.js.map 99.56 KB
+#+begin_example
+pnpm install
+Lockfile is up-to-date, resolution step is skipped
+Already up-to-date
+
+CLI Building entry: src/stoa.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v6.1.2
+CLI Target: node14
+CJS Build start
+CJS ⚡️ Build success in 156ms
+CJS bin/stoa.js     47.07 KB
+CJS bin/stoa.js.map 99.56 KB
+#+end_example
 
 ** Usage Documentation
 #+begin_src sh :exports both :results verbatim
@@ -61,59 +67,113 @@ make test
 
 #+RESULTS:
 #+begin_example
-Testing tokenizer snapshots
-✔ arithmetic.stoa
-✔ closures.stoa
-✔ comments.stoa
-✔ divide-by-zero.stoa
-✔ fib.stoa
-✔ functions.stoa
-✔ global-redefine.stoa
-✔ hello-world.stoa
-✔ literals.stoa
-✔ logical-ternary.stoa
-✔ name.stoa
-✔ same-names.stoa
-✔ scope.stoa
-✔ semantic-return.stoa
-✔ sticky-precision.stoa
-Passing: 15 Failing: 0
-
-Snapshotting the parse tree
-✔ arithmetic.stoa
-✔ closures.stoa
-✔ comments.stoa
-✔ divide-by-zero.stoa
-✔ fib.stoa
-✔ functions.stoa
-✔ global-redefine.stoa
-✔ hello-world.stoa
-✔ literals.stoa
-✔ logical-ternary.stoa
-✔ name.stoa
-✔ same-names.stoa
-✔ scope.stoa
-✔ semantic-return.stoa
-✔ sticky-precision.stoa
-Passing: 15 Failing: 0
-
-Testing the evaluator (with parse errors)
-✔ arithmetic.stoa
-✔ closures.stoa
-✔ comments.stoa
-✔ divide-by-zero.stoa
-✔ fib.stoa
-✔ functions.stoa
-✔ global-redefine.stoa
-✔ hello-world.stoa
-✔ literals.stoa
-✔ logical-ternary.stoa
-✔ name.stoa
-✔ same-names.stoa
-✔ scope.stoa
-✔ semantic-return.stoa
-✔ sticky-precision.stoa
-Passing: 15 Failing: 0
+Running the test suite
+Test: arithmetic.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: closures.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: comments.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: divide-by-zero.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: fib.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: functions.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: global-redefine.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: hello-world.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: literals.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: logical-ternary.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: name.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: same-names.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: scope.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: semantic-return.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Test: sticky-precision.stoa
+  ✔ Token errors
+  ✔ Token output
+  ✔ Parse errors
+  ✔ Parse tree
+  ✔ Runtime errors
+  ✔ Runtime Output
+Passing: 90 Failing: 0
 
 #+end_example
 
