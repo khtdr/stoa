@@ -1707,13 +1707,13 @@ if (reporter.errors) {
   process.exit(1);
 }
 resolver.visit(ast);
-if (import_opts.default.get("p")) {
-  console.log(new Printer().visit(ast));
-  process.exit(0);
-}
 if (reporter.errors) {
   reporter.parseError();
   process.exit(1);
+}
+if (import_opts.default.get("p")) {
+  console.log(new Printer().visit(ast));
+  process.exit(0);
 }
 interpreter.visit(ast);
 if (reporter.errors) {
