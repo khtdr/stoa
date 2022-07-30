@@ -1,13 +1,19 @@
+import * as Lib from "./lib";
 import * as Ast from "./ast";
 import * as Runtime from './runtime'
-import { Reporter } from "./errors";
+
+/**
+ * Goals
+ * 1) runtime error checking
+ * 2) defer to runtime library for behavior
+ */
 
 export class Interpreter extends Ast.Visitor<Runtime.Result> {
     readonly globals = new Runtime.Environment()
     private env = this.globals
 
     constructor(
-        readonly reporter: Reporter
+        readonly reporter: Lib.Reporter
     ) {
         super()
         Runtime.registerGlobals(this)

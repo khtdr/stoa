@@ -219,6 +219,63 @@ var import_opts = __toESM(require_opts());
 // package.json
 var version = "2022.07.29";
 
+// src/lib/language.ts
+var Language = class {
+  constructor(reporter = new StdErrReporter()) {
+    this.reporter = reporter;
+    this.opts = { stage: "eval" };
+    this.errored = false;
+  }
+  options(opts2) {
+    this.opts = opts2;
+  }
+  run(name, code) {
+    this.errored = false;
+    this.reporter.pushSource(name, code);
+    this.runToStage(code);
+    this.reporter.popSource();
+  }
+  runToStage(source) {
+    const scanner = new this.Tokenizer(source, this.reporter);
+    const tokens = scanner.drain();
+    if (this.reporter.errors) {
+      this.errored = true;
+      this.reporter.tokenError();
+    }
+    if (this.opts.stage === "scan") {
+      scanner.print(tokens);
+      return;
+    }
+    const parser = new this.Parser(tokens, this.reporter);
+    const interpreter = new this.Interpreter(this.reporter);
+    const resolver = new this.Resolver(this.reporter, interpreter);
+    const ast = parser.parse();
+    if (this.reporter.errors) {
+      this.errored = true;
+      this.reporter.parseError();
+      return;
+    }
+    if (!ast)
+      return;
+    resolver.visit(ast);
+    if (this.reporter.errors) {
+      this.errored = true;
+      this.reporter.parseError();
+      return;
+    }
+    if (this.opts.stage == "parse") {
+      parser.print(ast);
+      return;
+    }
+    interpreter.visit(ast);
+    if (this.reporter.errors) {
+      this.errored = true;
+      this.reporter.runtimeError();
+    }
+  }
+};
+__name(Language, "Language");
+
 // src/lib/tokenizer.ts
 var ERROR_TOKEN = "__stoa__::error";
 var Token = class {
@@ -234,12 +291,12 @@ var Token = class {
 };
 __name(Token, "Token");
 var TokenStream = class {
-  constructor(source2, lexicon, reporter2, line = 1, column = 1) {
-    this.reporter = reporter2;
+  constructor(source, lexicon, reporter, line = 1, column = 1) {
+    this.reporter = reporter;
     this.buffer = [];
     this.eof = false;
     this.error = false;
-    this.generator = tokenGenerator(source2, lexicon, reporter2, line, column);
+    this.generator = tokenGenerator(source, lexicon, reporter, line, column);
   }
   take() {
     this.peek();
@@ -251,10 +308,13 @@ var TokenStream = class {
     return this.buffer[0];
   }
   drain() {
-    let token, tokens2 = [];
+    let token, tokens = [];
     while (token = this.take())
-      tokens2.push(token);
-    return tokens2;
+      tokens.push(token);
+    return tokens;
+  }
+  print(tokens = this.buffer, level = "log") {
+    console[level](tokens.map((t) => `${t}`).join("\n"));
   }
   next() {
     if (this.eof)
@@ -281,10 +341,10 @@ var TokenStream = class {
   }
 };
 __name(TokenStream, "TokenStream");
-function* tokenGenerator(source2, lexicon, reporter2, start_line = 1, start_column = 1) {
+function* tokenGenerator(source, lexicon, reporter, start_line = 1, start_column = 1) {
   let idx = 0, line = start_line, column = start_column;
-  while (idx < source2.length) {
-    const [name = ERROR_TOKEN, text = source2[idx]] = longest(possible());
+  while (idx < source.length) {
+    const [name = ERROR_TOKEN, text = source[idx]] = longest(possible());
     const token = new Token(name, text, pos());
     const lines = text.split("\n").length;
     if (lines > 1) {
@@ -317,16 +377,16 @@ function* tokenGenerator(source2, lexicon, reporter2, start_line = 1, start_colu
     const candidates = [];
     Object.entries(lexicon).map(([name, rule]) => {
       if (typeof rule == "function") {
-        const text = rule(source2.substring(idx), reporter2, line, column);
+        const text = rule(source.substring(idx), reporter, line, column);
         if (text !== void 0)
           candidates.push([name, text, false]);
       } else if (typeof rule != "string") {
         const dynamic = rule.source[rule.source.length - 1] == "*";
         const regex = new RegExp(`^${rule.source}`, rule.flags);
-        const match = regex.exec(source2.substring(idx));
+        const match = regex.exec(source.substring(idx));
         if (match)
           return candidates.push([name, match[0], dynamic]);
-      } else if (source2.substring(idx, idx + rule.length) == rule) {
+      } else if (source.substring(idx, idx + rule.length) == rule) {
         return candidates.push([name, rule, false]);
       }
     });
@@ -348,13 +408,13 @@ var Tokens = {
     ALL: /\s+/
   }
 };
-function cStyleCommentScanner(value, reporter2, line, column) {
+function cStyleCommentScanner(value, reporter, line, column) {
   const tokenizer = new TokenStream(value, {
     OPEN: "/*",
     CLOSE: "*/",
     ESCAPED_CHAR: /\\./,
     CHAR: /.|\s/
-  }, reporter2, line, column);
+  }, reporter, line, column);
   const opener = tokenizer.take();
   if (opener && opener.name == "OPEN") {
     let stack = 0, closer, text = opener.text;
@@ -369,18 +429,18 @@ function cStyleCommentScanner(value, reporter2, line, column) {
           stack -= 1;
       }
     }
-    reporter2.error(opener, `Unclosed comment at line ${opener.pos.line}, column ${opener.pos.column}.`);
+    reporter.error(opener, `Unclosed comment at line ${opener.pos.line}, column ${opener.pos.column}.`);
     return text;
   }
 }
 __name(cStyleCommentScanner, "cStyleCommentScanner");
-function stringScanner(value, reporter2, line, column) {
+function stringScanner(value, reporter, line, column) {
   const tokenizer = new TokenStream(value, {
     SINGLE: "'",
     DOUBLE: '"',
     ESCAPED_CHAR: /\\./,
     CHAR: /.|\s/
-  }, reporter2, line, column);
+  }, reporter, line, column);
   const opener = tokenizer.take();
   if (opener && ["SINGLE", "DOUBLE"].includes(opener.name)) {
     let { text } = opener, closer;
@@ -389,7 +449,7 @@ function stringScanner(value, reporter2, line, column) {
       if (closer.name == opener.name)
         return text;
     }
-    reporter2.error(opener, `Unclosed string at line ${opener.pos.line}, column ${opener.pos.column}.`);
+    reporter.error(opener, `Unclosed string at line ${opener.pos.line}, column ${opener.pos.column}.`);
     return text;
   }
 }
@@ -397,13 +457,16 @@ __name(stringScanner, "stringScanner");
 
 // src/lib/parser.ts
 var Parser = class {
-  constructor(tokens2, reporter2 = new StdReporter()) {
-    this.tokens = tokens2;
-    this.reporter = reporter2;
+  constructor(tokens, reporter = new StdErrReporter()) {
+    this.tokens = tokens;
+    this.reporter = reporter;
     this.current = 0;
   }
   parse() {
     return void 0;
+  }
+  print(ast, level = "log") {
+    console[level](`${ast ?? ""}`);
   }
   match(...names) {
     for (const name of names) {
@@ -446,12 +509,16 @@ var Parser = class {
 };
 __name(Parser, "Parser");
 var Visitor = class {
+  constructor(reporter = new StdErrReporter(), interpreter) {
+    this.reporter = reporter;
+    this.interpreter = interpreter;
+  }
   visit(node) {
     const name = node.constructor.name;
     const fn = this[name];
     if (typeof fn == "function")
       return fn.bind(this)(node);
-    throw new ParseError(`Unvisitable node: ${name}`);
+    throw new ParseError(`Unvisitable node: ${name} (UNIMPLEMENTED BY AUTHOR)`);
   }
 };
 __name(Visitor, "Visitor");
@@ -460,18 +527,57 @@ var ParseError = class extends Error {
 __name(ParseError, "ParseError");
 
 // src/lib/reporter.ts
-var StdReporter = class {
+var StdErrReporter = class {
+  constructor() {
+    this.files = [];
+    this._errors = [];
+  }
+  pushSource(name, source) {
+    this.files.push([name, source]);
+  }
+  popSource() {
+    this.files.pop();
+  }
   error(token, message) {
-    const str = message ?? token.toString();
-    console.error(str);
+    this._errors.push([token, message]);
+  }
+  get errors() {
+    return !this._errors.length ? false : this._errors;
+  }
+  tokenError() {
+    this.reportErrors("Token");
+  }
+  parseError() {
+    this.reportErrors("Parse");
+  }
+  runtimeError() {
+    this.reportErrors("Runtime");
+  }
+  reportErrors(type) {
+    const [name, source] = this.files[this.files.length - 1];
+    const lines = source.split("\n");
+    for (const [token, message] of this._errors) {
+      this.log(`${type} error in ${name} at line,col ${token.pos.line},${token.pos.column}`);
+      const prefix = `${token.pos.line}. `;
+      const code = `${lines[token.pos.line - 1]}`;
+      this.log(`${prefix}${code}`);
+      const spaces = `${prefix}${code}`.replace(/./g, " ");
+      const arr = spaces.substring(0, prefix.length + token.pos.column - 1);
+      this.log(`${arr}\u2191`);
+      this.log(`${message}`);
+    }
+    this._errors = [];
+  }
+  log(message) {
+    console.error(message);
   }
 };
-__name(StdReporter, "StdReporter");
+__name(StdErrReporter, "StdErrReporter");
 
 // src/scanner.ts
 var _Scanner = class extends TokenStream {
-  constructor(source2, reporter2) {
-    super(source2, _Scanner.lexicon, reporter2);
+  constructor(source, reporter) {
+    super(source, _Scanner.lexicon, reporter);
   }
 };
 var Scanner = _Scanner;
@@ -690,12 +796,129 @@ var Program = class {
 };
 __name(Program, "Program");
 
+// src/printer.ts
+var Printer = class extends Visitor2 {
+  AssignExpr(assign) {
+    return `(= ${assign.name.text} ${this.visit(assign.value)})`;
+  }
+  BinaryExpr(expr) {
+    const operator = expr.operator.text;
+    const left = this.visit(expr.left);
+    const right = this.visit(expr.right);
+    return `(${operator} ${left} ${right})`;
+  }
+  BlockStmt(block) {
+    const blocks = block.statements.map((stmt) => this.visit(stmt)).join("\n");
+    return `(block 
+${indent(blocks)}
+)`;
+  }
+  CallExpr(call) {
+    const callee = `(call ${this.visit(call.callee)}`;
+    if (!call.args.length)
+      return `${callee})`;
+    const args = call.args.map((arg) => this.visit(arg)).join(" ");
+    return `${callee} ${args})`;
+  }
+  ExpressionStmt(statement) {
+    return this.visit(statement.expr);
+  }
+  FunctionExpr(fun) {
+    const params = fun.params.map((p) => p.text).join(" ");
+    const body = this.visit(fun.block);
+    return `(let [${params}] ${body})`;
+  }
+  FunctionDecl(decl) {
+    const name = decl.name.text;
+    const val = this.visit(decl.func);
+    return `(fun ${name} ${val})`;
+  }
+  GroupExpr(expr) {
+    const operand = this.visit(expr.inner);
+    return `(group ${operand})`;
+  }
+  IfStmt(statement) {
+    const cond = this.visit(statement.condition);
+    const stmtTrue = this.visit(statement.trueStatement);
+    if (!statement.falseStatement)
+      return `(if ${cond} ${stmtTrue})`;
+    const stmtFalse = this.visit(statement.falseStatement);
+    return `(if ${cond} 
+${indent(stmtTrue)} 
+${indent(stmtFalse)})`;
+  }
+  JumpStmt(statement) {
+    const dest = statement.keyword.name;
+    const dist = this.visit(statement.distance || new LiteralExpr([1, 0]));
+    return `(${dest} ${dist})`;
+  }
+  LiteralExpr(expr) {
+    return expr.toString();
+  }
+  LogicalExpr(expr) {
+    return this.BinaryExpr(expr);
+  }
+  PrintStmt(statement) {
+    return `(print ${this.visit(statement.expr)})`;
+  }
+  Program(program) {
+    const decls = program.code.map((decl) => this.visit(decl)).join("\n");
+    return `(program 
+${indent(decls)}
+)`;
+  }
+  ReturnStmt(ret) {
+    return `(return ${this.visit(ret.expr)})`;
+  }
+  TernaryExpr(expr) {
+    const left = this.visit(expr.left);
+    const middle = this.visit(expr.middle);
+    const right = this.visit(expr.right);
+    return `(?: ${left} ${middle} ${right})`;
+  }
+  UnaryExpr(expr) {
+    const operator = expr.operator.text;
+    const operand = this.visit(expr.operand);
+    return `(${operator} ${operand})`;
+  }
+  VariableDecl(declaration) {
+    const decl = `(var ${declaration.name.text}`;
+    const init = declaration.expr ? ` ${this.visit(declaration.expr)}` : "";
+    return `${decl}${init})`;
+  }
+  VariableExpr(expr) {
+    return `${expr.name.text}`;
+  }
+  WhileStmt(statement) {
+    const cond = this.visit(statement.condition);
+    const body = this.visit(statement.body);
+    return `(while ${cond} 
+${indent(body)}
+)`;
+  }
+};
+__name(Printer, "Printer");
+function indent(text) {
+  const pad = new Array(3).fill(" ").join("");
+  return text.replace(/^/mg, pad);
+}
+__name(indent, "indent");
+
 // src/parser.ts
 var Parser2 = class extends Parser {
   parse() {
     if (!this._parsed)
       this._parsed = this.Program();
     return this._parsed;
+  }
+  toString() {
+    if (!this._parsed)
+      return "un-parsed";
+    return new Printer().visit(this._parsed);
+  }
+  print(ast = this._parsed, level = "log") {
+    const message = !ast ? "()" : new Printer().visit(ast);
+    console[level](message);
   }
   Program() {
     const declarations = [];
@@ -1158,9 +1381,9 @@ __name(isCallable, "isCallable");
 
 // src/interpreter.ts
 var Interpreter = class extends Visitor2 {
-  constructor(reporter2) {
+  constructor(reporter) {
     super();
-    this.reporter = reporter2;
+    this.reporter = reporter;
     this.globals = new Environment();
     this.env = this.globals;
     this.locals = /* @__PURE__ */ new Map();
@@ -1384,120 +1607,12 @@ var Interpreter = class extends Visitor2 {
 };
 __name(Interpreter, "Interpreter");
 
-// src/printer.ts
-var Printer = class extends Visitor2 {
-  AssignExpr(assign) {
-    return `(= ${assign.name.text} ${this.visit(assign.value)})`;
-  }
-  BinaryExpr(expr) {
-    const operator = expr.operator.text;
-    const left = this.visit(expr.left);
-    const right = this.visit(expr.right);
-    return `(${operator} ${left} ${right})`;
-  }
-  BlockStmt(block) {
-    const blocks = block.statements.map((stmt) => this.visit(stmt)).join("\n");
-    return `(block 
-${indent(blocks)}
-)`;
-  }
-  CallExpr(call) {
-    const callee = `(call ${this.visit(call.callee)}`;
-    if (!call.args.length)
-      return `${callee})`;
-    const args = call.args.map((arg) => this.visit(arg)).join(" ");
-    return `${callee} ${args})`;
-  }
-  ExpressionStmt(statement) {
-    return this.visit(statement.expr);
-  }
-  FunctionExpr(fun) {
-    const params = fun.params.map((p) => p.text).join(" ");
-    const body = this.visit(fun.block);
-    return `(let [${params}] ${body})`;
-  }
-  FunctionDecl(decl) {
-    const name = decl.name.text;
-    const val = this.visit(decl.func);
-    return `(fun ${name} ${val})`;
-  }
-  GroupExpr(expr) {
-    const operand = this.visit(expr.inner);
-    return `(group ${operand})`;
-  }
-  IfStmt(statement) {
-    const cond = this.visit(statement.condition);
-    const stmtTrue = this.visit(statement.trueStatement);
-    if (!statement.falseStatement)
-      return `(if ${cond} ${stmtTrue})`;
-    const stmtFalse = this.visit(statement.falseStatement);
-    return `(if ${cond} 
-${indent(stmtTrue)} 
-${indent(stmtFalse)})`;
-  }
-  JumpStmt(statement) {
-    const dest = statement.keyword.name;
-    const dist = this.visit(statement.distance || new LiteralExpr([1, 0]));
-    return `(${dest} ${dist})`;
-  }
-  LiteralExpr(expr) {
-    return expr.toString();
-  }
-  LogicalExpr(expr) {
-    return this.BinaryExpr(expr);
-  }
-  PrintStmt(statement) {
-    return `(print ${this.visit(statement.expr)})`;
-  }
-  Program(program) {
-    const decls = program.code.map((decl) => this.visit(decl)).join("\n");
-    return `(program 
-${indent(decls)}
-)`;
-  }
-  ReturnStmt(ret) {
-    return `(return ${this.visit(ret.expr)})`;
-  }
-  TernaryExpr(expr) {
-    const left = this.visit(expr.left);
-    const middle = this.visit(expr.middle);
-    const right = this.visit(expr.right);
-    return `(?: ${left} ${middle} ${right})`;
-  }
-  UnaryExpr(expr) {
-    const operator = expr.operator.text;
-    const operand = this.visit(expr.operand);
-    return `(${operator} ${operand})`;
-  }
-  VariableDecl(declaration) {
-    const decl = `(var ${declaration.name.text}`;
-    const init = declaration.expr ? ` ${this.visit(declaration.expr)}` : "";
-    return `${decl}${init})`;
-  }
-  VariableExpr(expr) {
-    return `${expr.name.text}`;
-  }
-  WhileStmt(statement) {
-    const cond = this.visit(statement.condition);
-    const body = this.visit(statement.body);
-    return `(while ${cond} 
-${indent(body)}
-)`;
-  }
-};
-__name(Printer, "Printer");
-function indent(text) {
-  const pad = new Array(3).fill(" ").join("");
-  return text.replace(/^/mg, pad);
-}
-__name(indent, "indent");
-
 // src/resolver.ts
 var Resolver = class extends Visitor2 {
-  constructor(evaluator, reporter2) {
+  constructor(reporter, evaluator) {
     super();
+    this.reporter = reporter;
     this.evaluator = evaluator;
-    this.reporter = reporter2;
     this.currentFunction = 0 /* NONE */;
     this.scopes = [];
   }
@@ -1511,15 +1626,17 @@ var Resolver = class extends Visitor2 {
     const scope = this.scopes[0];
     if (!scope)
       return;
-    if ([true, false].includes(scope[ident.text]))
+    if (scope[ident.text] === 0 /* DECLARED */)
+      this.reporter.error(ident, "Variable is already declared");
+    if (scope[ident.text] === 1 /* DEFINED */)
       this.reporter.error(ident, "Variable is already defined");
-    scope[ident.text] = false;
+    scope[ident.text] = 0 /* DECLARED */;
   }
   define(ident) {
     const scope = this.scopes[0];
     if (!scope)
       return;
-    scope[ident.text] = true;
+    scope[ident.text] = 1 /* DEFINED */;
   }
   resolveLocal(expr, token) {
     this.scopes.find((scope, i) => {
@@ -1621,8 +1738,8 @@ var Resolver = class extends Visitor2 {
     const scope = this.scopes[0];
     if (!scope)
       return;
-    if (Object.keys(scope).includes(expr.name.text) && !scope[expr.name.text])
-      throw new ParseError("cant reference self in initializer");
+    if (scope[expr.name.text] === 0 /* DECLARED */)
+      this.reporter.error(expr.name, "Reference to uninitialized variable");
     this.resolveLocal(expr, expr.name);
   }
   WhileStmt(stmt) {
@@ -1632,93 +1749,35 @@ var Resolver = class extends Visitor2 {
 };
 __name(Resolver, "Resolver");
 
-// src/errors.ts
-var Reporter = class {
+// src/stoa.ts
+var Language2 = class extends Language {
   constructor() {
-    this._errors = [];
-    this.fileName = "";
-    this.source = "";
-  }
-  error(token, message) {
-    this._errors.push([token, message]);
-  }
-  get errors() {
-    return !this._errors.length ? false : this._errors;
-  }
-  addSource(name, source2) {
-    this.fileName = name;
-    this.source = source2;
-  }
-  tokenError() {
-    this.report("Token");
-  }
-  parseError() {
-    this.report("Parse");
-  }
-  runtimeError() {
-    this.report("Runtime");
-  }
-  report(type) {
-    const lines = this.source.split("\n");
-    for (const [token, message] of this._errors) {
-      console.error(`${type} error in ${this.fileName} at line,col ${token.pos.line},${token.pos.column}`);
-      const prefix = `${token.pos.line}. `;
-      const code = `${lines[token.pos.line - 1]}`;
-      console.error(`${prefix}${code}`);
-      const spaces = `${prefix}${code}`.replace(/./g, " ");
-      const arr = spaces.substring(0, prefix.length + token.pos.column - 1);
-      console.error(`${arr}\u2191`);
-      console.error(`${message}`);
-    }
-    this._errors = [];
+    super(...arguments);
+    this.Tokenizer = Scanner;
+    this.Parser = Parser2;
+    this.Resolver = Resolver;
+    this.Interpreter = Interpreter;
   }
 };
-__name(Reporter, "Reporter");
-
-// src/stoa.ts
+__name(Language2, "Language");
 import_opts.default.parse([
-  { short: "t", description: "prints tokens and exits " },
-  { short: "p", description: "prints parse tree and exits " },
-  { short: "v", description: "prints version info and exits " }
+  { short: "t", long: "tokens", description: "prints tokens and exits " },
+  { short: "p", long: "parse", description: "prints parse tree and exits " },
+  {
+    short: "v",
+    long: "version",
+    description: "prints version info and exits "
+  }
 ], [{ name: "file" }], true);
 if (import_opts.default.get("v")) {
   console.log(`stoa-${version}`);
   process.exit(0);
 }
+var Stoa = new Language2();
+var stage = import_opts.default.get("t") && "scan" || import_opts.default.get("p") && "parse" || "eval";
+Stoa.options({ stage });
 var fileName = import_opts.default.arg("file") ?? "/dev/stdin";
-var source = import_fs.default.readFileSync(fileName).toString();
-var reporter = new Reporter();
-reporter.addSource(fileName, source);
-var scanner = new Scanner(source, reporter);
-var tokens = scanner.drain();
-if (reporter.errors) {
-  reporter.tokenError();
-}
-if (import_opts.default.get("t")) {
-  console.log(tokens.map((token) => token.toString()).join("\n"));
-  process.exit(0);
-}
-var parser = new Parser2(tokens, reporter);
-var interpreter = new Interpreter(reporter);
-var resolver = new Resolver(interpreter, reporter);
-var ast = parser.parse();
-if (reporter.errors) {
-  reporter.parseError();
-  process.exit(1);
-}
-resolver.visit(ast);
-if (reporter.errors) {
-  reporter.parseError();
-  process.exit(1);
-}
-if (import_opts.default.get("p")) {
-  console.log(new Printer().visit(ast));
-  process.exit(0);
-}
-interpreter.visit(ast);
-if (reporter.errors) {
-  reporter.runtimeError();
-  process.exit(1);
-}
-process.exit(0);
+var sourceCode = import_fs.default.readFileSync(fileName).toString();
+Stoa.run(fileName, sourceCode);
+process.exit(Stoa.errored ? 1 : 0);
 //# sourceMappingURL=stoa.js.map

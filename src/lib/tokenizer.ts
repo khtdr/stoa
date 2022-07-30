@@ -1,7 +1,7 @@
 import * as Lib from ".";
 
 export type Lexeme = string | RegExp |
-    ((text: string, reporter: Lib.StdReporter, line: number, column: number) => undefined | string);
+    ((text: string, reporter: Lib.Reporter, line: number, column: number) => undefined | string);
 export type Lexicon = Record<string, Lexeme>;
 const ERROR_TOKEN = "__stoa__::error";
 
@@ -22,7 +22,8 @@ export class TokenStream<Lx extends Lexicon> {
     constructor(
         source: string,
         lexicon: Lx,
-        readonly reporter: Lib.Reporter, line = 1, column = 1
+        readonly reporter: Lib.Reporter,
+        line = 1, column = 1
     ) {
         this.generator = tokenGenerator(source, lexicon, reporter, line, column);
     }
@@ -40,6 +41,9 @@ export class TokenStream<Lx extends Lexicon> {
         let token, tokens = [];
         while ((token = this.take())) tokens.push(token);
         return tokens;
+    }
+    print(tokens = this.buffer, level: 'error' | 'log' = 'log') {
+        console[level](tokens.map(t => `${t}`).join('\n'))
     }
 
     private eof = false
@@ -71,6 +75,14 @@ export class TokenStream<Lx extends Lexicon> {
         );
     }
 }
+
+export class TokenStreamClass<Lx extends Lexicon> extends TokenStream<Lx> {
+    constructor(
+        source: string,
+        reporter: Lib.Reporter
+    ) { super(source, {} as Lx, reporter) }
+}
+
 
 function* tokenGenerator<Lx extends Lexicon>(
     source: string,

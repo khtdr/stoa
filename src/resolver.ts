@@ -1,38 +1,54 @@
 import * as Lib from "./lib";
 import * as Ast from "./ast";
 import { Interpreter } from "./interpreter";
-import { Reporter } from "./errors";
-
 enum FunctionType {
     NONE,
     FUNCTION,
 }
 
+enum VariableType {
+    DECLARED,
+    DEFINED,
+}
+
+/**
+ * Lexical bindings and scope *   is static scope
+ * which means static/semantic analysis and
+ * an extra pass called "Resolver".
+ *
+ * And other static analysis checks.
+ */
+
 export class Resolver extends Ast.Visitor<void> {
-    constructor(readonly evaluator: Interpreter, readonly reporter: Reporter) {
+    constructor(
+        readonly reporter: Lib.Reporter,
+        readonly evaluator: Interpreter
+    ) {
         super();
     }
-    currentFunction = FunctionType.NONE;
-    scopes: Record<string, boolean>[] = [];
-    beginScope() {
+    private currentFunction = FunctionType.NONE;
+    private scopes: Record<string, VariableType>[] = [];
+    private beginScope() {
         this.scopes.unshift({});
     }
-    endScope() {
+    private endScope() {
         this.scopes.shift();
     }
-    declare(ident: Lib.Token<"IDENTIFIER">) {
+    private declare(ident: Lib.Token<"IDENTIFIER">) {
         const scope = this.scopes[0];
         if (!scope) return;
-        if ([true, false].includes(scope[ident.text]))
+        if (scope[ident.text] === VariableType.DECLARED)
+            this.reporter.error(ident, "Variable is already declared");
+        if (scope[ident.text] === VariableType.DEFINED)
             this.reporter.error(ident, "Variable is already defined");
-        scope[ident.text] = false;
+        scope[ident.text] = VariableType.DECLARED;
     }
-    define(ident: Lib.Token<"IDENTIFIER">) {
+    private define(ident: Lib.Token<"IDENTIFIER">) {
         const scope = this.scopes[0];
         if (!scope) return;
-        scope[ident.text] = true;
+        scope[ident.text] = VariableType.DEFINED;
     }
-    resolveLocal(expr: Ast.Expression, token: Lib.Token<"IDENTIFIER">) {
+    private resolveLocal(expr: Ast.Expression, token: Lib.Token<"IDENTIFIER">) {
         this.scopes.find((scope, i) => {
             if (scope[token.text]) {
                 this.evaluator.resolve(expr, i);
@@ -41,7 +57,7 @@ export class Resolver extends Ast.Visitor<void> {
             return false;
         });
     }
-    resolveFunction(fun: Ast.FunctionExpr, ft: FunctionType) {
+    private resolveFunction(fun: Ast.FunctionExpr, ft: FunctionType) {
         const encFunction = this.currentFunction;
         this.currentFunction = ft;
         this.beginScope();
@@ -126,9 +142,9 @@ export class Resolver extends Ast.Visitor<void> {
     }
     VariableExpr(expr: Ast.VariableExpr) {
         const scope = this.scopes[0];
-        if (!scope) return; // the following ex needs reported, not thrown
-        if (Object.keys(scope).includes(expr.name.text) && !scope[expr.name.text])
-            throw new Lib.ParseError("cant reference self in initializer");
+        if (!scope) return;
+        if (scope[expr.name.text] === VariableType.DECLARED)
+            this.reporter.error(expr.name, "Reference to uninitialized variable");
         this.resolveLocal(expr, expr.name);
     }
     WhileStmt(stmt: Ast.WhileStmt) {

@@ -1,12 +1,21 @@
 import * as Lib from "./lib";
 import * as Ast from "./ast";
 import { TOKEN } from "./scanner";
+import { Printer } from "./printer";
 
 export class Parser extends Lib.Parser<typeof TOKEN, Ast.Visitable> {
     private _parsed?: Ast.Visitable;
     parse() {
         if (!this._parsed) this._parsed = this.Program();
         return this._parsed;
+    }
+    toString() {
+        if (!this._parsed) return "un-parsed";
+        return new Printer().visit(this._parsed)
+    }
+    print(ast = this._parsed, level: 'error' | 'log' = 'log') {
+        const message = !ast ? "()" : new Printer().visit(ast)
+        console[level](message)
     }
 
     // program -> declaration* EOF

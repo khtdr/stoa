@@ -3,11 +3,14 @@ import * as Lib from ".";
 export class Parser<Lx extends Lib.Lexicon, Ast extends object> {
     constructor(
         private readonly tokens: Lib.Token<keyof Lx>[],
-        protected reporter = new Lib.StdReporter()
+        protected reporter: Lib.Reporter = new Lib.StdErrReporter()
     ) { }
 
     parse(): Ast | undefined {
         return undefined;
+    }
+    print(ast?: Ast, level: 'error' | 'log' = 'log') {
+        console[level](`${ast ?? ''}`)
     }
 
     private current = 0;
@@ -55,28 +58,16 @@ export class Parser<Lx extends Lib.Lexicon, Ast extends object> {
 }
 
 export class Visitor<Ast extends object, Result = string> {
+    constructor(
+        readonly reporter: Lib.Reporter = new Lib.StdErrReporter(),
+        readonly interpreter?: any
+    ) { }
     visit(node: Ast): Result {
         const name = node.constructor.name
         const fn = this[name as keyof this]
         if (typeof fn == 'function') return fn.bind(this)(node)
-        throw new ParseError(`Unvisitable node: ${name}`)
+        throw new ParseError(`Unvisitable node: ${name} (UNIMPLEMENTED BY AUTHOR)`)
     }
 }
 
 export class ParseError extends Error { }
-
-// Some stuff used as placeholders for the CLI, partially configured languages, etc.
-
-export class AnyTokenParser<Lex extends Lib.Lexicon, Ast extends object> extends Parser<Lex, Ast> {
-    parse() {
-        const tokens = []
-        while (!this.atEnd()) tokens.push(this.advance())
-        return tokens as unknown as Ast
-    }
-}
-
-export class AnyAstVisitor<Ast extends object = any, Result extends string = string> implements Visitor<Ast, Result> {
-    visit(node: Ast): Result {
-        return JSON.stringify(node) as Result
-    }
-}

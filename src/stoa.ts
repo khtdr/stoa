@@ -1,18 +1,30 @@
 import fs from "fs";
 import opts from "opts";
 import { version } from "../package.json";
-import { Scanner, Token } from "./scanner";
+import * as Ast from "./ast";
+import { Scanner } from "./scanner";
 import { Parser } from "./parser";
 import { Interpreter } from "./interpreter";
-import { Printer } from "./printer";
 import { Resolver } from "./resolver";
-import { Reporter } from "./errors";
+import * as Lib from "./lib";
+import * as Runtime from "./runtime";
+
+class Language extends Lib.Language<typeof Scanner.lexicon, Ast.Visitable, Runtime.Result> {
+    Tokenizer = Scanner;
+    Parser = Parser;
+    Resolver = Resolver;
+    Interpreter = Interpreter;
+}
 
 opts.parse(
     [
-        { short: "t", description: "prints tokens and exits " },
-        { short: "p", description: "prints parse tree and exits " },
-        { short: "v", description: "prints version info and exits " },
+        { short: "t", long: "tokens", description: "prints tokens and exits " },
+        { short: "p", long: "parse", description: "prints parse tree and exits " },
+        {
+            short: "v",
+            long: "version",
+            description: "prints version info and exits ",
+        },
     ],
     [{ name: "file" }],
     true
@@ -23,48 +35,12 @@ if (opts.get("v")) {
     process.exit(0);
 }
 
+const Stoa = new Language();
+const stage = (opts.get("t") && "scan") || (opts.get("p") && "parse") || "eval";
+Stoa.options({ stage });
+
 const fileName = opts.arg("file") ?? "/dev/stdin";
+const sourceCode = fs.readFileSync(fileName).toString();
+Stoa.run(fileName, sourceCode);
 
-const source = fs.readFileSync(fileName).toString();
-const reporter = new Reporter();
-reporter.addSource(fileName, source);
-
-const scanner = new Scanner(source, reporter);
-const tokens = scanner.drain() as Token[];
-if (reporter.errors) {
-    reporter.tokenError();
-}
-
-if (opts.get("t")) {
-    console.log(tokens.map((token) => token.toString()).join("\n"));
-    process.exit(0);
-}
-
-const parser = new Parser(tokens, reporter);
-const interpreter = new Interpreter(reporter);
-const resolver = new Resolver(interpreter, reporter);
-
-const ast = parser.parse();
-if (reporter.errors) {
-    reporter.parseError();
-    process.exit(1);
-}
-
-resolver.visit(ast);
-if (reporter.errors) {
-    reporter.parseError();
-    process.exit(1);
-}
-
-if (opts.get("p")) {
-    console.log(new Printer().visit(ast));
-    process.exit(0);
-}
-
-interpreter.visit(ast);
-if (reporter.errors) {
-    reporter.runtimeError();
-    process.exit(1);
-}
-
-process.exit(0);
+process.exit(Stoa.errored ? 1 : 0);

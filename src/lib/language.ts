@@ -1,46 +1,67 @@
-export const langauge = undefined
-// import * as Lib from '.'
+import * as Lib from '.'
 
-// export class Language<Lex extends Lib.Lexicon, Ast extends object> {
+export abstract class Language<Tokens extends Lib.Lexicon, Ast extends object, Result> {
+    abstract readonly Tokenizer: typeof Lib.TokenStreamClass<Tokens>;
+    abstract readonly Parser: typeof Lib.Parser<Tokens, Ast>;
+    abstract readonly Resolver: typeof Lib.Visitor<Ast, void>;
+    abstract readonly Interpreter: typeof Lib.Visitor<Ast, Result>;
+    constructor(readonly reporter: Lib.Reporter = new Lib.StdErrReporter()) { }
 
-//     details: Params<Lex, Ast>['details']
-//     frontend: Params<Lex, Ast>['frontend']
+    private opts: { stage: "scan" | "parse" | "eval" } = { stage: "eval" };
+    options(opts: typeof this.opts) {
+        this.opts = opts;
+    }
 
-//     constructor(
-//         details: Partial<Params<Lex, Ast>['details']> = {},
-//         frontend: Partial<Params<Lex, Ast>['frontend']> = {},
-//     ) {
-//         this.details = {
-//             ...details,
-//             name: details.name ?? 'nameless-lang',
-//             version: details.version ?? '0.0.experimental'
-//         }
-//         this.frontend = {
-//             Scanner: frontend.Scanner ||
-//                 // @ts-expect-error not using this
-//                 Lib.TokenStreamClassFactory.buildTokenStreamClass({ CHAR: /./ }),
-//             Parser: frontend.Parser || Lib.AnyTokenParser<Lex, Ast>,
-//         }
-//     }
+    public errored = false;
+    run(name: string, code: string) {
+        this.errored = false;
+        this.reporter.pushSource(name, code);
+        this.runToStage(code);
+        this.reporter.popSource();
+    }
 
-//     scan(source: string): Lib.Token<keyof Lex>[] {
-//         return new this.frontend.Scanner(source, {}, new Lib.StdReporter()).drain()
-//     }
+    private runToStage(source: string) {
+        const scanner = new this.Tokenizer(source, this.reporter);
+        const tokens = scanner.drain();
+        if (this.reporter.errors) {
+            this.errored = true;
+            this.reporter.tokenError();
+        }
 
-//     parse(tokens: Lib.Token<keyof Lex>[]): Ast | undefined {
-//         return new this.frontend.Parser(tokens).parse()
-//     }
-// }
+        if (this.opts.stage === "scan") {
+            scanner.print(tokens)
+            return;
+        }
 
-// type Params<Lex extends Lib.Lexicon, Ast extends object> = {
-//     details: {
-//         name: string
-//         version: string
-//         [attr: string]: string
-//     }
-//     frontend: {
-//         Scanner: typeof Lib.TokenStream<Lex>
-//         // Parser: new (tokens: Lib.Token<keyof Lex>[]) => Lib.Parser<Lex, Ast>
-//         Parser: typeof Lib.Parser<Lex, Ast>
-//     }
-// }
+        const parser = new this.Parser(tokens, this.reporter);
+        const interpreter = new this.Interpreter(this.reporter);
+        const resolver = new this.Resolver(this.reporter, interpreter);
+
+        const ast = parser.parse();
+        if (this.reporter.errors) {
+            this.errored = true;
+            this.reporter.parseError();
+            return;
+        }
+
+        if (!ast) return
+
+        resolver.visit(ast);
+        if (this.reporter.errors) {
+            this.errored = true;
+            this.reporter.parseError();
+            return;
+        }
+
+        if (this.opts.stage == "parse") {
+            parser.print(ast)
+            return;
+        }
+
+        interpreter.visit(ast);
+        if (this.reporter.errors) {
+            this.errored = true;
+            this.reporter.runtimeError();
+        }
+    }
+}
