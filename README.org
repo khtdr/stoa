@@ -15,7 +15,7 @@ make build
 : CLI Target: node14
 : CJS Build start
 : CJS ⚡️ Build success in 38ms
-: CJS bin/stoa.js     47.06 KB
+: CJS bin/stoa.js     47.07 KB
 : CJS bin/stoa.js.map 99.56 KB
 
 ** Usage Documentation
@@ -148,7 +148,7 @@ All files         |   89.06 |    71.71 |   94.14 |   89.61 |
  src/lib          |   89.11 |    78.08 |   85.71 |    88.8 |
   parser.ts       |   84.37 |       60 |   81.81 |   80.76 | 10,27,52-53,62
   reporter.ts     |      50 |        0 |       0 |   33.33 | 9-10
-  tokenizer.ts    |   91.89 |    85.71 |   93.75 |    92.7 | 58-59,67-69,184-185
+  tokenizer.ts    |   91.89 |    85.71 |   93.75 |    92.7 | 57-58,66-68,183-184
  src/runtime      |   91.42 |    79.41 |      90 |      88 |
   environment.ts  |   90.47 |       75 |     100 |   84.61 | 17,23
   globals.ts      |      75 |      100 |      50 |      75 | 7

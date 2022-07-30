@@ -23,9 +23,7 @@ build-watch: deps
 	          --out-dir ./bin src/stoa.ts
 
 test: silent-build
-	@./bin/test-tokenizer.sh
-	@./bin/test-parser.sh
-	@./bin/test-evaluator.sh
+	@./bin/run-test-suite.sh
 
 silent-test:
 	@make test &>/dev/null
