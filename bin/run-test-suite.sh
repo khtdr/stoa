@@ -55,6 +55,6 @@ for test_script in *.stoa; do
 done
 echo
 total=$((pass+fail))
-echo -e "Passing: $pass out of $total ($((pass*100/total))%)"
+echo "Passing: $pass out of $total ($((pass*100/total))%)"
 echo "Failing: $fail out of $total ($((fail*100/total))%)"
 echo
