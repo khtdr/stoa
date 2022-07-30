@@ -1,6 +1,7 @@
 import * as Lib from ".";
 
-export type Lexeme = string | RegExp | ((text: string, reporter?: Lib.StdReporter) => undefined | string);
+export type Lexeme = string | RegExp |
+    ((text: string, reporter: Lib.StdReporter, line: number, column: number) => undefined | string);
 export type Lexicon = Record<string, Lexeme>;
 const ERROR_TOKEN = "__stoa__::error";
 
@@ -21,10 +22,10 @@ export class TokenStream<Lx extends Lexicon> {
     private generator: Generator<Token<keyof Lx>>;
     constructor(
         source: string,
-        lexicon: Lx = {} as Lx,
-        readonly reporter = new Lib.StdReporter()
+        lexicon: Lx,
+        readonly reporter: Lib.Reporter, line = 1, column = 1
     ) {
-        this.generator = tokenGenerator(source, lexicon);
+        this.generator = tokenGenerator(source, lexicon, reporter, line, column);
     }
 
     private buffer: (Token<keyof Lx> | undefined)[] = [];
@@ -74,11 +75,13 @@ export class TokenStream<Lx extends Lexicon> {
 
 function* tokenGenerator<Lx extends Lexicon>(
     source: string,
-    lexicon: Lx
+    lexicon: Lx,
+    reporter: Lib.Reporter,
+    start_line = 1, start_column = 1
 ): Generator<Token<keyof Lx>> {
     let idx = 0,
-        line = 1,
-        column = 1;
+        line = start_line,
+        column = start_column;
     while (idx < source.length) {
         const [name = ERROR_TOKEN, text = source[idx]] = longest(possible());
         const token = new Token(name, text, pos());
@@ -109,7 +112,7 @@ function* tokenGenerator<Lx extends Lexicon>(
         const candidates: [keyof Lx, string, boolean][] = [];
         Object.entries(lexicon).map(([name, rule]) => {
             if (typeof rule == "function") {
-                const text = rule(source.substring(idx));
+                const text = rule(source.substring(idx), reporter, line, column);
                 if (text !== undefined) candidates.push([name, text, false]);
             } else if (typeof rule != "string") {
                 const dynamic = rule.source[rule.source.length - 1] == '*'
@@ -138,13 +141,13 @@ export const Tokens = {
     }
 }
 
-function cStyleCommentScanner(value: string, reporter = new Lib.StdReporter()) {
+function cStyleCommentScanner(value: string, reporter: Lib.Reporter, line: number, column: number) {
     const tokenizer = new TokenStream(value, {
         OPEN: "/*",
         CLOSE: "*/",
         ESCAPED_CHAR: /\\./,
         CHAR: /.|\s/,
-    });
+    }, reporter, line, column);
     const opener = tokenizer.take();
     if (opener && opener.name == "OPEN") {
         let stack = 0,
@@ -158,18 +161,18 @@ function cStyleCommentScanner(value: string, reporter = new Lib.StdReporter()) {
                 else stack -= 1;
             }
         }
-        reporter.error(opener, `Unclose comment at line ${opener.pos.line}, column ${opener.pos.column}.`);
+        reporter.error(opener, `Unclosed comment at line ${opener.pos.line}, column ${opener.pos.column}.`);
         return text;
     }
 }
 
-function stringScanner(value: string, reporter = new Lib.StdReporter()) {
+function stringScanner(value: string, reporter: Lib.Reporter, line: number, column: number) {
     const tokenizer = new Lib.TokenStream(value, {
         SINGLE: "'",
         DOUBLE: '"',
         ESCAPED_CHAR: /\\./,
         CHAR: /.|\s/,
-    });
+    }, reporter, line, column);
     const opener = tokenizer.take();
     if (opener && ["SINGLE", "DOUBLE"].includes(opener.name)) {
         let { text } = opener,

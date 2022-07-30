@@ -11,16 +11,16 @@ help:
 	@echo make "coverage  # Builds coverage reports"
 
 build: deps
-	npx tsup --keep-names --no-splitting \
+	@npx tsup --keep-names --no-splitting \
 	         --out-dir ./bin src/stoa.ts \
 	         --sourcemap
 silent-build: deps
 	@make build &>/dev/null
 
 build-watch: deps
-	npx tsup --watch \
-	         --keep-names --no-splitting \
-	         --out-dir ./bin src/stoa.ts
+	@npx tsup --watch \
+	          --keep-names --no-splitting \
+	          --out-dir ./bin src/stoa.ts
 
 test: silent-build
 	@./bin/test-tokenizer.sh
@@ -31,24 +31,24 @@ silent-test:
 	@make test &>/dev/null
 
 test-watch: build
-	npx nodemon -e sh,stoa,txt,js -w tests -w bin/stoa.js -x './tests/run.sh'
+	@npx nodemon -e sh,stoa,txt,js -w tests -w bin/stoa.js -x './tests/run.sh'
 
 dev:
-	make build
-	make -j 2 build-watch test-watch
+	@make build
+	@make -j 2 build-watch test-watch
 
 install: build
-	mkdir -p ~/bin
-	cp bin/stoa.js ~/bin
+	@mkdir -p ~/bin
+	@cp bin/stoa.js ~/bin
 	cp bin/stoa ~/bin
-	chmod +x ~/bin/stoa
+	@chmod +x ~/bin/stoa
 	stoa -v
 
 coverage: silent-build
-	npx nyc --extends "@istanbuljs/nyc-config-typescript" \
-	        --exclude-after-remap \
-	        --reporter html --reporter text --reporter text-summary \
-            make silent-test
+	@npx nyc --extends "@istanbuljs/nyc-config-typescript" \
+	         --exclude-after-remap \
+	         --reporter html --reporter text --reporter text-summary \
+             make silent-test
 
 repl:
 	@make build >/dev/null

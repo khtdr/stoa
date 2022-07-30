@@ -28,7 +28,7 @@ reporter.addSource(fileName, source)
 const scanner = new Scanner(source, reporter)
 const tokens = scanner.drain() as Token[]
 if (reporter.errors) {
-    console.log(JSON.stringify(reporter.errors, null, 2))
+    reporter.tokenError()
 }
 
 if (opts.get('t')) {

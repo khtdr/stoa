@@ -1,21 +1,19 @@
 {
   "name": "stoa",
   "description": "language framework",
-  "version": "2022.07.20",
+  "version": "2022.07.29",
   "main": "bin/stoa.js",
   "repository": "https://github.com/khtdr/stoa",
   "author": "Kay Oh <khtdr.com@gmail.com>",
   "license": "UNLICENSED",
   "private": "true",
   "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@istanbuljs/nyc-config-typescript": "1",
     "@types/node": "14",
-    "chalk": "4",
-    "dependency-cruiser": "^11.13.0",
+    "dependency-cruiser": "11",
     "nodemon": "2",
-    "nyc": "^15.1.0",
+    "nyc": "15",
     "opts": "2",
-    "readline-ui": "2",
     "tsup": "6",
     "typescript": "4"
   }

@@ -1,6 +1,7 @@
+import * as Lib from './lib'
 import { Token } from './ast'
 
-export class Reporter {
+export class Reporter implements Lib.Reporter {
     private _errors: [Token, string][] = []
     error(token: Token, message: string) {
         this._errors.push([token, message])
@@ -14,6 +15,7 @@ export class Reporter {
         this.fileName = name
         this.source = source
     }
+    tokenError() { this.report('Token') }
     parseError() { this.report('Parse') }
     runtimeError() { this.report('Runtime') }
     private report(type: string) {
@@ -28,5 +30,6 @@ export class Reporter {
             console.log(`${arr}↑`)
             console.log(`${message}`)
         }
+        this._errors = []
     }
 }

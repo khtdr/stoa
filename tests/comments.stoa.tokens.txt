@@ -1,0 +1,19 @@
+Token error in ./comments.stoa at line,col 21,1
+21. /* if you forget to close it.
+    ↑
+Unclosed comment at line 21, column 1.
+PRINT[3,1]
+STRING[3,7]
+SEMICOLON[3,21]
+PRINT[6,1]
+STRING[6,7]
+SEMICOLON[6,21]
+PRINT[9,1]
+STRING[9,7]
+SEMICOLON[9,21]
+PRINT[17,1]
+STRING[17,7]
+SEMICOLON[17,21]
+PRINT[20,1]
+STRING[20,7]
+SEMICOLON[20,21]

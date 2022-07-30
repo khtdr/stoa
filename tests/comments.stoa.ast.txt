@@ -1,0 +1,11 @@
+Token error in ./comments.stoa at line,col 21,1
+21. /* if you forget to close it.
+    ↑
+Unclosed comment at line 21, column 1.
+(program 
+   (print checkpoint 1)
+   (print checkpoint 2)
+   (print checkpoint 3)
+   (print checkpoint 4)
+   (print checkpoint 5)
+)
