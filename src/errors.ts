@@ -21,14 +21,14 @@ export class Reporter implements Lib.Reporter {
     private report(type: string) {
         const lines = this.source.split("\n")
         for (const [token, message] of this._errors) {
-            console.log(`${type} error in ${this.fileName} at line,col ${token.pos.line},${token.pos.column}`)
+            console.error(`${type} error in ${this.fileName} at line,col ${token.pos.line},${token.pos.column}`)
             const prefix = `${token.pos.line}. `
             const code = `${lines[token.pos.line - 1]}`
-            console.log(`${prefix}${code}`)
+            console.error(`${prefix}${code}`)
             const spaces = `${prefix}${code}`.replace(/./g, ' ')
             const arr = spaces.substring(0, prefix.length + token.pos.column - 1)
-            console.log(`${arr}↑`)
-            console.log(`${message}`)
+            console.error(`${arr}↑`)
+            console.error(`${message}`)
         }
         this._errors = []
     }

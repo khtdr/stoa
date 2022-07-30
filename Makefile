@@ -57,6 +57,9 @@ repl:
 lint:
 	@npx tsc --noEmit
 
+snapshots:
+	@bin/run-snapshots.sh
+
 graph:
 	@npx depcruise --include-only "^src" --output-type dot src | dot -T png > dependency-graph.png
 

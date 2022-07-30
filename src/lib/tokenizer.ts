@@ -5,7 +5,6 @@ export type Lexeme = string | RegExp |
 export type Lexicon = Record<string, Lexeme>;
 const ERROR_TOKEN = "__stoa__::error";
 
-
 export class Token<Name = string> {
     constructor(
         readonly name: Name,
