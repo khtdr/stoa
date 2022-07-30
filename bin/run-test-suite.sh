@@ -3,88 +3,56 @@
 cd "$(dirname "$0")/../tests" || exit
 export PATH=../bin:./:$PATH
 
-echo "Running the test suite"
+test_stage() {
+    stderr_TEMP=$(mktemp)
+    stdout_TEMP=$(mktemp)
+    ./$test_script $flags 1>/dev/null 2> $stderr_TEMP
+    ./$test_script $flags 2>/dev/null 1> $stdout_TEMP
+    stderr_RESP=$(diff $stderr_TEMP "${test_script}.${ext}.stderr")
+    stdout_RESP=$(diff $stdout_TEMP "${test_script}.${ext}.stdout")
+    if [ -z "${stderr_RESP}" ]; then
+      echo "  ✔ ${err_title}"
+      ((pass+=1))
+    else
+      echo "  ❌ ${err_title}"
+      echo 'ACTUAL < -- > EXPECTED'
+      echo "${stderr_RESP}"
+      ((fail+=1))
+    fi
+    if [ -z "${stdout_RESP}" ]; then
+      echo "  ✔ ${out_title}"
+      ((pass+=1))
+    else
+      echo "  ❌ ${out_title}"
+      echo 'ACTUAL < -- > EXPECTED'
+      echo "${stdout_RESP}"
+      ((fail+=1))
+    fi
+    rm $stderr_TEMP
+    rm $stdout_TEMP
+}
 
 pass=0
 fail=0
 for test_script in *.stoa; do
-    stderr_TOKENS=$(mktemp)
-    stderr_PARSER=$(mktemp)
-    stderr_VALU8R=$(mktemp)
+    echo Testing: $test_script
+    flags="-t"
+    ext="tokens"
+    err_title="Token errors"
+    out_title="Token output"
+    test_stage
 
-    ./$test_script -t 1>/dev/null 2> $stderr_TOKENS
-    ./$test_script -p 1>/dev/null 2> $stderr_PARSER
-    ./$test_script    1>/dev/null 2> $stderr_VALU8R
+    flags="-p"
+    ext="ast"
+    err_title="Parse errors"
+    out_title="Parse tree"
+    test_stage
 
-    stderr_TK=$(diff $stderr_TOKENS "${test_script}.tokens.stderr")
-    stdout_TK=$(diff <($test_script -t 2>/dev/null) "${test_script}.tokens.stdout")
-
-    stderr_PR=$(diff $stderr_PARSER "${test_script}.ast.stderr")
-    stdout_PR=$(diff <($test_script -p 2>/dev/null) "${test_script}.ast.stdout")
-
-    stderr_EV=$(diff $stderr_VALU8R "${test_script}.eval.stderr")
-    stdout_EV=$(diff <($test_script 2>/dev/null) "${test_script}.eval.stdout")
-
-    echo "Test: ${test_script}"
-    if [ -z "${stderr_TK}" ]; then
-      echo "  ✔ Token errors"
-      ((pass+=1))
-    else
-      echo "  ❌ Token errors"
-      echo 'ACTUAL < -- > EXPECTED'
-      echo "${stderr_TK}"
-      ((fail+=1))
-    fi
-    if [ -z "${stdout_TK}" ]; then
-      echo "  ✔ Token output"
-      ((pass+=1))
-    else
-      echo "  ❌ Token output"
-      echo 'ACTUAL < -- > EXPECTED'
-      echo "${stdout_TK}"
-      ((fail+=1))
-    fi
-
-    if [ -z "${stderr_PR}" ]; then
-      echo "  ✔ Parse errors"
-      ((pass+=1))
-    else
-      echo "  ❌ Parse errors"
-      echo 'ACTUAL < -- > EXPECTED'
-      echo "${stderr_PR}"
-      ((fail+=1))
-    fi
-    if [ -z "${stdout_PR}" ]; then
-      echo "  ✔ Parse tree"
-      ((pass+=1))
-    else
-      echo "  ❌ Parse tree"
-      echo 'ACTUAL < -- > EXPECTED'
-      echo "${stdout_PR}"
-      ((fail+=1))
-    fi
-
-    if [ -z "${stderr_EV}" ]; then
-      echo "  ✔ Runtime errors"
-      ((pass+=1))
-    else
-      echo "  ❌ Runtime errors"
-      echo 'ACTUAL < -- > EXPECTED'
-      echo "${stderr_EV}"
-      ((fail+=1))
-    fi
-    if [ -z "${stdout_EV}" ]; then
-      echo "  ✔ Runtime Output"
-      ((pass+=1))
-    else
-      echo "  ❌ Runtime Output"
-      echo 'ACTUAL < -- > EXPECTED'
-      echo "${stdout_EV}"
-      ((fail+=1))
-    fi
-    rm $stderr_TOKENS
-    rm $stderr_PARSER
-    rm $stderr_VALU8R
+    flags=""
+    ext="eval"
+    err_title="Runtime errors"
+    out_title="Runtime output"
+    test_stage
 done
 echo Passing: $pass Failing: $fail
 echo

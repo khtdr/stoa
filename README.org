@@ -9,20 +9,14 @@ make build
 #+end_src
 
 #+RESULTS:
-#+begin_example
-pnpm install
-Lockfile is up-to-date, resolution step is skipped
-Already up-to-date
-
-CLI Building entry: src/stoa.ts
-CLI Using tsconfig: tsconfig.json
-CLI tsup v6.1.2
-CLI Target: node14
-CJS Build start
-CJS ⚡️ Build success in 156ms
-CJS bin/stoa.js     47.07 KB
-CJS bin/stoa.js.map 99.56 KB
-#+end_example
+: CLI Building entry: src/stoa.ts
+: CLI Using tsconfig: tsconfig.json
+: CLI tsup v6.1.2
+: CLI Target: node14
+: CJS Build start
+: CJS ⚡️ Build success in 37ms
+: CJS bin/stoa.js     47.07 KB
+: CJS bin/stoa.js.map 99.78 KB
 
 ** Usage Documentation
 #+begin_src sh :exports both :results verbatim
@@ -67,112 +61,111 @@ make test
 
 #+RESULTS:
 #+begin_example
-Running the test suite
-Test: arithmetic.stoa
+Testing: arithmetic.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: closures.stoa
+  ✔ Runtime output
+Testing: closures.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: comments.stoa
+  ✔ Runtime output
+Testing: comments.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: divide-by-zero.stoa
+  ✔ Runtime output
+Testing: divide-by-zero.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: fib.stoa
+  ✔ Runtime output
+Testing: fib.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: functions.stoa
+  ✔ Runtime output
+Testing: functions.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: global-redefine.stoa
+  ✔ Runtime output
+Testing: global-redefine.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: hello-world.stoa
+  ✔ Runtime output
+Testing: hello-world.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: literals.stoa
+  ✔ Runtime output
+Testing: literals.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: logical-ternary.stoa
+  ✔ Runtime output
+Testing: logical-ternary.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: name.stoa
+  ✔ Runtime output
+Testing: name.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: same-names.stoa
+  ✔ Runtime output
+Testing: same-names.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: scope.stoa
+  ✔ Runtime output
+Testing: scope.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: semantic-return.stoa
+  ✔ Runtime output
+Testing: semantic-return.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
-Test: sticky-precision.stoa
+  ✔ Runtime output
+Testing: sticky-precision.stoa
   ✔ Token errors
   ✔ Token output
   ✔ Parse errors
   ✔ Parse tree
   ✔ Runtime errors
-  ✔ Runtime Output
+  ✔ Runtime output
 Passing: 90 Failing: 0
 
 #+end_example
@@ -189,17 +182,17 @@ make coverage
 ------------------|---------|----------|---------|---------|----------------------------------------
 File              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
 ------------------|---------|----------|---------|---------|----------------------------------------
-All files         |   89.06 |    71.71 |   94.14 |   89.61 |
- src              |   87.68 |    68.32 |   96.15 |   89.01 |
+All files         |   89.06 |    71.71 |   94.14 |   89.49 |
+ src              |   87.68 |    68.32 |   96.15 |   88.84 |
   ast.ts          |     100 |      100 |     100 |     100 |
   errors.ts       |     100 |      100 |     100 |     100 |
   interpreter.ts  |   81.52 |     67.3 |   96.42 |   84.25 | ...120-126,141,158,173-175,183,198-204
   parser.ts       |   85.13 |    64.56 |   96.87 |   86.32 | ...140,150-154,228,329-334,383,406-424
   printer.ts      |   91.52 |     62.5 |      96 |   90.38 | 44-50
-  resolver.ts     |    96.2 |       90 |   96.42 |   98.55 | 91
+  resolver.ts     |    96.2 |       90 |   96.42 |   97.14 | 94,131
   runtime.ts      |   95.45 |       50 |      80 |     100 | 21-22
   scanner.ts      |     100 |      100 |     100 |     100 |
-  stoa.ts         |   89.18 |    81.25 |     100 |   88.88 | 18-19,45-46
+  stoa.ts         |   89.18 |    81.25 |     100 |   88.88 | 22-23,49-50
  src/ast          |    97.7 |      100 |      95 |   96.87 |
   declarations.ts |     100 |      100 |     100 |     100 |
   expressions.ts  |     100 |      100 |     100 |     100 |
@@ -219,7 +212,7 @@ All files         |   89.06 |    71.71 |   94.14 |   89.61 |
 Statements   : 89.06% ( 782/878 )
 Branches     : 71.71% ( 284/396 )
 Functions    : 94.14% ( 177/188 )
-Lines        : 89.61% ( 673/751 )
+Lines        : 89.49% ( 673/752 )
 ================================================================================
 #+end_example
 
