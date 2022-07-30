@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
-<title>README.html</title>
+<title>index.html</title>
 <meta http-equiv="Content-Type" content="application/xhtml+xml;charset=utf-8"/>
 <link rel="stylesheet" type="text/css" media="all" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css"  />
 <link rel="stylesheet" type="text/css" media="all" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/github.min.css"  /><meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'><style> body { box-sizing: border-box; max-width: 740px; width: 100%; margin: 40px auto; padding: 0 10px; } </style><script id='MathJax-script' async src='https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'></script><script src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js'></script><script>document.addEventListener('DOMContentLoaded', () => { document.body.classList.add('markdown-body'); document.querySelectorAll('pre[lang] > code').forEach((code) => { code.classList.add(code.parentElement.lang); }); document.querySelectorAll('pre > code').forEach((code) => { hljs.highlightBlock(code); }); });</script>
@@ -15,176 +15,4321 @@
 
 <h1 id="table-of-contents">Table of Contents</h1>
 <ol type="1">
-<li><a href="#org60a3c30">Project Stoa</a>
+<li><a href="#orgbc0bc56">Project Stoa</a>
 <ol type="1">
-<li><a href="#org3ded3e4">Project Status</a>
+<li><a href="#org0e7d62a">Project Status</a>
 <ol type="1">
-<li><a href="#org6db5509">create a malleable language framework for
+<li><a href="#orgd7d2a01">create a malleable language framework for
 exploring language ideas</a></li>
 </ol></li>
-<li><a href="#orge0618bc">Build Status</a></li>
-<li><a href="#orgd0af5b6">Usage Documentation</a></li>
-<li><a href="#org54d51af">Current Version</a></li>
-<li><a href="#org49e2d82">Code Structure</a></li>
-<li><a href="#org4a351f4">Test Suite Status</a></li>
-<li><a href="#orge95985d">Code Coverage</a></li>
-<li><a href="#orga16c0ba">Potential Goals</a></li>
+<li><a href="#org4a6e6ee">Build Status</a></li>
+<li><a href="#orgb2805f3">Usage Documentation</a></li>
+<li><a href="#org35ed0e4">Current Version</a></li>
+<li><a href="#orgb50d832">Code Structure</a></li>
+<li><a href="#orgd779fb6">Test Suite Status</a></li>
+<li><a href="#orgd4364a1">Code Coverage</a></li>
+<li><a href="#org557342e">Potential Goals</a></li>
 </ol></li>
-<li><a href="#org7f584c8">…</a>
+<li><a href="#org5347850">…</a>
 <ol type="1">
-<li><a href="#orgdd3cb8b">build</a></li>
-<li><a href="#org8e20468">clean</a></li>
+<li><a href="#orge536ad2">clean</a></li>
+<li><a href="#org0c124ab">build</a></li>
 </ol></li>
 </ol>
-<p><a id="org60a3c30"></a></p>
+<p><a id="orgbc0bc56"></a></p>
 <h1 id="project-stoa">Project Stoa</h1>
-<p><a id="org3ded3e4"></a></p>
+<p><a id="org0e7d62a"></a></p>
 <h2 id="project-status">Project Status</h2>
-<p><a id="org6db5509"></a></p>
+<p><a id="orgd7d2a01"></a></p>
 <h3
 id="create-a-malleable-language-framework-for-exploring-language-ideas">[
 ] create a malleable language framework for exploring language
 ideas</h3>
-<p><a id="orge0618bc"></a></p>
+<p><a id="org4a6e6ee"></a></p>
 <h2 id="build-status">Build Status</h2>
-<pre><code>make build
-
-npx tsup --keep-names --no-splitting \
-             --out-dir ./bin src/stoa.ts \
-             --sourcemap
-CLI Building entry: src/stoa.ts
-CLI Using tsconfig: tsconfig.json
-CLI tsup v6.1.2
-CLI Target: node14
-CJS Build start
-CJS ⚡️ Build success in 89ms
-CJS bin/stoa.js     161.81 KB
-CJS bin/stoa.js.map 300.73 KB</code></pre>
-<p><a id="orgd0af5b6"></a></p>
+<pre><code>make build</code></pre>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup>
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">
+npx
+</td>
+<td class="org-left">
+tsup
+</td>
+<td class="org-left">
+–keep-names
+</td>
+<td class="org-left">
+–no-splitting
+</td>
+<td class="org-left">
+&lt;/td&gt;
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+–out-dir
+</td>
+<td class="org-left">
+./bin
+</td>
+<td class="org-left">
+src/stoa.ts
+</td>
+<td class="org-left">
+&lt;/td&gt;
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+–sourcemap
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+CLI
+</td>
+<td class="org-left">
+Building
+</td>
+<td class="org-left">
+entry:
+</td>
+<td class="org-left">
+src/stoa.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+CLI
+</td>
+<td class="org-left">
+Using
+</td>
+<td class="org-left">
+tsconfig:
+</td>
+<td class="org-left">
+tsconfig.json
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+CLI
+</td>
+<td class="org-left">
+tsup
+</td>
+<td class="org-left">
+v6.1.2
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+CLI
+</td>
+<td class="org-left">
+Target:
+</td>
+<td class="org-left">
+node14
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+CJS
+</td>
+<td class="org-left">
+Build
+</td>
+<td class="org-left">
+start
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+CJS
+</td>
+<td class="org-left">
+⚡️
+</td>
+<td class="org-left">
+Build
+</td>
+<td class="org-left">
+success
+</td>
+<td class="org-left">
+in
+</td>
+<td class="org-left">
+83ms
+</td>
+</tr>
+<tr>
+<td class="org-left">
+CJS
+</td>
+<td class="org-left">
+bin/stoa.js
+</td>
+<td class="org-left">
+162.13
+</td>
+<td class="org-left">
+KB
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+CJS
+</td>
+<td class="org-left">
+bin/stoa.js.map
+</td>
+<td class="org-left">
+301.39
+</td>
+<td class="org-left">
+KB
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+</tbody>
+</table>
+<p><a id="orgb2805f3"></a></p>
 <h2 id="usage-documentation">Usage Documentation</h2>
-<pre><code>./bin/stoa --help
-
-Usage: node ./bin/stoa.js [options] [file]
-Show this help message
-    --help
-prints version info and exits 
-    -v
-prints parse tree and exits 
-    -p
-prints tokens and exits 
-    -t</code></pre>
-<p><a id="org54d51af"></a></p>
+<pre><code>./bin/stoa --help</code></pre>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup>
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">
+Usage:
+</td>
+<td class="org-left">
+node
+</td>
+<td class="org-left">
+./bin/stoa.js
+</td>
+<td class="org-left">
+[options]
+</td>
+<td class="org-left">
+[file]
+</td>
+</tr>
+<tr>
+<td class="org-left">
+Show
+</td>
+<td class="org-left">
+this
+</td>
+<td class="org-left">
+help
+</td>
+<td class="org-left">
+message
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+–help
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+prints
+</td>
+<td class="org-left">
+version
+</td>
+<td class="org-left">
+info
+</td>
+<td class="org-left">
+and
+</td>
+<td class="org-left">
+exits
+</td>
+</tr>
+<tr>
+<td class="org-left">
+-v
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+prints
+</td>
+<td class="org-left">
+parse
+</td>
+<td class="org-left">
+tree
+</td>
+<td class="org-left">
+and
+</td>
+<td class="org-left">
+exits
+</td>
+</tr>
+<tr>
+<td class="org-left">
+-p
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+prints
+</td>
+<td class="org-left">
+tokens
+</td>
+<td class="org-left">
+and
+</td>
+<td class="org-left">
+exits
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+-t
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+</tbody>
+</table>
+<p><a id="org35ed0e4"></a></p>
 <h2 id="current-version">Current Version</h2>
 <pre><code>./bin/stoa -v
 
 stoa-2022.07.20</code></pre>
-<p><a id="org49e2d82"></a></p>
+<p><a id="orgb50d832"></a></p>
 <h2 id="code-structure">Code Structure</h2>
 <pre><code>make graph</code></pre>
 <figure>
 <img src="./dependency-graph.png" alt="img" />
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
-<p><a id="org4a351f4"></a></p>
+<p><a id="orgd779fb6"></a></p>
 <h2 id="test-suite-status">Test Suite Status</h2>
-<pre><code>make test
-
-Testing tokenizer snapshots
-✔ arithmetic.stoa
-✔ closures.stoa
-✔ divide-by-zero.stoa
-✔ fib.stoa
-✔ functions.stoa
-✔ global-redefine.stoa
-✔ hello-world.stoa
-✔ literals.stoa
-✔ name.stoa
-✔ same-names.stoa
-✔ scope.stoa
-✔ semantic-return.stoa
-✔ sticky-precision.stoa
-Passing: 13 Failing: 0
-
-Snapshotting the parse tree
-✔ arithmetic.stoa
-✔ closures.stoa
-✔ divide-by-zero.stoa
-✔ fib.stoa
-✔ functions.stoa
-✔ global-redefine.stoa
-✔ hello-world.stoa
-✔ literals.stoa
-✔ name.stoa
-✔ same-names.stoa
-✔ scope.stoa
-✔ semantic-return.stoa
-✔ sticky-precision.stoa
-Passing: 13 Failing: 0
-
-Testing the evaluator (with parse errors)
-✔ arithmetic.stoa
-✔ closures.stoa
-✔ divide-by-zero.stoa
-✔ fib.stoa
-✔ functions.stoa
-✔ global-redefine.stoa
-✔ hello-world.stoa
-✔ literals.stoa
-✔ name.stoa
-✔ same-names.stoa
-✔ scope.stoa
-✔ semantic-return.stoa
-✔ sticky-precision.stoa
-Passing: 13 Failing: 0</code></pre>
-<p><a id="orge95985d"></a></p>
+<pre><code>make test</code></pre>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup>
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">
+Testing
+</td>
+<td class="org-left">
+tokenizer
+</td>
+<td class="org-left">
+snapshots
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+arithmetic.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+closures.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+divide-by-zero.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+fib.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+functions.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+global-redefine.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+hello-world.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+literals.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+logical-ternary.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+name.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+same-names.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+scope.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+semantic-return.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+sticky-precision.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+Passing:
+</td>
+<td class="org-left">
+14
+</td>
+<td class="org-left">
+Failing:
+</td>
+<td class="org-left">
+0
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+Snapshotting
+</td>
+<td class="org-left">
+the
+</td>
+<td class="org-left">
+parse
+</td>
+<td class="org-left">
+tree
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+arithmetic.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+closures.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+divide-by-zero.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+fib.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+functions.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+global-redefine.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+hello-world.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+literals.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+logical-ternary.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+name.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+same-names.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+scope.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+semantic-return.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+sticky-precision.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+Passing:
+</td>
+<td class="org-left">
+14
+</td>
+<td class="org-left">
+Failing:
+</td>
+<td class="org-left">
+0
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+Testing
+</td>
+<td class="org-left">
+the
+</td>
+<td class="org-left">
+evaluator
+</td>
+<td class="org-left">
+(with
+</td>
+<td class="org-left">
+parse
+</td>
+<td class="org-left">
+errors)
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+arithmetic.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+closures.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+divide-by-zero.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+fib.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+functions.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+global-redefine.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+hello-world.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+literals.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+logical-ternary.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+name.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+same-names.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+scope.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+semantic-return.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+✔
+</td>
+<td class="org-left">
+sticky-precision.stoa
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+Passing:
+</td>
+<td class="org-left">
+14
+</td>
+<td class="org-left">
+Failing:
+</td>
+<td class="org-left">
+0
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+</tbody>
+</table>
+<p><a id="orgd4364a1"></a></p>
 <h2 id="code-coverage">Code Coverage</h2>
-<pre><code>make coverage
-
-npx nyc --extends &quot;@istanbuljs/nyc-config-typescript&quot; \
-            --exclude-after-remap \
-            --reporter html --reporter text --reporter text-summary \
-            make silent-test
-------------------|---------|----------|---------|---------|----------------------------------------
-File              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                      
-------------------|---------|----------|---------|---------|----------------------------------------
-All files         |   81.74 |    65.88 |   89.83 |   81.98 |                                        
- src              |    80.3 |    62.08 |   91.47 |    81.4 |                                        
-  ast.ts          |     100 |      100 |     100 |     100 |                                        
-  errors.ts       |     100 |      100 |     100 |     100 |                                        
-  interpreter.ts  |   71.14 |       50 |   89.28 |   74.78 | ...116,124-131,148,159-165,173,188-194 
-  parser.ts       |   77.02 |    64.56 |   96.87 |   77.83 | ...259-264,273-275,329-334,383,406-424 
-  printer.ts      |   83.05 |     62.5 |      88 |   80.76 | 44-50,56,69-72                         
-  resolver.ts     |   89.87 |       90 |   89.28 |    91.3 | 91-97,111-113                          
-  runtime.ts      |   95.45 |       50 |      80 |     100 | 21-22                                  
-  scanner.ts      |     100 |      100 |     100 |     100 |                                        
-  stoa.ts         |   86.48 |       75 |     100 |   86.11 | 18-19,31,45-46                         
- src/ast          |    88.5 |      100 |      85 |   84.37 |                                        
-  declarations.ts |     100 |      100 |     100 |     100 |                                        
-  expressions.ts  |   84.31 |      100 |   81.81 |   78.94 | 62-64,70-74                            
-  statements.ts   |    92.3 |      100 |   85.71 |   89.47 | 25-26                                  
-  visitor.ts      |     100 |      100 |     100 |     100 |                                        
- src/lib          |   81.33 |    69.86 |   85.71 |   82.03 |                                        
-  cli.ts          |     100 |      100 |     100 |     100 |                                        
-  parser.ts       |   84.37 |       60 |   81.81 |   80.76 | 10,27,52-53,62                         
-  repl.ts         |     100 |      100 |     100 |     100 |                                        
-  reporter.ts     |      50 |        0 |       0 |   33.33 | 9-10                                   
-  tokenizer.ts    |   81.08 |       75 |   93.75 |   83.33 | 57-58,66-68,150-162,181-182            
- src/runtime      |   91.42 |    79.41 |      90 |      88 |                                        
-  environment.ts  |   90.47 |       75 |     100 |   84.61 | 17,23                                  
-  globals.ts      |      75 |      100 |      50 |      75 | 7                                      
-  values.ts       |     100 |      100 |     100 |     100 |                                        
-------------------|---------|----------|---------|---------|----------------------------------------
-
-=============================== Coverage summary ===============================
-Statements   : 81.74% ( 712/871 )
-Branches     : 65.88% ( 253/384 )
-Functions    : 89.83% ( 168/187 )
-Lines        : 81.98% ( 610/744 )
-================================================================================</code></pre>
+<pre><code>make coverage</code></pre>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup>
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-right" />
+<col  class="org-right" />
+<col  class="org-left" />
+<col  class="org-right" />
+<col  class="org-right" />
+<col  class="org-left" />
+<col  class="org-right" />
+<col  class="org-right" />
+<col  class="org-left" />
+<col  class="org-right" />
+<col  class="org-right" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">
+npx
+</td>
+<td class="org-left">
+nyc
+</td>
+<td class="org-left">
+–extends
+</td>
+<td class="org-right">
+<span class="citation"
+data-cites="istanbuljs/nyc-config-typescript">@istanbuljs/nyc-config-typescript</span>
+</td>
+<td class="org-right">
+&lt;/td&gt;
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+–exclude-after-remap
+</td>
+<td class="org-left">
+&lt;/td&gt;
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+–reporter
+</td>
+<td class="org-left">
+html
+</td>
+<td class="org-right">
+–reporter
+</td>
+<td class="org-right">
+text
+</td>
+<td class="org-left">
+–reporter
+</td>
+<td class="org-right">
+text-summary
+</td>
+<td class="org-right">
+&lt;/td&gt;
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+make
+</td>
+<td class="org-left">
+silent-test
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+——————
+</td>
+<td class="org-left">
+———
+</td>
+<td class="org-left">
+———-
+</td>
+<td class="org-right">
+———
+</td>
+<td class="org-right">
+———
+</td>
+<td class="org-left">
+—————————————-
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+File
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+%
+</td>
+<td class="org-right">
+Stmts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+%
+</td>
+<td class="org-left">
+Branch
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+%
+</td>
+<td class="org-right">
+Funcs
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+%
+</td>
+<td class="org-left">
+Lines
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+Uncovered
+</td>
+<td class="org-left">
+Line
+</td>
+<td class="org-left">
+#s
+</td>
+</tr>
+<tr>
+<td class="org-left">
+——————
+</td>
+<td class="org-left">
+———
+</td>
+<td class="org-left">
+———-
+</td>
+<td class="org-right">
+———
+</td>
+<td class="org-right">
+———
+</td>
+<td class="org-left">
+—————————————-
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+All
+</td>
+<td class="org-left">
+files
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+87.59
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+69.94
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+94.11
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+88.29
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+src
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+87.47
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+67.97
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+96.12
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+88.78
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+ast.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+errors.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+interpreter.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+81.52
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+67.3
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+96.42
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+84.25
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+…120-126,141,158,173-175,183,198-204
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+parser.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+85.13
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+64.56
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+96.87
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+86.32
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+…140,150-154,228,329-334,383,406-424
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+printer.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+91.52
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+62.5
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+96
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+90.38
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+44-50
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+resolver.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+96.2
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+90
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+96.42
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+98.55
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+91
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+runtime.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+95.45
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+50
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+80
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+21-22
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+scanner.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+stoa.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+86.48
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+75
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+86.11
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+18-19,31,45-46
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+src/ast
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+97.7
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+95
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+96.87
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+declarations.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+expressions.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+statements.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+92.3
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+85.71
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+89.47
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+25-26
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+visitor.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+src/lib
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+81.33
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+69.86
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+85.71
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+82.03
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+cli.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+parser.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+84.37
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+60
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+81.81
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+80.76
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+10,27,52-53,62
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+repl.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+reporter.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+50
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+0
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+0
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+33.33
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+9-10
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+tokenizer.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+81.08
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+75
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+93.75
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+83.33
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+57-58,66-68,150-162,181-182
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+src/runtime
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+91.42
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+79.41
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+90
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+88
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+environment.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+90.47
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+75
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+84.61
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+17,23
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+globals.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+75
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+50
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+75
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+7
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+values.ts
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+100
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+——————
+</td>
+<td class="org-left">
+———
+</td>
+<td class="org-left">
+———-
+</td>
+<td class="org-right">
+———
+</td>
+<td class="org-right">
+———
+</td>
+<td class="org-left">
+—————————————-
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+<code>=============================</code>
+</td>
+<td class="org-left">
+Coverage
+</td>
+<td class="org-left">
+summary
+</td>
+<td class="org-right">
+<code>=============================</code>
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+Statements
+</td>
+<td class="org-left">
+:
+</td>
+<td class="org-left">
+87.59%
+</td>
+<td class="org-right">
+(
+</td>
+<td class="org-right">
+770/879
+</td>
+<td class="org-left">
+)
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+Branches
+</td>
+<td class="org-left">
+:
+</td>
+<td class="org-left">
+69.94%
+</td>
+<td class="org-right">
+(
+</td>
+<td class="org-right">
+277/396
+</td>
+<td class="org-left">
+)
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+Functions
+</td>
+<td class="org-left">
+:
+</td>
+<td class="org-left">
+94.11%
+</td>
+<td class="org-right">
+(
+</td>
+<td class="org-right">
+176/187
+</td>
+<td class="org-left">
+)
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+Lines
+</td>
+<td class="org-left">
+:
+</td>
+<td class="org-left">
+88.29%
+</td>
+<td class="org-right">
+(
+</td>
+<td class="org-right">
+664/752
+</td>
+<td class="org-left">
+)
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+<tr>
+<td class="org-left">
+<code>==============================================================================</code>
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-right">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+<td class="org-left">
+ 
+</td>
+</tr>
+</tbody>
+</table>
 <p>The latest uploaded report is at: <a
 href="https://khtdr.com/stoa/coverage/"
 class="uri">https://khtdr.com/stoa/coverage/</a></p>
-<p><a id="orga16c0ba"></a></p>
+<p><a id="org557342e"></a></p>
 <h2 id="potential-goals">Potential Goals</h2>
 <ul>
 <li>full stack from sql to hover effects</li>
@@ -193,12 +4338,12 @@ class="uri">https://khtdr.com/stoa/coverage/</a></p>
 <li>minimize user function writing with string/date/number
 primitives</li>
 </ul>
-<p><a id="org7f584c8"></a></p>
+<p><a id="org5347850"></a></p>
 <h1 id="section">…</h1>
-<p><a id="orgdd3cb8b"></a></p>
-<h2 id="build">build</h2>
-<p><a id="org8e20468"></a></p>
+<p><a id="orge536ad2"></a></p>
 <h2 id="clean">clean</h2>
+<p><a id="org0c124ab"></a></p>
+<h2 id="build">build</h2>
 
 </body>
 </html>
