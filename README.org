@@ -114,111 +114,38 @@ make test
 #+RESULTS:
 #+begin_example
 Testing: arithmetic.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: closures.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: comments.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: divide-by-zero.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: fib.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: functions.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: global-redefine.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: hello-world.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: literals.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: logical-ternary.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: name.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: same-names.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: scope.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: semantic-return.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
+✔✔✔✔✔✔
 Testing: sticky-precision.stoa
-  ✔ Token errors
-  ✔ Token output
-  ✔ Parse errors
-  ✔ Parse tree
-  ✔ Runtime errors
-  ✔ Runtime output
-Passing: 90 Failing: 0
+✔✔✔✔✔✔
+
+Passing: 90 out of 90 (100%)
+Failing: 0 out of 90 (0%)
 
 #+end_example
 
