@@ -1,2 +1,2 @@
 bin/stoa.js linguist-generated
-packages/* linguist-generated
+packages/** linguist-generated
