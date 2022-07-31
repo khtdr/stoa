@@ -1,31 +1,41 @@
 * Project Stoa
 
 ** Project Status
+*** [ ] create an example language, Stox, based on Crafting Interpreters
 *** [ ] create a malleable language framework for exploring language ideas
 
-** Build Status
+** Example Languages
+*** Stox
+**** Code Structure
+#+begin_src shell :results none
+make graphics
+#+end_src
+
+[[./images/stox-code.png]]
+
+**** Build Status
 #+begin_src sh :exports both :results verbatim
-make build
+make stox
 #+end_src
 
 #+RESULTS:
-: CLI Building entry: src/stoa.ts
-: CLI Using tsconfig: tsconfig.json
+: CLI Building entry: stox.ts
+: CLI Using tsconfig: ../tsconfig.json
 : CLI tsup v6.1.2
 : CLI Target: node14
 : CJS Build start
-: CJS ⚡️ Build success in 39ms
-: CJS bin/stoa.js     49.03 KB
-: CJS bin/stoa.js.map 104.86 KB
+: CJS ⚡️ Build success in 40ms
+: CJS ../bin/stox.js     49.61 KB
+: CJS ../bin/stox.js.map 107.96 KB
 
-** Usage Documentation
+**** Usage Documentation
 #+begin_src sh :exports both :results verbatim
-./bin/stoa --help
+./bin/stox --help
 #+end_src
 
 #+RESULTS:
 #+begin_example
-Usage: node ./bin/stoa.js [options] [file]
+Usage: node ./bin/stox.js [options] [file]
 Show this help message
     --help
 prints version info and exits
@@ -39,18 +49,18 @@ runs the repl
 
 #+end_example
 
-** Current Version
+**** Current Version
 #+begin_src sh :exports both :results verbatim
-./bin/stoa -v
+./bin/stox -v
 #+end_src
 
 #+RESULTS:
-: stoa-2022.07.29
+: stox-2022.07.29
 
-** Code Coverage
+**** Code Coverage
 
 #+begin_src sh :exports both :results verbatim
-make coverage
+make coverage-stox
 #+end_src
 
 #+RESULTS:
@@ -58,89 +68,84 @@ make coverage
 ------------------|---------|----------|---------|---------|----------------------------------------
 File              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
 ------------------|---------|----------|---------|---------|----------------------------------------
-All files         |   88.94 |    71.19 |   94.02 |   89.55 |
+All files         |   88.46 |    71.09 |   92.19 |   89.07 |
+ lib/repl-kit     |      40 |      100 |       0 |   33.33 |
+  index.ts        |      40 |      100 |       0 |   33.33 | 2-4
  lib/stoa-ltk     |    91.2 |    78.57 |   91.48 |   91.62 |
-  language.ts     |    90.9 |    84.21 |     100 |   92.85 | 53-55
+  language.ts     |    90.9 |    84.21 |     100 |   92.85 | 55-57
   parser.ts       |   82.85 |    52.63 |   76.92 |   79.31 | 10-13,30,55-56,69
   reporter.ts     |     100 |      100 |     100 |     100 |
   tokenizer.ts    |   92.03 |    84.48 |   94.44 |   92.78 | 61-62,70-72,195-196
- src              |    86.2 |    67.02 |   95.76 |   87.55 |
-  interpreter.ts  |   81.52 |     67.3 |   96.42 |   84.25 | ...126-132,147,164,179-181,189,204-210
+ stox/src         |   85.89 |     66.9 |   94.95 |   87.29 |
+  cli-app.ts      |   73.68 |    76.92 |       0 |   76.47 | 23-24,32-33
+  interpreter.ts  |   81.52 |     67.3 |   96.42 |   84.25 | ...132-138,153,170,185-187,195,210-216
   parser.ts       |   84.14 |    63.15 |   94.11 |   85.64 | ...149,159-163,237,338-343,392,415-433
   printer.ts      |   91.52 |     62.5 |      96 |   90.38 | 44-50
+  repl.ts         |     100 |      100 |     100 |     100 |
   resolver.ts     |   95.06 |       85 |   96.42 |   95.89 | 41,110,147
-  scanner.ts      |     100 |      100 |     100 |     100 |
-  stoa.ts         |      90 |    81.81 |     100 |   88.88 | 36-37
- src/ast          |   97.77 |      100 |   95.23 |   96.96 |
+  stoa-lang.ts    |     100 |      100 |     100 |     100 |
+  tokenizer.ts    |     100 |      100 |     100 |     100 |
+ stox/src/ast     |   97.77 |      100 |   95.23 |   96.96 |
   declarations.ts |     100 |      100 |     100 |     100 |
   expressions.ts  |     100 |      100 |     100 |     100 |
   index.ts        |     100 |      100 |     100 |     100 |
   statements.ts   |    92.3 |      100 |   85.71 |   89.47 | 25-26
   visitor.ts      |     100 |      100 |     100 |     100 |
- src/runtime      |   92.98 |    76.31 |   86.66 |    92.1 |
+ stox/src/runtime |   92.98 |    76.31 |   86.66 |      90 |
+  base.ts         |     100 |      100 |     100 |     100 |
+  control-flow.ts |   94.44 |       50 |      75 |   91.66 | 7
   environment.ts  |   90.47 |       75 |     100 |   84.61 | 17,23
   globals.ts      |      75 |      100 |      50 |      75 | 7
-  index.ts        |   95.45 |       50 |      80 |     100 | 21-22
   values.ts       |     100 |      100 |     100 |     100 |
 ------------------|---------|----------|---------|---------|----------------------------------------
 
 =============================== Coverage summary ===============================
-Statements   : 88.94% ( 813/914 )
-Branches     : 71.19% ( 299/420 )
-Functions    : 94.02% ( 189/201 )
-Lines        : 89.55% ( 703/785 )
+Statements   : 88.46% ( 821/928 )
+Branches     : 71.09% ( 300/422 )
+Functions    : 92.19% ( 189/205 )
+Lines        : 89.07% ( 709/796 )
 ================================================================================
 #+end_example
 
 The latest uploaded report is at: https://khtdr.com/stoa/coverage/
 
-** Code Structure
-#+begin_src shell :results none
-make graph
-#+end_src
-
-[[./images/archi.png]]
-
-[[./images/dependency-graph.png]]
-
-
-** Test Suite Status
+**** Test Suite Status
 
 #+begin_src sh :exports both :results verbatim
-make test
+make test-stox
 #+end_src
 
 #+RESULTS:
 #+begin_example
-Testing: arithmetic.stoa
+Testing: arithmetic.stox
 ✔✔✔✔✔✔
-Testing: closures.stoa
+Testing: closures.stox
 ✔✔✔✔✔✔
-Testing: comments.stoa
+Testing: comments.stox
 ✔✔✔✔✔✔
-Testing: divide-by-zero.stoa
+Testing: divide-by-zero.stox
 ✔✔✔✔✔✔
-Testing: fib.stoa
+Testing: fib.stox
 ✔✔✔✔✔✔
-Testing: functions.stoa
+Testing: functions.stox
 ✔✔✔✔✔✔
-Testing: global-redefine.stoa
+Testing: global-redefine.stox
 ✔✔✔✔✔✔
-Testing: hello-world.stoa
+Testing: hello-world.stox
 ✔✔✔✔✔✔
-Testing: literals.stoa
+Testing: literals.stox
 ✔✔✔✔✔✔
-Testing: logical-ternary.stoa
+Testing: logical-ternary.stox
 ✔✔✔✔✔✔
-Testing: name.stoa
+Testing: name.stox
 ✔✔✔✔✔✔
-Testing: same-names.stoa
+Testing: same-names.stox
 ✔✔✔✔✔✔
-Testing: scope.stoa
+Testing: scope.stox
 ✔✔✔✔✔✔
-Testing: semantic-return.stoa
+Testing: semantic-return.stox
 ✔✔✔✔✔✔
-Testing: sticky-precision.stoa
+Testing: sticky-precision.stox
 ✔✔✔✔✔✔
 
 Passing: 90 out of 90 (100%)
@@ -148,8 +153,7 @@ Failing: 0 out of 90 (0%)
 
 #+end_example
 
-
-** Potential Goals
+**** Potential Goals
 - full stack from sql to hover effects
 - lsp compatible
 - actually use it to create

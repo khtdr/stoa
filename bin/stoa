@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-# This file is not generated, it is committed.
-node "$(dirname "$0")/stoa.js" "$@"

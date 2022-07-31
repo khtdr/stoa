@@ -1,3 +1,0 @@
-#!/usr/bin/env stoa
-
-print "Hello, World!";

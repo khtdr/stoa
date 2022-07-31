@@ -1,0 +1,12 @@
+#!/usr/bin/env stox
+
+print "Scope Test";
+
+var a = "AAA";
+
+{
+  fun p() {print a;}
+  p();
+  var a = "BBB";
+  p();
+}

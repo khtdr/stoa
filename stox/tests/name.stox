@@ -1,0 +1,4 @@
+#!/usr/bin/env stox
+
+var name = "Joey";
+print "Hello, " + name + "!";

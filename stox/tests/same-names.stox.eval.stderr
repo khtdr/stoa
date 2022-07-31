@@ -1,0 +1,8 @@
+Parse error in ./same-names.stox at line,col 10,7
+10.   var b = "bee";
+          ↑
+Variable is already defined
+Parse error in ./same-names.stox at line,col 16,7
+16.   var c = "Sea";
+          ↑
+Variable is already defined

@@ -1,0 +1,17 @@
+#!/usr/bin/env stox
+
+// Ok to redefine at top level
+var a = "a";
+var a = "A";
+
+{
+  var a = "Eh.";
+  var b = "Be";
+  var b = "bee";
+}
+
+{
+  var a = "eh...";
+  var c = "Si";
+  var c = "Sea";
+}

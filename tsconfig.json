@@ -16,15 +16,14 @@
                 "baseUrl": ".",
                 "paths": {
                         "*": [
-                                "node_modules/*",
-                                "src/*",
-                                "lib/*"
+                                "stox/src/*",
+                                "lib/*",
+                                "node_modules/*"
                         ]
                 },
         },
         "include": [
-                "src",
-                "lib/stoa-ltk",
-                "lib/repl-kit"
+                "stox",
+                "lib"
         ]
 }

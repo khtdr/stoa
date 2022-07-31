@@ -2,7 +2,6 @@
   "name": "stoa",
   "description": "language framework",
   "version": "2022.07.29",
-  "main": "bin/stoa.js",
   "repository": "https://github.com/khtdr/stoa",
   "author": "Kay Oh <khtdr.com@gmail.com>",
   "license": "UNLICENSED",

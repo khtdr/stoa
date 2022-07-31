@@ -1,5 +1,0 @@
-#!/usr/bin/env stoa
-
-{ // should't be allowed
-  return;
-}

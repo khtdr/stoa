@@ -1,91 +1,61 @@
 NPM=pnpm
 
-all: build
-
-help:
-	@echo make "build     # Builds the STOA application"
-	@echo make "dev       # Build and test, watching for changes"
-	@echo make "repl      # Launch the REPL"
-	@echo make "install   # Builds and installs to ~/bin"
-	@echo make "test      # Builds, installs, and tests"
-	@echo make "coverage  # Builds coverage reports"
-	@echo make "deps      # Builds node_modules"
-	@echo make "packages  # Builds stoa-ltk and repl-kit"
-
-build: deps
-	@npx tsup --keep-names --no-splitting \
-	          --out-dir ./bin src/stoa.ts \
-	          --sourcemap
-silent-build: deps
-	@make build &>/dev/null
-
-build-watch: deps
-	@npx tsup --watch \
-	          --keep-names --no-splitting \
-	          --out-dir ./bin src/stoa.ts
+all: packages
 
 packages: repl-kit stoa-ltk
 
-repl-kit:
+repl-kit: deps
 	npx tsup --dts --no-splitting \
 	    --out-dir ./packages/repl-kit  \
 	    lib/repl-kit/index.ts
 
-stoa-ltk:
+stoa-ltk: deps
 	npx tsup --dts --no-splitting \
 	    --out-dir ./packages/stoa-ltk  \
 	    lib/stoa-ltk/index.ts
 
-test: silent-build
-	@./bin/run-test-suite.sh
+stox: build-stox
 
-silent-test:
-	@make test &>/dev/null
+build-stox: deps
+	@cd stox && make build
 
-test-watch: build
-	@npx nodemon -e sh,stoa,txt,js -w tests -w bin/stoa.js -x './tests/run.sh'
+build-watch-stox: deps
+	@cd stox && make build-watch
 
-dev:
-	@make build
-	@make -j 2 build-watch test-watch
+test-stox: deps
+	@cd stox && make test
 
-install: build
-	@mkdir -p ~/bin
-	@cp bin/stoa.js ~/bin
-	cp bin/stoa ~/bin
-	@chmod +x ~/bin/stoa
-	stoa -v
+test-watch-stox: deps
+	@cd stox && make test-watch
 
-coverage: silent-build
-	@npx nyc --extends "@istanbuljs/nyc-config-typescript" \
-	         --exclude-after-remap \
-	         --reporter html --reporter text --reporter text-summary \
-             make silent-test
+dev-stox: deps
+	@cd stox && make dev
 
-repl:
-	@make build >/dev/null
-	@bin/stoa --repl
+install-stox: deps
+	@cd stox && make install-stox
 
-lint:
-	@npx tsc --noEmit
+coverage-stox: deps
+	@cd stox && make coverage
 
-snapshots:
-	@bin/run-snapshots.sh
+repl-stox: deps
+	@cd stox && make repl
 
-graph:
-	@npx depcruise --include-only "^src|^lib|^package.json" --ts-config --output-type dot src | dot -T png > images/dependency-graph.png
-	@npx depcruise --include-only "^src|^lib|^package.json" --ts-config --output-type archi src | dot -T png > images/archi.png
+lint-stox: deps
+	@cd stox && make lint
+
+snapshot-stox: deps
+	@cd stox && make snapshot
+
+graphics:
+	@npx depcruise --exclude "^node_modules" --ts-config --output-type archi stox/stox.ts | dot -T png > ./images/stox-code.png
+
+clean-stox:
+	@cd stox && make clean
+
+uninstall-stox:
+	@cd stox && make uninstall
 
 deps: Makefile node_modules
 
 node_modules: package.json
 	${NPM} install
-
-clean:
-	rm -rf node_modules
-	rm -rf coverage
-	rm -f bin/stoa.js
-
-uninstall:
-	rm ~/bin/stoa.js
-	rm ~/bin/stoa
