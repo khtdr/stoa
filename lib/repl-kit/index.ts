@@ -1,1 +1,6 @@
-export const version = 0
+export class Repl {
+    constructor(readonly lang: any) { }
+    async run() {
+        return new Promise(resolve => resolve(undefined))
+    }
+}

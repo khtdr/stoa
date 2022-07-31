@@ -32,7 +32,7 @@ opts.parse(
     true
 );
 
-if (opts.get("v")) {
+if (opts.get("version")) {
     console.log(`stoa-${version}`);
     process.exit(0);
 }
@@ -41,13 +41,13 @@ const Stoa = new Language();
 const stage = (opts.get("t") && "scan") || (opts.get("p") && "parse") || "eval";
 Stoa.options({ stage });
 
-// const readStdin = !opts.get('r')
-// const fileName = opts.arg("file") ?? readStdin ? "/dev/stdin" : "/dev/null";
-const fileName = opts.arg("file") ?? "/dev/stdin";
-const sourceCode = fs.readFileSync(fileName).toString();
-Stoa.run(fileName, sourceCode);
+if (opts.get('repl')) {
+    const repl = new Repl(Stoa)
+    repl.run().finally(() => process.exit(0))
 
-// if (opts.get('r'))
-//     (async () => await new Repl(Stoa).run())()
-// else process.exit(Stoa.errored ? 1 : 0);
-process.exit(Stoa.errored ? 1 : 0);
+} else {
+    const fileName = opts.arg("file") ?? "/dev/stdin";
+    const sourceCode = fs.readFileSync(fileName).toString();
+    Stoa.run(fileName, sourceCode);
+    process.exit(Stoa.errored ? 1 : 0);
+}

@@ -1,5 +1,7 @@
 import * as Lib from '.'
 
+type RuntimeOpts = { stage: "scan" | "parse" | "eval" };
+
 export abstract class Language<Tokens extends Lib.Lexicon, Ast extends object, Result> {
     abstract readonly Tokenizer: typeof Lib.TokenStreamClass<Tokens>;
     abstract readonly Parser: typeof Lib.Parser<Tokens, Ast>;
@@ -21,8 +23,8 @@ export abstract class Language<Tokens extends Lib.Lexicon, Ast extends object, R
         return this._resolver
     }
 
-    private opts: { stage: "scan" | "parse" | "eval" } = { stage: "eval" };
-    options(opts: typeof this.opts) {
+    private opts: RuntimeOpts = { stage: "eval" };
+    options(opts: RuntimeOpts) {
         this.opts = opts;
     }
 

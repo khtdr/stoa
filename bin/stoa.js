@@ -1757,6 +1757,22 @@ var Resolver = class extends Visitor2 {
 };
 __name(Resolver, "Resolver");
 
+// lib/repl-kit/index.ts
+var Repl = class {
+  constructor(lang) {
+    this.lang = lang;
+  }
+  async run() {
+    return new Promise((resolve) => resolve(void 0));
+  }
+};
+__name(Repl, "Repl");
+
+// src/repl.ts
+var Repl2 = class extends Repl {
+};
+__name(Repl2, "Repl");
+
 // src/stoa.ts
 var Language2 = class extends Language {
   constructor() {
@@ -1778,15 +1794,20 @@ import_opts.default.parse([
     description: "prints version info and exits "
   }
 ], [{ name: "file" }], true);
-if (import_opts.default.get("v")) {
+if (import_opts.default.get("version")) {
   console.log(`stoa-${version}`);
   process.exit(0);
 }
 var Stoa = new Language2();
 var stage = import_opts.default.get("t") && "scan" || import_opts.default.get("p") && "parse" || "eval";
 Stoa.options({ stage });
-var fileName = import_opts.default.arg("file") ?? "/dev/stdin";
-var sourceCode = import_fs.default.readFileSync(fileName).toString();
-Stoa.run(fileName, sourceCode);
-process.exit(Stoa.errored ? 1 : 0);
+if (import_opts.default.get("repl")) {
+  const repl = new Repl2(Stoa);
+  repl.run().finally(() => process.exit(0));
+} else {
+  const fileName = import_opts.default.arg("file") ?? "/dev/stdin";
+  const sourceCode = import_fs.default.readFileSync(fileName).toString();
+  Stoa.run(fileName, sourceCode);
+  process.exit(Stoa.errored ? 1 : 0);
+}
 //# sourceMappingURL=stoa.js.map

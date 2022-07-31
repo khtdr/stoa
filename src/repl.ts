@@ -1,8 +1,5 @@
-import * as Ltk from "stoa-ltk";
-export class Repl {
-  constructor(readonly lang: Ltk.Language<any, any, any>) { }
-  async run() { }
-}
+import * as Rpk from "repl-kit";
+export class Repl extends Rpk.Repl { }
 
 // @ ts-expect-error this project kinda sucks like this
 // import { AutoComplete } from 'enquirer'

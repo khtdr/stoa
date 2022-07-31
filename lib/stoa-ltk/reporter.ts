@@ -1,5 +1,7 @@
 import { Token } from ".";
 
+type Errors = [Token, string][]
+
 export interface Reporter {
     error(token: Token, message?: string): void
     pushSource(name: string, source: string): void
@@ -19,11 +21,11 @@ export class StdErrReporter implements Reporter {
         this.files.pop()
     }
 
-    private _errors: [Token, string][] = []
+    private _errors: Errors = []
     error(token: Token, message: string) {
         this._errors.push([token, message])
     }
-    get errors(): false | typeof this._errors {
+    get errors(): false | Errors {
         return !this._errors.length ? false : this._errors
     }
 
