@@ -73,9 +73,8 @@ snapshots:
 	@bin/run-snapshots.sh
 
 graph:
-	@npx depcruise --include-only "^(src|lib)" --output-type dot src | dot -T png > images/dependency-graph.png
-	@npx depcruise --include-only "^(src|lib)" --output-type ddot src | dot -T png > images/ddot.png
-	@npx depcruise --include-only "^(src|lib)" --output-type archi src | dot -T png > images/archi.png
+	@npx depcruise --include-only "^src|^lib|^package.json" --ts-config --output-type dot src | dot -T png > images/dependency-graph.png
+	@npx depcruise --include-only "^src|^lib|^package.json" --ts-config --output-type archi src | dot -T png > images/archi.png
 
 deps: Makefile node_modules
 

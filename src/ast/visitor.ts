@@ -1,5 +1,5 @@
 import * as Ltk from 'stoa-ltk'
-import type * as Ast from '../ast'
+import type * as Ast from '.'
 
 export abstract class Visitor<Result = void> extends Ltk.Visitor<Ast.Visitable, Result> {
     abstract AssignExpr(expr: Ast.AssignExpr): Result

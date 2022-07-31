@@ -24,6 +24,7 @@
         },
         "include": [
                 "src",
-                "lib"
+                "lib/stoa-ltk",
+                "lib/repl-kit"
         ]
 }

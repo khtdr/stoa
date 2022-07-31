@@ -1,4 +1,4 @@
-import { RuntimeError } from '../runtime'
+import { RuntimeError } from '.'
 import { Token } from '../ast'
 
 export class Environment {

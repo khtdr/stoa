@@ -1,8 +1,8 @@
-import * as Ast from './ast'
+import * as Ast from '../ast'
 
-export * from './runtime/environment'
-export * from './runtime/globals'
-export * from './runtime/values'
+export * from './environment'
+export * from './globals'
+export * from './values'
 
 export class Function implements Callable {
     constructor(

@@ -1,4 +1,4 @@
-import * as Ast from '../ast'
+import * as Ast from '.'
 
 export class BlockStmt implements Ast.Statement {
     constructor(

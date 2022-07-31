@@ -99,9 +99,6 @@ The latest uploaded report is at: https://khtdr.com/stoa/coverage/
 make graph
 #+end_src
 
-
-[[./images/ddot.png]]
-
 [[./images/archi.png]]
 
 [[./images/dependency-graph.png]]

@@ -11,14 +11,14 @@ export interface Statement extends Visitable { }
 export interface Expression extends Visitable { }
 
 // usually identifiers and references for static analysis
-export { TOKEN } from './scanner'
-export type { Token } from './scanner'
+export { TOKEN } from '../scanner'
+export type { Token } from '../scanner'
 
 // organized implementations
-export * from './ast/declarations'
-export * from './ast/expressions'
-export * from './ast/statements'
-export * from './ast/visitor'
+export * from './declarations'
+export * from './expressions'
+export * from './statements'
+export * from './visitor'
 
 export class Program implements Visitable {
     constructor(

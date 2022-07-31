@@ -1,4 +1,4 @@
-import * as Ast from '../ast'
+import * as Ast from '.'
 
 export class FunctionExpr implements Ast.Expression {
     constructor(

@@ -796,7 +796,7 @@ var Visitor2 = class extends Visitor {
 };
 __name(Visitor2, "Visitor");
 
-// src/ast.ts
+// src/ast/index.ts
 var Program = class {
   constructor(code) {
     this.code = code;
@@ -1347,7 +1347,7 @@ function truthy(val) {
 }
 __name(truthy, "truthy");
 
-// src/runtime.ts
+// src/runtime/index.ts
 var Function = class {
   constructor(arity, call) {
     this.arity = arity;
