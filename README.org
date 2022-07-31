@@ -14,9 +14,9 @@ make build
 : CLI tsup v6.1.2
 : CLI Target: node14
 : CJS Build start
-: CJS ⚡️ Build success in 37ms
-: CJS bin/stoa.js     49.02 KB
-: CJS bin/stoa.js.map 104.91 KB
+: CJS ⚡️ Build success in 39ms
+: CJS bin/stoa.js     49.03 KB
+: CJS bin/stoa.js.map 104.86 KB
 
 ** Usage Documentation
 #+begin_src sh :exports both :results verbatim
@@ -64,23 +64,23 @@ All files         |   88.94 |    71.19 |   94.02 |   89.55 |
   parser.ts       |   82.85 |    52.63 |   76.92 |   79.31 | 10-13,30,55-56,69
   reporter.ts     |     100 |      100 |     100 |     100 |
   tokenizer.ts    |   92.03 |    84.48 |   94.44 |   92.78 | 61-62,70-72,195-196
- src              |   86.63 |    66.78 |   95.16 |   87.92 |
-  ast.ts          |     100 |      100 |     100 |     100 |
+ src              |    86.2 |    67.02 |   95.76 |   87.55 |
   interpreter.ts  |   81.52 |     67.3 |   96.42 |   84.25 | ...126-132,147,164,179-181,189,204-210
   parser.ts       |   84.14 |    63.15 |   94.11 |   85.64 | ...149,159-163,237,338-343,392,415-433
   printer.ts      |   91.52 |     62.5 |      96 |   90.38 | 44-50
   resolver.ts     |   95.06 |       85 |   96.42 |   95.89 | 41,110,147
-  runtime.ts      |   95.45 |       50 |      80 |     100 | 21-22
   scanner.ts      |     100 |      100 |     100 |     100 |
   stoa.ts         |      90 |    81.81 |     100 |   88.88 | 36-37
- src/ast          |    97.7 |      100 |      95 |   96.87 |
+ src/ast          |   97.77 |      100 |   95.23 |   96.96 |
   declarations.ts |     100 |      100 |     100 |     100 |
   expressions.ts  |     100 |      100 |     100 |     100 |
+  index.ts        |     100 |      100 |     100 |     100 |
   statements.ts   |    92.3 |      100 |   85.71 |   89.47 | 25-26
   visitor.ts      |     100 |      100 |     100 |     100 |
- src/runtime      |   91.42 |    79.41 |      90 |      88 |
+ src/runtime      |   92.98 |    76.31 |   86.66 |    92.1 |
   environment.ts  |   90.47 |       75 |     100 |   84.61 | 17,23
   globals.ts      |      75 |      100 |      50 |      75 | 7
+  index.ts        |   95.45 |       50 |      80 |     100 | 21-22
   values.ts       |     100 |      100 |     100 |     100 |
 ------------------|---------|----------|---------|---------|----------------------------------------
 
