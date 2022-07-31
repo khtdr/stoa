@@ -1,25 +1,28 @@
 import * as Ltk from 'stoa-ltk'
-import type * as Ast from '.'
+import type * as Decl from './declarations'
+import type * as Expr from './expressions'
+import type * as Node from './nodes'
+import type * as Stmt from './statements'
 
-export abstract class Visitor<Result = void> extends Ltk.Visitor<Ast.Visitable, Result> {
-    abstract AssignExpr(expr: Ast.AssignExpr): Result
-    abstract BinaryExpr(expr: Ast.BinaryExpr): Result
-    abstract BlockStmt(stmt: Ast.BlockStmt): Result
-    abstract CallExpr(expr: Ast.CallExpr): Result
-    abstract ExpressionStmt(stmt: Ast.ExpressionStmt): Result
-    abstract FunctionExpr(expr: Ast.FunctionExpr): Result
-    abstract FunctionDecl(decl: Ast.FunctionDecl): Result
-    abstract GroupExpr(expr: Ast.GroupExpr): Result
-    abstract IfStmt(stmt: Ast.IfStmt): Result
-    abstract JumpStmt(stmt: Ast.JumpStmt): Result
-    abstract LiteralExpr(expr: Ast.LiteralExpr): Result
-    abstract LogicalExpr(expr: Ast.LogicalExpr): Result
-    abstract PrintStmt(stmt: Ast.PrintStmt): Result
-    abstract Program(program: Ast.Program): Result
-    abstract ReturnStmt(stmt: Ast.ReturnStmt): Result
-    abstract TernaryExpr(expr: Ast.TernaryExpr): Result
-    abstract UnaryExpr(expr: Ast.UnaryExpr): Result
-    abstract VariableDecl(decl: Ast.VariableDecl): Result
-    abstract VariableExpr(expr: Ast.VariableExpr): Result
-    abstract WhileStmt(stmt: Ast.WhileStmt): Result
+export abstract class Visitor<Result = void> extends Ltk.Visitor<Node.Ast, Result> {
+    abstract AssignExpr(expr: Expr.AssignExpr): Result
+    abstract BinaryExpr(expr: Expr.BinaryExpr): Result
+    abstract BlockStmt(stmt: Stmt.BlockStmt): Result
+    abstract CallExpr(expr: Expr.CallExpr): Result
+    abstract ExpressionStmt(stmt: Stmt.ExpressionStmt): Result
+    abstract FunctionExpr(expr: Expr.FunctionExpr): Result
+    abstract FunctionDecl(decl: Decl.FunctionDecl): Result
+    abstract GroupExpr(expr: Expr.GroupExpr): Result
+    abstract IfStmt(stmt: Stmt.IfStmt): Result
+    abstract JumpStmt(stmt: Stmt.JumpStmt): Result
+    abstract LiteralExpr(expr: Expr.LiteralExpr): Result
+    abstract LogicalExpr(expr: Expr.LogicalExpr): Result
+    abstract PrintStmt(stmt: Stmt.PrintStmt): Result
+    abstract Program(program: Node.Program): Result
+    abstract ReturnStmt(stmt: Stmt.ReturnStmt): Result
+    abstract TernaryExpr(expr: Expr.TernaryExpr): Result
+    abstract UnaryExpr(expr: Expr.UnaryExpr): Result
+    abstract VariableDecl(decl: Decl.VariableDecl): Result
+    abstract VariableExpr(expr: Expr.VariableExpr): Result
+    abstract WhileStmt(stmt: Stmt.WhileStmt): Result
 }

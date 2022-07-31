@@ -1,4 +1,4 @@
-import { Token } from "../ast/index"
+import { Token } from "../ast/nodes"
 import { Interpreter } from "../interpreter"
 
 export function registerGlobals(evaluator: Interpreter) {

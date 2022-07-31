@@ -641,23 +641,35 @@ Tokenizer.lexicon = {
 };
 var TOKEN = Object.keys(Tokenizer.lexicon).reduce((a, c) => (a[c] = c, a), {});
 
-// src/ast/declarations.ts
-var VariableDecl = class {
-  constructor(name, expr) {
-    this.name = name;
-    this.expr = expr;
-  }
+// src/ast/visitor.ts
+var Visitor2 = class extends Visitor {
 };
-__name(VariableDecl, "VariableDecl");
-var FunctionDecl = class {
-  constructor(name, func) {
-    this.name = name;
-    this.func = func;
-  }
-};
-__name(FunctionDecl, "FunctionDecl");
+__name(Visitor2, "Visitor");
 
 // src/ast/expressions.ts
+var AssignExpr = class {
+  constructor(name, value) {
+    this.name = name;
+    this.value = value;
+  }
+};
+__name(AssignExpr, "AssignExpr");
+var BinaryExpr = class {
+  constructor(left, operator, right) {
+    this.left = left;
+    this.operator = operator;
+    this.right = right;
+  }
+};
+__name(BinaryExpr, "BinaryExpr");
+var CallExpr = class {
+  constructor(callee, args, end) {
+    this.callee = callee;
+    this.args = args;
+    this.end = end;
+  }
+};
+__name(CallExpr, "CallExpr");
 var FunctionExpr = class {
   constructor(params, block) {
     this.params = params;
@@ -665,6 +677,12 @@ var FunctionExpr = class {
   }
 };
 __name(FunctionExpr, "FunctionExpr");
+var GroupExpr = class {
+  constructor(inner) {
+    this.inner = inner;
+  }
+};
+__name(GroupExpr, "GroupExpr");
 var LiteralExpr = class {
   constructor(value) {
     this.value = value;
@@ -681,42 +699,6 @@ var LiteralExpr = class {
   }
 };
 __name(LiteralExpr, "LiteralExpr");
-var VariableExpr = class {
-  constructor(name) {
-    this.name = name;
-  }
-};
-__name(VariableExpr, "VariableExpr");
-var UnaryExpr = class {
-  constructor(operator, operand) {
-    this.operator = operator;
-    this.operand = operand;
-  }
-};
-__name(UnaryExpr, "UnaryExpr");
-var CallExpr = class {
-  constructor(callee, args, end) {
-    this.callee = callee;
-    this.args = args;
-    this.end = end;
-  }
-};
-__name(CallExpr, "CallExpr");
-var BinaryExpr = class {
-  constructor(left, operator, right) {
-    this.left = left;
-    this.operator = operator;
-    this.right = right;
-  }
-};
-__name(BinaryExpr, "BinaryExpr");
-var AssignExpr = class {
-  constructor(name, value) {
-    this.name = name;
-    this.value = value;
-  }
-};
-__name(AssignExpr, "AssignExpr");
 var LogicalExpr = class {
   constructor(left, operator, right) {
     this.left = left;
@@ -735,74 +717,19 @@ var TernaryExpr = class {
   }
 };
 __name(TernaryExpr, "TernaryExpr");
-var GroupExpr = class {
-  constructor(inner) {
-    this.inner = inner;
+var UnaryExpr = class {
+  constructor(operator, operand) {
+    this.operator = operator;
+    this.operand = operand;
   }
 };
-__name(GroupExpr, "GroupExpr");
-
-// src/ast/statements.ts
-var BlockStmt = class {
-  constructor(statements) {
-    this.statements = statements;
+__name(UnaryExpr, "UnaryExpr");
+var VariableExpr = class {
+  constructor(name) {
+    this.name = name;
   }
 };
-__name(BlockStmt, "BlockStmt");
-var ExpressionStmt = class {
-  constructor(expr) {
-    this.expr = expr;
-  }
-};
-__name(ExpressionStmt, "ExpressionStmt");
-var IfStmt = class {
-  constructor(condition, trueStatement, falseStatement) {
-    this.condition = condition;
-    this.trueStatement = trueStatement;
-    this.falseStatement = falseStatement;
-  }
-};
-__name(IfStmt, "IfStmt");
-var JumpStmt = class {
-  constructor(keyword, distance) {
-    this.keyword = keyword;
-    this.distance = distance;
-  }
-};
-__name(JumpStmt, "JumpStmt");
-var PrintStmt = class {
-  constructor(expr) {
-    this.expr = expr;
-  }
-};
-__name(PrintStmt, "PrintStmt");
-var ReturnStmt = class {
-  constructor(expr, keyword) {
-    this.expr = expr;
-    this.keyword = keyword;
-  }
-};
-__name(ReturnStmt, "ReturnStmt");
-var WhileStmt = class {
-  constructor(condition, body) {
-    this.condition = condition;
-    this.body = body;
-  }
-};
-__name(WhileStmt, "WhileStmt");
-
-// src/ast/visitor.ts
-var Visitor2 = class extends Visitor {
-};
-__name(Visitor2, "Visitor");
-
-// src/ast/index.ts
-var Program = class {
-  constructor(code) {
-    this.code = code;
-  }
-};
-__name(Program, "Program");
+__name(VariableExpr, "VariableExpr");
 
 // src/printer.ts
 var Printer = class extends Visitor2 {
@@ -911,6 +838,79 @@ function indent(text) {
   return text.replace(/^/mg, pad);
 }
 __name(indent, "indent");
+
+// src/ast/declarations.ts
+var FunctionDecl = class {
+  constructor(name, func) {
+    this.name = name;
+    this.func = func;
+  }
+};
+__name(FunctionDecl, "FunctionDecl");
+var VariableDecl = class {
+  constructor(name, expr) {
+    this.name = name;
+    this.expr = expr;
+  }
+};
+__name(VariableDecl, "VariableDecl");
+
+// src/ast/nodes.ts
+var Program = class {
+  constructor(code) {
+    this.code = code;
+  }
+};
+__name(Program, "Program");
+
+// src/ast/statements.ts
+var BlockStmt = class {
+  constructor(statements) {
+    this.statements = statements;
+  }
+};
+__name(BlockStmt, "BlockStmt");
+var ExpressionStmt = class {
+  constructor(expr) {
+    this.expr = expr;
+  }
+};
+__name(ExpressionStmt, "ExpressionStmt");
+var IfStmt = class {
+  constructor(condition, trueStatement, falseStatement) {
+    this.condition = condition;
+    this.trueStatement = trueStatement;
+    this.falseStatement = falseStatement;
+  }
+};
+__name(IfStmt, "IfStmt");
+var JumpStmt = class {
+  constructor(keyword, distance) {
+    this.keyword = keyword;
+    this.distance = distance;
+  }
+};
+__name(JumpStmt, "JumpStmt");
+var PrintStmt = class {
+  constructor(expr) {
+    this.expr = expr;
+  }
+};
+__name(PrintStmt, "PrintStmt");
+var ReturnStmt = class {
+  constructor(expr, keyword) {
+    this.expr = expr;
+    this.keyword = keyword;
+  }
+};
+__name(ReturnStmt, "ReturnStmt");
+var WhileStmt = class {
+  constructor(condition, body) {
+    this.condition = condition;
+    this.body = body;
+  }
+};
+__name(WhileStmt, "WhileStmt");
 
 // src/parser.ts
 var Parser2 = class extends Parser {
@@ -1430,6 +1430,15 @@ var RuntimeError = class extends Error {
 };
 __name(RuntimeError, "RuntimeError");
 
+// src/runtime/errors.ts
+var RuntimeError2 = class extends Error {
+  constructor(token, message) {
+    super(message);
+    this.token = token;
+  }
+};
+__name(RuntimeError2, "RuntimeError");
+
 // src/runtime/environment.ts
 var Environment = class {
   constructor(enclosure) {
@@ -1453,7 +1462,7 @@ var Environment = class {
     else if ((_a = this.enclosure) == null ? void 0 : _a.has(name))
       this.enclosure.set(name, value);
     else
-      throw new RuntimeError(name, `No such variable: ${name.text}`);
+      throw new RuntimeError2(name, `No such variable: ${name.text}`);
   }
   get(name, distance = 0) {
     var _a;
@@ -1463,7 +1472,7 @@ var Environment = class {
       return this.table.get(name.text);
     if ((_a = this.enclosure) == null ? void 0 : _a.has(name))
       return this.enclosure.get(name);
-    throw new RuntimeError(name, `Undefined variable: ${name.text}`);
+    throw new RuntimeError2(name, `Undefined variable: ${name.text}`);
   }
 };
 __name(Environment, "Environment");
@@ -1759,7 +1768,7 @@ var Interpreter = class extends Visitor2 {
 };
 __name(Interpreter, "Interpreter");
 
-// src/stoa-lang.ts
+// src/stox-lang.ts
 var StoxLang = class extends Language {
   constructor() {
     super(...arguments);

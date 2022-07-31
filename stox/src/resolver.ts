@@ -1,6 +1,11 @@
 import * as Ltk from "stoa-ltk";
-import * as Ast from "./ast";
 import { Interpreter } from "./interpreter";
+import { Visitor } from "./ast/visitor";
+import * as Decl from './ast/declarations'
+import * as Expr from './ast/expressions'
+import * as Node from './ast/nodes'
+import * as Stmt from './ast/statements'
+
 enum FunctionType {
     NONE,
     FUNCTION,
@@ -19,7 +24,7 @@ enum VariableType {
  * And other static analysis checks.
  */
 
-export class Resolver extends Ast.Visitor<void> {
+export class Resolver extends Visitor<void> {
     constructor(
         readonly reporter: Ltk.Reporter,
         readonly evaluator: Interpreter
@@ -48,7 +53,7 @@ export class Resolver extends Ast.Visitor<void> {
         if (!scope) return;
         scope[ident.text] = VariableType.DEFINED;
     }
-    private resolveLocal(expr: Ast.Expression, token: Ltk.Token<"IDENTIFIER">) {
+    private resolveLocal(expr: Node.Expression, token: Ltk.Token<"IDENTIFIER">) {
         this.scopes.find((scope, i) => {
             if (scope[token.text]) {
                 this.evaluator.resolve(expr, i);
@@ -57,7 +62,7 @@ export class Resolver extends Ast.Visitor<void> {
             return false;
         });
     }
-    private resolveFunction(fun: Ast.FunctionExpr, ft: FunctionType) {
+    private resolveFunction(fun: Expr.FunctionExpr, ft: FunctionType) {
         const encFunction = this.currentFunction;
         this.currentFunction = ft;
         this.beginScope();
@@ -70,84 +75,84 @@ export class Resolver extends Ast.Visitor<void> {
         this.currentFunction = encFunction;
     }
 
-    AssignExpr(expr: Ast.AssignExpr) {
+    AssignExpr(expr: Expr.AssignExpr) {
         this.visit(expr.value);
         this.resolveLocal(expr, expr.name);
     }
-    BinaryExpr(expr: Ast.BinaryExpr) {
+    BinaryExpr(expr: Expr.BinaryExpr) {
         this.visit(expr.left);
         this.visit(expr.right);
     }
-    BlockStmt(block: Ast.BlockStmt) {
+    BlockStmt(block: Stmt.BlockStmt) {
         this.beginScope();
         for (const stmt of block.statements) this.visit(stmt);
         this.endScope();
     }
-    CallExpr(expr: Ast.CallExpr) {
+    CallExpr(expr: Expr.CallExpr) {
         this.visit(expr.callee);
         for (const arg of expr.args) this.visit(arg);
     }
-    ExpressionStmt(stmt: Ast.ExpressionStmt) {
+    ExpressionStmt(stmt: Stmt.ExpressionStmt) {
         this.visit(stmt.expr);
     }
-    FunctionExpr(expr: Ast.FunctionExpr) {
+    FunctionExpr(expr: Expr.FunctionExpr) {
         this.resolveFunction(expr, FunctionType.FUNCTION);
     }
-    FunctionDecl(decl: Ast.FunctionDecl) {
+    FunctionDecl(decl: Decl.FunctionDecl) {
         this.declare(decl.name);
         this.define(decl.name);
         this.resolveFunction(decl.func, FunctionType.FUNCTION);
     }
-    GroupExpr(expr: Ast.GroupExpr) {
+    GroupExpr(expr: Expr.GroupExpr) {
         this.visit(expr.inner);
     }
-    IfStmt(stmt: Ast.IfStmt) {
+    IfStmt(stmt: Stmt.IfStmt) {
         this.visit(stmt.condition);
         this.visit(stmt.trueStatement);
         if (stmt.falseStatement) this.visit(stmt.falseStatement);
     }
-    JumpStmt(stmt: Ast.JumpStmt) {
+    JumpStmt(stmt: Stmt.JumpStmt) {
         this.visit(stmt.distance);
     }
-    LiteralExpr(_expr: Ast.LiteralExpr) { }
-    LogicalExpr(expr: Ast.LogicalExpr) {
+    LiteralExpr(_expr: Expr.LiteralExpr) { }
+    LogicalExpr(expr: Expr.LogicalExpr) {
         this.visit(expr.left);
         this.visit(expr.right);
     }
-    PrintStmt(stmt: Ast.PrintStmt) {
+    PrintStmt(stmt: Stmt.PrintStmt) {
         this.visit(stmt.expr);
     }
-    Program(program: Ast.Program) {
+    Program(program: Node.Program) {
         for (const decl of program.code) this.visit(decl);
     }
-    ReturnStmt(stmt: Ast.ReturnStmt) {
+    ReturnStmt(stmt: Stmt.ReturnStmt) {
         if (this.currentFunction == FunctionType.NONE)
             this.reporter.error(stmt.keyword, "No return from top-level allowed");
         this.visit(stmt.expr);
     }
-    TernaryExpr(expr: Ast.TernaryExpr) {
+    TernaryExpr(expr: Expr.TernaryExpr) {
         this.visit(expr.left);
         this.visit(expr.middle);
         this.visit(expr.right);
     }
-    UnaryExpr(expr: Ast.UnaryExpr) {
+    UnaryExpr(expr: Expr.UnaryExpr) {
         this.visit(expr.operand);
     }
-    VariableDecl(decl: Ast.VariableDecl) {
+    VariableDecl(decl: Decl.VariableDecl) {
         this.declare(decl.name);
         if (decl.expr) {
             this.visit(decl.expr);
         }
         this.define(decl.name);
     }
-    VariableExpr(expr: Ast.VariableExpr) {
+    VariableExpr(expr: Expr.VariableExpr) {
         const scope = this.scopes[0];
         if (!scope) return;
         if (scope[expr.name.text] === VariableType.DECLARED)
             this.reporter.error(expr.name, "Reference to uninitialized variable");
         this.resolveLocal(expr, expr.name);
     }
-    WhileStmt(stmt: Ast.WhileStmt) {
+    WhileStmt(stmt: Stmt.WhileStmt) {
         this.visit(stmt.condition);
         this.visit(stmt.body);
     }

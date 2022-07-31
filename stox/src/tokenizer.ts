@@ -65,6 +65,7 @@ export class Tokenizer extends Ltk.TokenStream<typeof Tokenizer.lexicon> {
         }
 }
 
+export type Lexicon = typeof Tokenizer.lexicon;
 type TokenName = keyof typeof Tokenizer.lexicon;
 
 export const TOKEN = (Object.keys(Tokenizer.lexicon) as TokenName[]).reduce(

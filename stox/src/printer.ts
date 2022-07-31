@@ -1,90 +1,94 @@
-import * as Ast from './ast'
+import { Visitor } from './ast/visitor'
+import * as Decl from './ast/declarations'
+import * as Expr from './ast/expressions'
+import * as Node from './ast/nodes'
+import * as Stmt from './ast/statements'
 
-export class Printer extends Ast.Visitor<string> {
-    AssignExpr(assign: Ast.AssignExpr): string {
+export class Printer extends Visitor<string> {
+    AssignExpr(assign: Expr.AssignExpr): string {
         return `(= ${assign.name.text} ${this.visit(assign.value)})`
     }
-    BinaryExpr(expr: Ast.BinaryExpr): string {
+    BinaryExpr(expr: Expr.BinaryExpr): string {
         const operator = expr.operator.text
         const left = this.visit(expr.left)
         const right = this.visit(expr.right)
         return `(${operator} ${left} ${right})`
     }
-    BlockStmt(block: Ast.BlockStmt): string {
+    BlockStmt(block: Stmt.BlockStmt): string {
         const blocks = block.statements.map(stmt => this.visit(stmt)).join("\n")
         return `(block \n${indent(blocks)}\n)`
     }
-    CallExpr(call: Ast.CallExpr): string {
+    CallExpr(call: Expr.CallExpr): string {
         const callee = `(call ${this.visit(call.callee)}`
         if (!call.args.length) return `${callee})`
         const args = call.args.map(arg => this.visit(arg)).join(' ')
         return `${callee} ${args})`
     }
-    ExpressionStmt(statement: Ast.ExpressionStmt): string {
+    ExpressionStmt(statement: Stmt.ExpressionStmt): string {
         return this.visit(statement.expr)
     }
-    FunctionExpr(fun: Ast.FunctionExpr): string {
+    FunctionExpr(fun: Expr.FunctionExpr): string {
         const params = fun.params.map(p => p.text).join(' ')
         const body = this.visit(fun.block)
         return `(let [${params}] ${body})`
     }
-    FunctionDecl(decl: Ast.FunctionDecl): string {
+    FunctionDecl(decl: Decl.FunctionDecl): string {
         const name = decl.name.text
         const val = this.visit(decl.func)
         return `(fun ${name} ${val})`
     }
-    GroupExpr(expr: Ast.GroupExpr): string {
+    GroupExpr(expr: Expr.GroupExpr): string {
         const operand = this.visit(expr.inner)
         return `(group ${operand})`
     }
-    IfStmt(statement: Ast.IfStmt): string {
+    IfStmt(statement: Stmt.IfStmt): string {
         const cond = this.visit(statement.condition)
         const stmtTrue = this.visit(statement.trueStatement)
         if (!statement.falseStatement) return `(if ${cond} ${stmtTrue})`
         const stmtFalse = this.visit(statement.falseStatement)
         return `(if ${cond} \n${indent(stmtTrue)} \n${indent(stmtFalse)})`
     }
-    JumpStmt(statement: Ast.JumpStmt): string {
+    JumpStmt(statement: Stmt.JumpStmt): string {
         const dest = statement.keyword.name
-        const dist = this.visit(statement.distance || new Ast.LiteralExpr([1, 0]))
+        const dist = this.visit(statement.distance || new Expr.LiteralExpr([1, 0]))
         return `(${dest} ${dist})`
     }
-    LiteralExpr(expr: Ast.LiteralExpr): string {
+    LiteralExpr(expr: Expr.LiteralExpr): string {
         return expr.toString()
     }
-    LogicalExpr(expr: Ast.LogicalExpr): string {
+    LogicalExpr(expr: Expr.LogicalExpr): string {
         return this.BinaryExpr(expr)
     }
-    PrintStmt(statement: Ast.PrintStmt): string {
+    PrintStmt(statement: Stmt.PrintStmt): string {
         return `(print ${this.visit(statement.expr)})`
     }
-    Program(program: Ast.Program): string {
+    Program(program: Node.Program): string {
         const decls = program.code.map(decl => this.visit(decl)).join("\n")
         return `(program \n${indent(decls)}\n)`
     }
-    ReturnStmt(ret: Ast.ReturnStmt): string {
+    ReturnStmt(ret: Stmt.ReturnStmt): string {
         return `(return ${this.visit(ret.expr)})`
     }
-    TernaryExpr(expr: Ast.TernaryExpr): string {
+    TernaryExpr(expr: Expr.TernaryExpr): string {
         const left = this.visit(expr.left)
         const middle = this.visit(expr.middle)
         const right = this.visit(expr.right)
         return `(?: ${left} ${middle} ${right})`
     }
-    UnaryExpr(expr: Ast.UnaryExpr): string {
+    UnaryExpr(expr: Expr.UnaryExpr): string {
         const operator = expr.operator.text
         const operand = this.visit(expr.operand)
         return `(${operator} ${operand})`
     }
-    VariableDecl(declaration: Ast.VariableDecl): string {
+    VariableDecl(declaration: Decl.VariableDecl): string {
         const decl = `(var ${declaration.name.text}`
         const init = declaration.expr ? ` ${this.visit(declaration.expr)}` : ''
         return `${decl}${init})`
     }
-    VariableExpr(expr: Ast.VariableExpr): string {
+    VariableExpr(expr: Expr.VariableExpr): string {
         return `${expr.name.text}`
     }
-    WhileStmt(statement: Ast.WhileStmt): string {
+    WhileStmt(statement: Stmt.WhileStmt): string {
         const cond = this.visit(statement.condition)
         const body = this.visit(statement.body)
         return `(while ${cond} \n${indent(body)}\n)`

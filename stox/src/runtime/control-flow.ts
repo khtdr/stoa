@@ -1,4 +1,4 @@
-import { Result } from './base'
+import { Result } from './values'
 
 export class ReturnException {
     constructor(readonly value: Result = undefined) { }

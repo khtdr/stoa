@@ -1,3 +1,8 @@
+import { LiteralExpr } from '../ast/expressions'
+import { Callable } from './control-flow'
+
+export type Result = LiteralExpr['value'] | Callable
+
 export function isNumber(val: unknown): val is [number, number] {
     return Array.isArray(val) && val.length == 2
 }

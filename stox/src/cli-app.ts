@@ -1,6 +1,6 @@
 import fs from "fs";
 import opts from "opts";
-import { StoxLang } from './stoa-lang'
+import { StoxLang } from './stox-lang'
 import { Repl } from './repl'
 
 opts.parse(

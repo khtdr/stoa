@@ -1,15 +1,16 @@
-import * as Ast from '.'
+import * as Expr from './expressions'
+import * as Node from './nodes'
 
-export class VariableDecl implements Ast.Declarable {
+export class FunctionDecl implements Node.Declaration {
     constructor(
-        readonly name: Ast.Token<"IDENTIFIER">,
-        readonly expr: Ast.Expression | undefined
+        readonly name: Node.Token<"IDENTIFIER">,
+        readonly func: Expr.FunctionExpr,
     ) { }
 }
 
-export class FunctionDecl implements Ast.Declarable {
+export class VariableDecl implements Node.Declaration {
     constructor(
-        readonly name: Ast.Token<"IDENTIFIER">,
-        readonly func: Ast.FunctionExpr,
+        readonly name: Node.Token<"IDENTIFIER">,
+        readonly expr: Node.Expression | undefined
     ) { }
 }

@@ -1,5 +1,5 @@
-import { RuntimeError } from './base'
-import { Token } from '../ast/index'
+import { Token } from '../ast/nodes'
+import { RuntimeError } from './errors'
 
 export class Environment {
     constructor(readonly enclosure?: Environment) { }

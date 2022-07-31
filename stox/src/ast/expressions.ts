@@ -1,13 +1,43 @@
-import * as Ast from '.'
+import * as Node from './nodes'
+import * as Stmt from './statements'
 
-export class FunctionExpr implements Ast.Expression {
+export class AssignExpr implements Node.Expression {
     constructor(
-        readonly params: Ast.Token<"IDENTIFIER">[],
-        readonly block: Ast.BlockStmt
+        readonly name: Node.Token<'IDENTIFIER'>,
+        readonly value: Node.Expression
     ) { }
 }
 
-export class LiteralExpr implements Ast.Expression {
+export class BinaryExpr implements Node.Expression {
+    constructor(
+        readonly left: Node.Expression,
+        readonly operator: Node.Token,
+        readonly right: Node.Expression
+    ) { }
+}
+
+export class CallExpr implements Node.Expression {
+    constructor(
+        readonly callee: Node.Expression,
+        readonly args: Node.Expression[],
+        readonly end: Node.Token<any>,
+    ) { }
+}
+
+export class FunctionExpr implements Node.Expression {
+    constructor(
+        readonly params: Node.Token<"IDENTIFIER">[],
+        readonly block: Stmt.BlockStmt
+    ) { }
+}
+
+export class GroupExpr implements Node.Expression {
+    constructor(
+        readonly inner: Node.Expression
+    ) { }
+}
+
+export class LiteralExpr implements Node.Expression {
     constructor(
         readonly value: string | [number, number] | boolean | undefined | void
     ) { }
@@ -20,63 +50,33 @@ export class LiteralExpr implements Ast.Expression {
     }
 }
 
-export class VariableExpr implements Ast.Expression {
+export class LogicalExpr implements Node.Expression {
     constructor(
-        readonly name: Ast.Token<"IDENTIFIER">
+        readonly left: Node.Expression,
+        readonly operator: Node.Token<any>,
+        readonly right: Node.Expression
     ) { }
 }
 
-export class UnaryExpr implements Ast.Expression {
+export class TernaryExpr implements Node.Expression {
     constructor(
-        readonly operator: Ast.Token<any>,
-        readonly operand: Ast.Expression
+        readonly left: Node.Expression,
+        readonly op1: Node.Token<any>,
+        readonly middle: Node.Expression,
+        readonly op2: Node.Token<any>,
+        readonly right: Node.Expression
     ) { }
 }
 
-export class CallExpr implements Ast.Expression {
+export class UnaryExpr implements Node.Expression {
     constructor(
-        readonly callee: Ast.Expression,
-        readonly args: Ast.Expression[],
-        readonly end: Ast.Token<any>,
+        readonly operator: Node.Token<any>,
+        readonly operand: Node.Expression
     ) { }
 }
 
-export class BinaryExpr implements Ast.Expression {
+export class VariableExpr implements Node.Expression {
     constructor(
-        readonly left: Ast.Expression,
-        readonly operator: Ast.Token,
-        readonly right: Ast.Expression
-    ) { }
-}
-
-
-export class AssignExpr implements Ast.Expression {
-    constructor(
-        readonly name: Ast.Token<'IDENTIFIER'>,
-        readonly value: Ast.Expression
-    ) { }
-}
-
-export class LogicalExpr implements Ast.Expression {
-    constructor(
-        readonly left: Ast.Expression,
-        readonly operator: Ast.Token<any>,
-        readonly right: Ast.Expression
-    ) { }
-}
-
-export class TernaryExpr implements Ast.Expression {
-    constructor(
-        readonly left: Ast.Expression,
-        readonly op1: Ast.Token<any>,
-        readonly middle: Ast.Expression,
-        readonly op2: Ast.Token<any>,
-        readonly right: Ast.Expression
-    ) { }
-}
-
-export class GroupExpr implements Ast.Expression {
-    constructor(
-        readonly inner: Ast.Expression
+        readonly name: Node.Token<"IDENTIFIER">
     ) { }
 }

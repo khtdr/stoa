@@ -1,5 +1,5 @@
 import { LiteralExpr } from '../ast/expressions'
-import { Token } from '../ast/index'
+import { Token } from '../ast/nodes'
 import { Callable } from './control-flow'
 
 export type Result = LiteralExpr['value'] | Callable

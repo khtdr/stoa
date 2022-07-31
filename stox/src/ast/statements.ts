@@ -1,48 +1,48 @@
-import * as Ast from '.'
+import * as Node from './nodes'
 
-export class BlockStmt implements Ast.Statement {
+export class BlockStmt implements Node.Statement {
     constructor(
-        readonly statements: Ast.Statement[]
+        readonly statements: Node.Statement[]
     ) { }
 }
 
-export class ExpressionStmt implements Ast.Statement {
+export class ExpressionStmt implements Node.Statement {
     constructor(
-        readonly expr: Ast.Expression
+        readonly expr: Node.Expression
     ) { }
 }
 
-export class IfStmt implements Ast.Statement {
+export class IfStmt implements Node.Statement {
     constructor(
-        readonly condition: Ast.Expression,
-        readonly trueStatement: Ast.Statement,
-        readonly falseStatement?: Ast.Statement
+        readonly condition: Node.Expression,
+        readonly trueStatement: Node.Statement,
+        readonly falseStatement?: Node.Statement
     ) { }
 }
 
-export class JumpStmt implements Ast.Statement {
+export class JumpStmt implements Node.Statement {
     constructor(
-        readonly keyword: Ast.Token<'BREAK' | 'CONTINUE'>,
-        readonly distance: Ast.Expression,
+        readonly keyword: Node.Token<'BREAK' | 'CONTINUE'>,
+        readonly distance: Node.Expression,
     ) { }
 }
 
-export class PrintStmt implements Ast.Statement {
+export class PrintStmt implements Node.Statement {
     constructor(
-        readonly expr: Ast.Expression
+        readonly expr: Node.Expression
     ) { }
 }
 
-export class ReturnStmt implements Ast.Statement {
+export class ReturnStmt implements Node.Statement {
     constructor(
-        readonly expr: Ast.Expression,
-        readonly keyword: Ast.Token<'RETURN'>
+        readonly expr: Node.Expression,
+        readonly keyword: Node.Token<'RETURN'>
     ) { }
 }
 
-export class WhileStmt implements Ast.Statement {
+export class WhileStmt implements Node.Statement {
     constructor(
-        readonly condition: Ast.Expression,
-        readonly body: Ast.Statement
+        readonly condition: Node.Expression,
+        readonly body: Node.Statement
     ) { }
 }

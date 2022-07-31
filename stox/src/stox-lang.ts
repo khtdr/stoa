@@ -1,14 +1,13 @@
 import { Language } from "stoa-ltk";
 import { version } from "../../package.json";
-import { Visitable } from "./ast/index";
-import { Tokenizer } from "./tokenizer";
+import { Ast } from "./ast/nodes";
+import { Tokenizer, Lexicon } from "./tokenizer";
 import { Parser } from "./parser";
 import { Resolver } from "./resolver";
 import { Interpreter } from "./interpreter";
-import { Result } from "runtime/base";
+import { Result } from "runtime/values";
 
-export class StoxLang
-    extends Language<typeof Tokenizer.lexicon, Visitable, Result> {
+export class StoxLang extends Language<Lexicon, Ast, Result> {
 
     readonly version = version
     Tokenizer = Tokenizer;

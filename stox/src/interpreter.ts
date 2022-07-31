@@ -1,13 +1,16 @@
 import { Reporter } from "stoa-ltk";
-import { Expression, Token, TOKEN } from "ast/index";
-import { LiteralExpr } from "ast/expressions";
-import { Visitor } from "ast/visitor";
-import { Result, RuntimeError } from "runtime/base";
-import { Environment } from "runtime/environment";
-import { registerGlobals } from "runtime/globals";
-import { isNumber, isString, truthy } from "runtime/values";
-import { BreakException, ContinueException, Function, isCallable, JumpException, ReturnException } from "runtime/control-flow";
-import * as Node from "ast/index";
+import { Result, RuntimeError } from "./runtime/base";
+import { Environment } from "./runtime/environment";
+import { registerGlobals } from "./runtime/globals";
+import { isNumber, isString, truthy } from "./runtime/values";
+import { BreakException, ContinueException, Function, isCallable, JumpException, ReturnException } from "./runtime/control-flow";
+
+import { Visitor } from './ast/visitor'
+import { TOKEN } from "ast/nodes";
+import * as Decl from './ast/declarations'
+import * as Expr from './ast/expressions'
+import * as Node from './ast/nodes'
+import * as Stmt from './ast/statements'
 
 /**
  * Goals
@@ -24,32 +27,32 @@ export class Interpreter extends Visitor<Result> {
     readonly globals = new Environment()
     private env = this.globals
 
-    locals: Map<Expression, number> = new Map()
-    resolve(expr: Expression, depth: number) {
+    locals: Map<Node.Expression, number> = new Map()
+    resolve(expr: Node.Expression, depth: number) {
         this.locals.set(expr, depth)
     }
-    lookUpVariable(name: Token<'IDENTIFIER'>, expr: Expression) {
+    lookUpVariable(name: Node.Token<'IDENTIFIER'>, expr: Node.Expression) {
         const distance = this.locals.get(expr)
         if (distance !== undefined) return this.env.get(name, distance)
         return this.globals.get(name)
     }
 
-    AssignExpr(expr: Node.AssignExpr): Result {
+    AssignExpr(expr: Expr.AssignExpr): Result {
         const value = this.visit(expr.value)
         const distance = this.locals.get(expr)
         if (distance !== undefined) this.env.set(expr.name, value, distance)
         else this.globals.set(expr.name, value)
         return value
     }
-    BinaryExpr(expr: Node.BinaryExpr): Result {
+    BinaryExpr(expr: Expr.BinaryExpr): Result {
         const { operator: { name: op } } = expr
         const left = this.visit(expr.left);
         const right = this.visit(expr.right);
         if (op == TOKEN.COMMA) return right;
         if (op == TOKEN.PLUS) {
             if (isString(left) || isString(right)) {
-                const lStr = (isCallable(left)) ? left : new LiteralExpr(left)
-                const rStr = (isCallable(right)) ? right : new LiteralExpr(right)
+                const lStr = (isCallable(left)) ? left : new Expr.LiteralExpr(left)
+                const rStr = (isCallable(right)) ? right : new Expr.LiteralExpr(right)
                 return `${lStr}${rStr}`
             }
         }
@@ -77,7 +80,7 @@ export class Interpreter extends Visitor<Result> {
         if (op == TOKEN.LESS_EQUAL) return left[0] <= right[0]
         throw new RuntimeError(expr.operator, "Unexpected binary expression")
     }
-    BlockStmt(block: Node.BlockStmt): Result {
+    BlockStmt(block: Stmt.BlockStmt): Result {
         const previous = this.env
         this.env = new Environment(previous)
         try {
@@ -86,16 +89,16 @@ export class Interpreter extends Visitor<Result> {
             this.env = previous
         }
     }
-    CallExpr(call: Node.CallExpr): Result {
+    CallExpr(call: Expr.CallExpr): Result {
         const callee = this.visit(call.callee)
         if (!isCallable(callee)) throw new RuntimeError(call.end, "uncallable target")
         if (callee.arity != call.args.length) throw new RuntimeError(call.end, "wrong number of args")
         return callee.call(call.args.map(arg => this.visit(arg)))
     }
-    ExpressionStmt(statement: Node.ExpressionStmt): void {
+    ExpressionStmt(statement: Stmt.ExpressionStmt): void {
         this.visit(statement.expr)
     }
-    FunctionExpr(fun: Node.FunctionExpr): Result {
+    FunctionExpr(fun: Expr.FunctionExpr): Result {
         const closure = new Environment(this.env)
         return new Function(
             fun.params.length,
@@ -118,31 +121,31 @@ export class Interpreter extends Visitor<Result> {
                 }
             })
     }
-    FunctionDecl(decl: Node.FunctionDecl): Result {
+    FunctionDecl(decl: Decl.FunctionDecl): Result {
         const func = this.FunctionExpr(decl.func)
         this.env.init(decl.name)
         this.env.set(decl.name, func)
     }
-    GroupExpr(expr: Node.GroupExpr): Result {
+    GroupExpr(expr: Expr.GroupExpr): Result {
         return this.visit(expr.inner);
     }
-    IfStmt(statement: Node.IfStmt): Result {
+    IfStmt(statement: Stmt.IfStmt): Result {
         const condition = this.visit(statement.condition);
         if (truthy(condition)) this.visit(statement.trueStatement);
         else if (statement.falseStatement) this.visit(statement.falseStatement);
     }
-    JumpStmt(stmt: Node.JumpStmt): Result {
-        const distance = this.visit(stmt.distance || new LiteralExpr([1, 0]))
+    JumpStmt(stmt: Stmt.JumpStmt): Result {
+        const distance = this.visit(stmt.distance || new Expr.LiteralExpr([1, 0]))
         if (!isNumber(distance))
             throw new RuntimeError(stmt.keyword, "expected numerical distance")
         throw stmt.keyword.name == TOKEN.BREAK
             ? new BreakException(distance[0])
             : new ContinueException(distance[0])
     }
-    LiteralExpr(expr: Node.LiteralExpr): Result {
+    LiteralExpr(expr: Expr.LiteralExpr): Result {
         return expr.value
     }
-    LogicalExpr(expr: Node.LogicalExpr): Result {
+    LogicalExpr(expr: Expr.LogicalExpr): Result {
         const { operator: { name: op } } = expr
         const left = this.visit(expr.left)
         const left_truthy = truthy(left)
@@ -152,9 +155,9 @@ export class Interpreter extends Visitor<Result> {
         if (truthy(right)) return right
         return truthy(false)
     }
-    PrintStmt(statement: Node.PrintStmt): void {
+    PrintStmt(statement: Stmt.PrintStmt): void {
         const val = this.visit(statement.expr)
-        const str = (isCallable(val)) ? val : new LiteralExpr(val).toString()
+        const str = (isCallable(val)) ? val : new Expr.LiteralExpr(val).toString()
         console.log(str + '')
     }
     Program(program: Node.Program): Result {
@@ -162,7 +165,7 @@ export class Interpreter extends Visitor<Result> {
             const statements = program.code.map(stmt => this.visit(stmt))
             const last = statements[statements.length - 1]
             if (isCallable(last)) return `${last}`
-            return new LiteralExpr(last).toString()
+            return new Expr.LiteralExpr(last).toString()
         } catch (e) {
             if (!(e instanceof RuntimeError)) {
                 // need some token?
@@ -173,11 +176,11 @@ export class Interpreter extends Visitor<Result> {
             }
         }
     }
-    ReturnStmt(ret: Node.ReturnStmt): Result {
+    ReturnStmt(ret: Stmt.ReturnStmt): Result {
         const value = this.visit(ret.expr)
         throw new ReturnException(value)
     }
-    TernaryExpr(expr: Node.TernaryExpr): Result {
+    TernaryExpr(expr: Expr.TernaryExpr): Result {
         const { op1: { name: op1 }, op2: { name: op2 } } = expr
         if (op1 == TOKEN.QUESTION && op2 == TOKEN.COLON) {
             const left = this.visit(expr.left);
@@ -186,7 +189,7 @@ export class Interpreter extends Visitor<Result> {
         }
         throw new RuntimeError(op1, "Unexpected ternary expression")
     }
-    UnaryExpr(expr: Node.UnaryExpr): Result {
+    UnaryExpr(expr: Expr.UnaryExpr): Result {
         const { operator: { name: op } } = expr
         const value = this.visit(expr.operand);
         if (op == TOKEN.BANG) return !truthy(value);
@@ -194,15 +197,15 @@ export class Interpreter extends Visitor<Result> {
         if (op == TOKEN.DASH) return [-value[0], value[1]];
         throw new RuntimeError(op, "Unexpected unary expression")
     }
-    VariableDecl(declaration: Node.VariableDecl): Result {
+    VariableDecl(declaration: Decl.VariableDecl): Result {
         this.env.init(declaration.name)
         const val = declaration.expr ? this.visit(declaration.expr) : undefined
         this.env.set(declaration.name, val)
     }
-    VariableExpr(expr: Node.VariableExpr): Result {
+    VariableExpr(expr: Expr.VariableExpr): Result {
         return this.lookUpVariable(expr.name, expr)
     }
-    WhileStmt(statement: Node.WhileStmt): Result {
+    WhileStmt(statement: Stmt.WhileStmt): Result {
         while (truthy(this.visit(statement.condition))) {
             try {
                 this.visit(statement.body)
