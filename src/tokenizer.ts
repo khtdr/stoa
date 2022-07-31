@@ -1,6 +1,6 @@
 import * as Ltk from "stoa-ltk";
 
-export class Scanner extends Ltk.TokenStream<typeof Scanner.lexicon> {
+export class Tokenizer extends Ltk.TokenStream<typeof Tokenizer.lexicon> {
         static readonly lexicon = {
                 // literals
                 FALSE: /false/i,
@@ -61,13 +61,13 @@ export class Scanner extends Ltk.TokenStream<typeof Scanner.lexicon> {
         };
 
         constructor(source: string, reporter: Ltk.Reporter) {
-                super(source, Scanner.lexicon, reporter);
+                super(source, Tokenizer.lexicon, reporter);
         }
 }
 
-type TokenName = keyof typeof Scanner.lexicon;
+type TokenName = keyof typeof Tokenizer.lexicon;
 
-export const TOKEN = (Object.keys(Scanner.lexicon) as TokenName[]).reduce(
+export const TOKEN = (Object.keys(Tokenizer.lexicon) as TokenName[]).reduce(
         (a, c) => ((a[c] = c), a),
         {} as Record<string, string>
 ) as { [key in TokenName]: key };

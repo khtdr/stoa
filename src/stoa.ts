@@ -2,7 +2,7 @@ import fs from "fs";
 import opts from "opts";
 import * as Ltk from "stoa-ltk";
 import { version } from "../package.json";
-import { Scanner } from "./scanner";
+import { Tokenizer } from "./tokenizer";
 import { Parser } from "./parser";
 import { Interpreter } from "./interpreter";
 import { Resolver } from "./resolver";
@@ -10,8 +10,8 @@ import { Repl } from './repl'
 import * as Ast from "./ast";
 import * as Runtime from "./runtime";
 
-class Language extends Ltk.Language<typeof Scanner.lexicon, Ast.Visitable, Runtime.Result> {
-    Tokenizer = Scanner;
+class Language extends Ltk.Language<typeof Tokenizer.lexicon, Ast.Visitable, Runtime.Result> {
+    Tokenizer = Tokenizer;
     Parser = Parser;
     Resolver = Resolver;
     Interpreter = Interpreter;

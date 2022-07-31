@@ -582,15 +582,15 @@ __name(StdErrReporter, "StdErrReporter");
 // package.json
 var version = "2022.07.29";
 
-// src/scanner.ts
-var _Scanner = class extends TokenStream {
+// src/tokenizer.ts
+var _Tokenizer = class extends TokenStream {
   constructor(source, reporter) {
-    super(source, _Scanner.lexicon, reporter);
+    super(source, _Tokenizer.lexicon, reporter);
   }
 };
-var Scanner = _Scanner;
-__name(Scanner, "Scanner");
-Scanner.lexicon = {
+var Tokenizer = _Tokenizer;
+__name(Tokenizer, "Tokenizer");
+Tokenizer.lexicon = {
   FALSE: /false/i,
   NIL: /nil/,
   NUMBER: /\d+(\.\d+)?/,
@@ -639,7 +639,7 @@ Scanner.lexicon = {
   _SINGLE_LINE_COMMENT: Tokens.COMMENTS.DOUBLE_SLASH,
   _SPACE: Tokens.SPACE.ALL
 };
-var TOKEN = Object.keys(Scanner.lexicon).reduce((a, c) => (a[c] = c, a), {});
+var TOKEN = Object.keys(Tokenizer.lexicon).reduce((a, c) => (a[c] = c, a), {});
 
 // src/ast/declarations.ts
 var VariableDecl = class {
@@ -1777,7 +1777,7 @@ __name(Repl2, "Repl");
 var Language2 = class extends Language {
   constructor() {
     super(...arguments);
-    this.Tokenizer = Scanner;
+    this.Tokenizer = Tokenizer;
     this.Parser = Parser2;
     this.Resolver = Resolver;
     this.Interpreter = Interpreter;

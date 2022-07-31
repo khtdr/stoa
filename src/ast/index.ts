@@ -11,8 +11,8 @@ export interface Statement extends Visitable { }
 export interface Expression extends Visitable { }
 
 // usually identifiers and references for static analysis
-export { TOKEN } from '../scanner'
-export type { Token } from '../scanner'
+export { TOKEN } from '../tokenizer'
+export type { Token } from '../tokenizer'
 
 // organized implementations
 export * from './declarations'

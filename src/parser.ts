@@ -1,6 +1,6 @@
 import * as Ltk from "stoa-ltk";
 import * as Ast from "./ast";
-import { TOKEN } from "./scanner";
+import { TOKEN } from "./tokenizer";
 import { Printer } from "./printer";
 
 export class Parser extends Ltk.Parser<typeof TOKEN, Ast.Visitable> {
