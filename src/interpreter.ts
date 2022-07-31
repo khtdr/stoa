@@ -1,4 +1,4 @@
-import * as Lib from "./lib";
+import * as Ltk from "stoa-ltk";
 import * as Ast from "./ast";
 import * as Runtime from './runtime'
 
@@ -13,7 +13,7 @@ export class Interpreter extends Ast.Visitor<Runtime.Result> {
     private env = this.globals
 
     constructor(
-        readonly reporter: Lib.Reporter
+        readonly reporter: Ltk.Reporter
     ) {
         super()
         Runtime.registerGlobals(this)

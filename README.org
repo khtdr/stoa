@@ -15,8 +15,8 @@ make build
 : CLI Target: node14
 : CJS Build start
 : CJS ⚡️ Build success in 37ms
-: CJS bin/stoa.js     48.76 KB
-: CJS bin/stoa.js.map 104.03 KB
+: CJS bin/stoa.js     49.02 KB
+: CJS bin/stoa.js.map 104.91 KB
 
 ** Usage Documentation
 #+begin_src sh :exports both :results verbatim
@@ -34,6 +34,8 @@ prints parse tree and exits
     -p, --parse
 prints tokens and exits
     -t, --tokens
+runs the repl
+    -r, --repl
 
 #+end_example
 
@@ -56,7 +58,12 @@ make coverage
 ------------------|---------|----------|---------|---------|----------------------------------------
 File              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
 ------------------|---------|----------|---------|---------|----------------------------------------
-All files         |    88.9 |    71.15 |   93.96 |    89.5 |
+All files         |   88.94 |    71.19 |   94.02 |   89.55 |
+ lib/stoa-ltk     |    91.2 |    78.57 |   91.48 |   91.62 |
+  language.ts     |    90.9 |    84.21 |     100 |   92.85 | 53-55
+  parser.ts       |   82.85 |    52.63 |   76.92 |   79.31 | 10-13,30,55-56,69
+  reporter.ts     |     100 |      100 |     100 |     100 |
+  tokenizer.ts    |   92.03 |    84.48 |   94.44 |   92.78 | 61-62,70-72,195-196
  src              |   86.63 |    66.78 |   95.16 |   87.92 |
   ast.ts          |     100 |      100 |     100 |     100 |
   interpreter.ts  |   81.52 |     67.3 |   96.42 |   84.25 | ...126-132,147,164,179-181,189,204-210
@@ -65,17 +72,12 @@ All files         |    88.9 |    71.15 |   93.96 |    89.5 |
   resolver.ts     |   95.06 |       85 |   96.42 |   95.89 | 41,110,147
   runtime.ts      |   95.45 |       50 |      80 |     100 | 21-22
   scanner.ts      |     100 |      100 |     100 |     100 |
-  stoa.ts         |      90 |    81.81 |     100 |   88.88 | 34-35
+  stoa.ts         |      90 |    81.81 |     100 |   88.88 | 36-37
  src/ast          |    97.7 |      100 |      95 |   96.87 |
   declarations.ts |     100 |      100 |     100 |     100 |
   expressions.ts  |     100 |      100 |     100 |     100 |
   statements.ts   |    92.3 |      100 |   85.71 |   89.47 | 25-26
   visitor.ts      |     100 |      100 |     100 |     100 |
- src/lib          |   91.03 |    78.72 |   91.11 |   91.44 |
-  language.ts     |      90 |    86.66 |     100 |    92.1 | 42-44
-  parser.ts       |   82.85 |    52.63 |   76.92 |   79.31 | 10-13,30,55-56,69
-  reporter.ts     |     100 |      100 |     100 |     100 |
-  tokenizer.ts    |   92.03 |    84.48 |   94.44 |   92.78 | 61-62,70-72,195-196
  src/runtime      |   91.42 |    79.41 |      90 |      88 |
   environment.ts  |   90.47 |       75 |     100 |   84.61 | 17,23
   globals.ts      |      75 |      100 |      50 |      75 | 7
@@ -83,10 +85,10 @@ All files         |    88.9 |    71.15 |   93.96 |    89.5 |
 ------------------|---------|----------|---------|---------|----------------------------------------
 
 =============================== Coverage summary ===============================
-Statements   : 88.9% ( 809/910 )
-Branches     : 71.15% ( 296/416 )
-Functions    : 93.96% ( 187/199 )
-Lines        : 89.5% ( 699/781 )
+Statements   : 88.94% ( 813/914 )
+Branches     : 71.19% ( 299/420 )
+Functions    : 94.02% ( 189/201 )
+Lines        : 89.55% ( 703/785 )
 ================================================================================
 #+end_example
 
@@ -98,11 +100,11 @@ make graph
 #+end_src
 
 
-[[./ddot.png]]
+[[./images/ddot.png]]
 
-[[./archi.png]]
+[[./images/archi.png]]
 
-[[./dependency-graph.png]]
+[[./images/dependency-graph.png]]
 
 
 ** Test Suite Status

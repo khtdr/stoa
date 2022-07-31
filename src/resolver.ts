@@ -1,4 +1,4 @@
-import * as Lib from "./lib";
+import * as Ltk from "stoa-ltk";
 import * as Ast from "./ast";
 import { Interpreter } from "./interpreter";
 enum FunctionType {
@@ -21,7 +21,7 @@ enum VariableType {
 
 export class Resolver extends Ast.Visitor<void> {
     constructor(
-        readonly reporter: Lib.Reporter,
+        readonly reporter: Ltk.Reporter,
         readonly evaluator: Interpreter
     ) {
         super();
@@ -34,7 +34,7 @@ export class Resolver extends Ast.Visitor<void> {
     private endScope() {
         this.scopes.shift();
     }
-    private declare(ident: Lib.Token<"IDENTIFIER">) {
+    private declare(ident: Ltk.Token<"IDENTIFIER">) {
         const scope = this.scopes[0];
         if (!scope) return;
         if (scope[ident.text] === VariableType.DECLARED)
@@ -43,12 +43,12 @@ export class Resolver extends Ast.Visitor<void> {
             this.reporter.error(ident, "Variable is already defined");
         scope[ident.text] = VariableType.DECLARED;
     }
-    private define(ident: Lib.Token<"IDENTIFIER">) {
+    private define(ident: Ltk.Token<"IDENTIFIER">) {
         const scope = this.scopes[0];
         if (!scope) return;
         scope[ident.text] = VariableType.DEFINED;
     }
-    private resolveLocal(expr: Ast.Expression, token: Lib.Token<"IDENTIFIER">) {
+    private resolveLocal(expr: Ast.Expression, token: Ltk.Token<"IDENTIFIER">) {
         this.scopes.find((scope, i) => {
             if (scope[token.text]) {
                 this.evaluator.resolve(expr, i);

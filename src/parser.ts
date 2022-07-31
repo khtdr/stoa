@@ -1,9 +1,9 @@
-import * as Lib from "./lib";
+import * as Ltk from "stoa-ltk";
 import * as Ast from "./ast";
 import { TOKEN } from "./scanner";
 import { Printer } from "./printer";
 
-export class Parser extends Lib.Parser<typeof TOKEN, Ast.Visitable> {
+export class Parser extends Ltk.Parser<typeof TOKEN, Ast.Visitable> {
     private _parsed?: Ast.Visitable;
     parse() {
         if (!this._parsed) this._parsed = this.Program();
@@ -33,7 +33,7 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.Visitable> {
         try {
             return this.FunDeclaration() || this.VarDeclaration() || this.Statement()
         } catch (err) {
-            if (err instanceof Lib.ParseError) {
+            if (err instanceof Ltk.ParseError) {
                 this.synchronize()
                 return
             } else throw err
@@ -61,13 +61,13 @@ export class Parser extends Lib.Parser<typeof TOKEN, Ast.Visitable> {
     }
 
     // parameters -> IDENTIFER ("," IDENTIFIER)*
-    Parameters(): Lib.Token<"IDENTIFIER">[] {
-        const params: Lib.Token<"IDENTIFIER">[] = []
+    Parameters(): Ltk.Token<"IDENTIFIER">[] {
+        const params: Ltk.Token<"IDENTIFIER">[] = []
         if (this.peek()?.name != TOKEN.RIGHT_PAREN) {
             if (params.length >= 255) this.error(this.peek()!, 'Too many params (255 max)')
             do {
                 const id = this.consume(TOKEN.IDENTIFIER, 'expected param name')
-                params.push(id as Lib.Token<'IDENTIFIER'>)
+                params.push(id as Ltk.Token<'IDENTIFIER'>)
             } while (this.peek()?.name == TOKEN.COMMA)
         }
         return params

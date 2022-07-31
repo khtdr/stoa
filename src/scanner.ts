@@ -1,12 +1,12 @@
-import * as Lib from "./lib";
+import * as Ltk from "stoa-ltk";
 
-export class Scanner extends Lib.TokenStream<typeof Scanner.lexicon> {
+export class Scanner extends Ltk.TokenStream<typeof Scanner.lexicon> {
         static readonly lexicon = {
                 // literals
                 FALSE: /false/i,
                 NIL: /nil/,
                 NUMBER: /\d+(\.\d+)?/,
-                STRING: Lib.Tokens.STRINGS.STD,
+                STRING: Ltk.Tokens.STRINGS.STD,
                 TRUE: /true/i,
                 IDENTIFIER: /[a-z][a-z\d]*/i,
 
@@ -54,13 +54,13 @@ export class Scanner extends Lib.TokenStream<typeof Scanner.lexicon> {
                 WHILE: /while/i,
 
                 // discarded
-                _SHEBANG_COMMENT: Lib.Tokens.COMMENTS.SHEBANG,
-                _MULTI_LINE_COMMENT: Lib.Tokens.COMMENTS.C_STYLE,
-                _SINGLE_LINE_COMMENT: Lib.Tokens.COMMENTS.DOUBLE_SLASH,
-                _SPACE: Lib.Tokens.SPACE.ALL,
+                _SHEBANG_COMMENT: Ltk.Tokens.COMMENTS.SHEBANG,
+                _MULTI_LINE_COMMENT: Ltk.Tokens.COMMENTS.C_STYLE,
+                _SINGLE_LINE_COMMENT: Ltk.Tokens.COMMENTS.DOUBLE_SLASH,
+                _SPACE: Ltk.Tokens.SPACE.ALL,
         };
 
-        constructor(source: string, reporter: Lib.Reporter) {
+        constructor(source: string, reporter: Ltk.Reporter) {
                 super(source, Scanner.lexicon, reporter);
         }
 }
@@ -72,4 +72,4 @@ export const TOKEN = (Object.keys(Scanner.lexicon) as TokenName[]).reduce(
         {} as Record<string, string>
 ) as { [key in TokenName]: key };
 
-export type Token<T extends TokenName = TokenName> = Lib.Token<T>;
+export type Token<T extends TokenName = TokenName> = Ltk.Token<T>;

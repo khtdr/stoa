@@ -1,7 +1,7 @@
-import * as Lib from '../lib'
+import * as Ltk from 'stoa-ltk'
 import type * as Ast from '../ast'
 
-export abstract class Visitor<Result = void> extends Lib.Visitor<Ast.Visitable, Result> {
+export abstract class Visitor<Result = void> extends Ltk.Visitor<Ast.Visitable, Result> {
     abstract AssignExpr(expr: Ast.AssignExpr): Result
     abstract BinaryExpr(expr: Ast.BinaryExpr): Result
     abstract BlockStmt(stmt: Ast.BlockStmt): Result

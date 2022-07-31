@@ -216,15 +216,22 @@ var require_opts = __commonJS({
 var import_fs = __toESM(require("fs"));
 var import_opts = __toESM(require_opts());
 
-// package.json
-var version = "2022.07.29";
-
-// src/lib/language.ts
+// lib/stoa-ltk/language.ts
 var Language = class {
   constructor(reporter = new StdErrReporter()) {
     this.reporter = reporter;
     this.opts = { stage: "eval" };
     this.errored = false;
+  }
+  get interpreter() {
+    if (!this._interpreter)
+      this._interpreter = new this.Interpreter(this.reporter);
+    return this._interpreter;
+  }
+  get resolver() {
+    if (!this._resolver)
+      this._resolver = new this.Resolver(this.reporter, this.interpreter);
+    return this._resolver;
   }
   options(opts2) {
     this.opts = opts2;
@@ -247,8 +254,6 @@ var Language = class {
       return;
     }
     const parser = new this.Parser(tokens, this.reporter);
-    const interpreter = new this.Interpreter(this.reporter);
-    const resolver = new this.Resolver(this.reporter, interpreter);
     const ast = parser.parse();
     if (this.reporter.errors) {
       this.errored = true;
@@ -257,7 +262,7 @@ var Language = class {
     }
     if (!ast)
       return;
-    resolver.visit(ast);
+    this.resolver.visit(ast);
     if (this.reporter.errors) {
       this.errored = true;
       this.reporter.parseError();
@@ -267,7 +272,7 @@ var Language = class {
       parser.print(ast);
       return;
     }
-    interpreter.visit(ast);
+    this.interpreter.visit(ast);
     if (this.reporter.errors) {
       this.errored = true;
       this.reporter.runtimeError();
@@ -276,7 +281,7 @@ var Language = class {
 };
 __name(Language, "Language");
 
-// src/lib/tokenizer.ts
+// lib/stoa-ltk/tokenizer.ts
 var ERROR_TOKEN = "__stoa__::error";
 var Token = class {
   constructor(name, text, pos) {
@@ -455,7 +460,7 @@ function stringScanner(value, reporter, line, column) {
 }
 __name(stringScanner, "stringScanner");
 
-// src/lib/parser.ts
+// lib/stoa-ltk/parser.ts
 var Parser = class {
   constructor(tokens, reporter = new StdErrReporter()) {
     this.tokens = tokens;
@@ -526,7 +531,7 @@ var ParseError = class extends Error {
 };
 __name(ParseError, "ParseError");
 
-// src/lib/reporter.ts
+// lib/stoa-ltk/reporter.ts
 var StdErrReporter = class {
   constructor() {
     this.files = [];
@@ -573,6 +578,9 @@ var StdErrReporter = class {
   }
 };
 __name(StdErrReporter, "StdErrReporter");
+
+// package.json
+var version = "2022.07.29";
 
 // src/scanner.ts
 var _Scanner = class extends TokenStream {
@@ -1761,6 +1769,7 @@ var Language2 = class extends Language {
 };
 __name(Language2, "Language");
 import_opts.default.parse([
+  { short: "r", long: "repl", description: "runs the repl" },
   { short: "t", long: "tokens", description: "prints tokens and exits " },
   { short: "p", long: "parse", description: "prints parse tree and exits " },
   {

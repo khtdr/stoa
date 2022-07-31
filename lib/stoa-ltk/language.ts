@@ -7,6 +7,20 @@ export abstract class Language<Tokens extends Lib.Lexicon, Ast extends object, R
     abstract readonly Interpreter: typeof Lib.Visitor<Ast, Result>;
     constructor(readonly reporter: Lib.Reporter = new Lib.StdErrReporter()) { }
 
+    private _interpreter?: Lib.Visitor<Ast, Result>
+    get interpreter() {
+        if (!this._interpreter)
+            this._interpreter = new this.Interpreter(this.reporter)
+        return this._interpreter
+    }
+
+    private _resolver?: Lib.Visitor<Ast, void>
+    get resolver() {
+        if (!this._resolver)
+            this._resolver = new this.Resolver(this.reporter, this.interpreter)
+        return this._resolver
+    }
+
     private opts: { stage: "scan" | "parse" | "eval" } = { stage: "eval" };
     options(opts: typeof this.opts) {
         this.opts = opts;
@@ -34,9 +48,6 @@ export abstract class Language<Tokens extends Lib.Lexicon, Ast extends object, R
         }
 
         const parser = new this.Parser(tokens, this.reporter);
-        const interpreter = new this.Interpreter(this.reporter);
-        const resolver = new this.Resolver(this.reporter, interpreter);
-
         const ast = parser.parse();
         if (this.reporter.errors) {
             this.errored = true;
@@ -46,7 +57,7 @@ export abstract class Language<Tokens extends Lib.Lexicon, Ast extends object, R
 
         if (!ast) return
 
-        resolver.visit(ast);
+        this.resolver.visit(ast);
         if (this.reporter.errors) {
             this.errored = true;
             this.reporter.parseError();
@@ -58,7 +69,7 @@ export abstract class Language<Tokens extends Lib.Lexicon, Ast extends object, R
             return;
         }
 
-        interpreter.visit(ast);
+        this.interpreter.visit(ast);
         if (this.reporter.errors) {
             this.errored = true;
             this.reporter.runtimeError();
