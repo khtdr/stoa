@@ -33,7 +33,7 @@ install: build
 coverage: silent-build
 	@npx nyc --extends "@istanbuljs/nyc-config-typescript" \
 	         --exclude-after-remap \
-	         --reporter html --reporter text --reporter text-summary \
+	         --reporter html --reporter text-summary --reporter text \
              make silent-test
 
 repl:

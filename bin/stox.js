@@ -589,7 +589,7 @@ var RuntimeError = class extends Error {
 __name(RuntimeError, "RuntimeError");
 
 // ../package.json
-var version = "2022.07.29";
+var version = "2022.07.31";
 
 // src/tokenizer.ts
 var _Tokenizer = class extends TokenStream {

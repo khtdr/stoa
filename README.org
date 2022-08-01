@@ -24,7 +24,7 @@ make stox
 : CLI tsup v6.1.2
 : CLI Target: node14
 : CJS Build start
-: CJS ⚡️ Build success in 41ms
+: CJS ⚡️ Build success in 39ms
 : CJS ../bin/stox.js     49.62 KB
 : CJS ../bin/stox.js.map 108.80 KB
 
@@ -55,7 +55,7 @@ runs the repl
 #+end_src
 
 #+RESULTS:
-: stox-2022.07.29
+: stox-2022.07.31
 
 **** Code Coverage
 
@@ -65,6 +65,13 @@ make coverage-stox
 
 #+RESULTS:
 #+begin_example
+
+=============================== Coverage summary ===============================
+Statements   : 88.46% ( 821/928 )
+Branches     : 71.09% ( 300/422 )
+Functions    : 92.19% ( 189/205 )
+Lines        : 89.07% ( 709/796 )
+================================================================================
 ------------------|---------|----------|---------|---------|----------------------------------------
 File              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
 ------------------|---------|----------|---------|---------|----------------------------------------
@@ -98,19 +105,9 @@ All files         |   88.46 |    71.09 |   92.19 |   89.07 |
   globals.ts      |      75 |      100 |      50 |      75 | 7
   values.ts       |     100 |      100 |     100 |     100 |
 ------------------|---------|----------|---------|---------|----------------------------------------
-
-=============================== Coverage summary ===============================
-Statements   : 88.46% ( 821/928 )
-Branches     : 71.09% ( 300/422 )
-Functions    : 92.19% ( 189/205 )
-Lines        : 89.07% ( 709/796 )
-================================================================================
 #+end_example
 
-The latest uploaded reports are at:
-- Stox Coverage https://khtdr.com/stoa/coverage/stox/src
-- Stoa LTK https://khtdr.com/stoa/coverage/lib/stoa-tlk
-- Repl Kit https://khtdr.com/stoa/coverage/lib/repl-kit
+The latest uploaded code-coverage reports are at: https://khtdr.com/stoa/coverage
 
 **** Test Suite Status
 
