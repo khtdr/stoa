@@ -579,6 +579,15 @@ var StdErrReporter = class {
 };
 __name(StdErrReporter, "StdErrReporter");
 
+// ../lib/stoa-ltk/runtime.ts
+var RuntimeError = class extends Error {
+  constructor(token, message) {
+    super(message);
+    this.token = token;
+  }
+};
+__name(RuntimeError, "RuntimeError");
+
 // ../package.json
 var version = "2022.07.29";
 
@@ -1421,24 +1430,6 @@ var Resolver = class extends Visitor2 {
 };
 __name(Resolver, "Resolver");
 
-// src/runtime/base.ts
-var RuntimeError = class extends Error {
-  constructor(token, message) {
-    super(message);
-    this.token = token;
-  }
-};
-__name(RuntimeError, "RuntimeError");
-
-// src/runtime/errors.ts
-var RuntimeError2 = class extends Error {
-  constructor(token, message) {
-    super(message);
-    this.token = token;
-  }
-};
-__name(RuntimeError2, "RuntimeError");
-
 // src/runtime/environment.ts
 var Environment = class {
   constructor(enclosure) {
@@ -1462,7 +1453,7 @@ var Environment = class {
     else if ((_a = this.enclosure) == null ? void 0 : _a.has(name))
       this.enclosure.set(name, value);
     else
-      throw new RuntimeError2(name, `No such variable: ${name.text}`);
+      throw new RuntimeError(name, `No such variable: ${name.text}`);
   }
   get(name, distance = 0) {
     var _a;
@@ -1472,7 +1463,7 @@ var Environment = class {
       return this.table.get(name.text);
     if ((_a = this.enclosure) == null ? void 0 : _a.has(name))
       return this.enclosure.get(name);
-    throw new RuntimeError2(name, `Undefined variable: ${name.text}`);
+    throw new RuntimeError(name, `Undefined variable: ${name.text}`);
   }
 };
 __name(Environment, "Environment");

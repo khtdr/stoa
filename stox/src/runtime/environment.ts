@@ -1,5 +1,5 @@
+import { RuntimeError } from 'stoa-ltk/runtime'
 import { Token } from '../ast/nodes'
-import { RuntimeError } from './errors'
 
 export class Environment {
     constructor(readonly enclosure?: Environment) { }

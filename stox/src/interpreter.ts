@@ -1,8 +1,7 @@
-import { Reporter } from "stoa-ltk";
-import { Result, RuntimeError } from "./runtime/base";
+import { Reporter, RuntimeError } from "stoa-ltk";
 import { Environment } from "./runtime/environment";
 import { registerGlobals } from "./runtime/globals";
-import { isNumber, isString, truthy } from "./runtime/values";
+import { isNumber, isString, truthy, Result } from "./runtime/values";
 import { BreakException, ContinueException, Function, isCallable, JumpException, ReturnException } from "./runtime/control-flow";
 
 import { Visitor } from './ast/visitor'
