@@ -24,9 +24,9 @@ make stox
 : CLI tsup v6.1.2
 : CLI Target: node14
 : CJS Build start
-: CJS ⚡️ Build success in 40ms
-: CJS ../bin/stox.js     49.61 KB
-: CJS ../bin/stox.js.map 107.96 KB
+: CJS ⚡️ Build success in 39ms
+: CJS ../bin/stox.js     49.62 KB
+: CJS ../bin/stox.js.map 108.80 KB
 
 **** Usage Documentation
 #+begin_src sh :exports both :results verbatim
@@ -71,28 +71,28 @@ File              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
 All files         |   88.46 |    71.09 |   92.19 |   89.07 |
  lib/repl-kit     |      40 |      100 |       0 |   33.33 |
   index.ts        |      40 |      100 |       0 |   33.33 | 2-4
- lib/stoa-ltk     |    91.2 |    78.57 |   91.48 |   91.62 |
+ lib/stoa-ltk     |   91.36 |    78.57 |   91.66 |   91.75 |
   language.ts     |    90.9 |    84.21 |     100 |   92.85 | 55-57
   parser.ts       |   82.85 |    52.63 |   76.92 |   79.31 | 10-13,30,55-56,69
   reporter.ts     |     100 |      100 |     100 |     100 |
+  runtime.ts      |     100 |      100 |     100 |     100 |
   tokenizer.ts    |   92.03 |    84.48 |   94.44 |   92.78 | 61-62,70-72,195-196
  stox/src         |   85.89 |     66.9 |   94.95 |   87.29 |
   cli-app.ts      |   73.68 |    76.92 |       0 |   76.47 | 23-24,32-33
-  interpreter.ts  |   81.52 |     67.3 |   96.42 |   84.25 | ...132-138,153,170,185-187,195,210-216
-  parser.ts       |   84.14 |    63.15 |   94.11 |   85.64 | ...149,159-163,237,338-343,392,415-433
-  printer.ts      |   91.52 |     62.5 |      96 |   90.38 | 44-50
+  interpreter.ts  |   81.52 |     67.3 |   96.42 |   84.25 | ...134-140,155,172,187-189,197,212-218
+  parser.ts       |   84.14 |    63.15 |   94.11 |   85.64 | ...153,163-167,241,342-347,396,419-437
+  printer.ts      |   91.52 |     62.5 |      96 |   90.38 | 48-54
   repl.ts         |     100 |      100 |     100 |     100 |
-  resolver.ts     |   95.06 |       85 |   96.42 |   95.89 | 41,110,147
-  stoa-lang.ts    |     100 |      100 |     100 |     100 |
+  resolver.ts     |   95.06 |       85 |   96.42 |   95.89 | 46,115,152
+  stox-lang.ts    |     100 |      100 |     100 |     100 |
   tokenizer.ts    |     100 |      100 |     100 |     100 |
  stox/src/ast     |   97.77 |      100 |   95.23 |   96.96 |
   declarations.ts |     100 |      100 |     100 |     100 |
   expressions.ts  |     100 |      100 |     100 |     100 |
-  index.ts        |     100 |      100 |     100 |     100 |
+  nodes.ts        |     100 |      100 |     100 |     100 |
   statements.ts   |    92.3 |      100 |   85.71 |   89.47 | 25-26
   visitor.ts      |     100 |      100 |     100 |     100 |
- stox/src/runtime |   92.98 |    76.31 |   86.66 |      90 |
-  base.ts         |     100 |      100 |     100 |     100 |
+ stox/src/runtime |   92.45 |    76.31 |   85.71 |   89.18 |
   control-flow.ts |   94.44 |       50 |      75 |   91.66 | 7
   environment.ts  |   90.47 |       75 |     100 |   84.61 | 17,23
   globals.ts      |      75 |      100 |      50 |      75 | 7
