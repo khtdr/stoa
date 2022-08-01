@@ -324,26 +324,27 @@ var TokenStream = class {
     console[level](tokens.map((t) => `${t}`).join("\n"));
   }
   next() {
-    if (this.eof)
-      return;
     while (true) {
+      if (this.eof)
+        return;
       const token = this.generator.next().value;
       if (!token) {
         this.eof = true;
-        break;
+        continue;
       }
       if (token.name == ERROR_TOKEN) {
         this.reporter.error(token, `Unrecognized input`);
         continue;
       }
-      if (token.name.toString().startsWith("_"))
+      if (token.name.toString().startsWith("_")) {
         continue;
+      }
       return token;
     }
   }
 };
 __name(TokenStream, "TokenStream");
-function* tokenGenerator(source, lexicon, reporter, start_line = 1, start_column = 1) {
+function* tokenGenerator(source, lexicon, reporter, start_line, start_column) {
   let idx = 0, line = start_line, column = start_column;
   while (idx < source.length) {
     const [name = ERROR_TOKEN, text = source[idx]] = longest(possible());
@@ -459,7 +460,7 @@ __name(stringScanner, "stringScanner");
 
 // ../lib/stoa-ltk/parser.ts
 var Parser = class {
-  constructor(tokens, reporter = new StdErrReporter()) {
+  constructor(tokens, reporter) {
     this.tokens = tokens;
     this.reporter = reporter;
     this.current = 0;
@@ -511,7 +512,7 @@ var Parser = class {
   previous() {
     return this.tokens[this.current - 1];
   }
-  error(token, message = "Unexpected token") {
+  error(token, message) {
     this.reporter.error(token, message);
     return new ParseError(message);
   }

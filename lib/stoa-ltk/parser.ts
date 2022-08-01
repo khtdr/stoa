@@ -3,7 +3,7 @@ import * as Lib from ".";
 export class Parser<Lx extends Lib.Lexicon, Ast extends object> {
     constructor(
         private readonly tokens: Lib.Token<keyof Lx>[],
-        protected reporter: Lib.Reporter = new Lib.StdErrReporter()
+        protected reporter: Lib.Reporter
     ) { }
 
     parse(): Ast | undefined {
@@ -64,7 +64,7 @@ export class Parser<Lx extends Lib.Lexicon, Ast extends object> {
         return this.tokens[this.current - 1] as Lib.Token<Name>;
     }
 
-    protected error(token: Lib.Token<any>, message = "Unexpected token") {
+    protected error(token: Lib.Token<any>, message: string) {
         this.reporter.error(token, message);
         return new ParseError(message);
     }

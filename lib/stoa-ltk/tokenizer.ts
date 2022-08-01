@@ -57,18 +57,20 @@ export class TokenStream<Lx extends Lexicon> {
 
     private eof = false;
     private next(): Token<keyof Lx> | undefined {
-        if (this.eof) return;
         while (true) {
+            if (this.eof) return;
             const token = this.generator.next().value;
             if (!token) {
                 this.eof = true;
-                break;
+                continue;
             }
             if (token.name == ERROR_TOKEN) {
                 this.reporter.error(token, `Unrecognized input`);
                 continue;
             }
-            if (token.name.toString().startsWith("_")) continue;
+            if (token.name.toString().startsWith("_")) {
+                continue;
+            }
             return token;
         }
     }
@@ -84,8 +86,8 @@ function* tokenGenerator<Lx extends Lexicon>(
     source: string,
     lexicon: Lx,
     reporter: Lib.Reporter,
-    start_line = 1,
-    start_column = 1
+    start_line: number,
+    start_column: number
 ): Generator<Token<keyof Lx>> {
     let idx = 0,
         line = start_line,

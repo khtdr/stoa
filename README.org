@@ -24,9 +24,9 @@ make stox
 : CLI tsup v6.1.2
 : CLI Target: node14
 : CJS Build start
-: CJS ⚡️ Build success in 43ms
-: CJS ../bin/stox.js     49.80 KB
-: CJS ../bin/stox.js.map 109.68 KB
+: CJS ⚡️ Build success in 41ms
+: CJS ../bin/stox.js     49.77 KB
+: CJS ../bin/stox.js.map 109.67 KB
 
 **** Usage Documentation
 #+begin_src sh :exports both :results verbatim
@@ -67,23 +67,23 @@ make coverage-stox
 #+begin_example
 
 =============================== Coverage summary ===============================
-Statements   : 90.56% ( 845/933 )
-Branches     : 73.72% ( 317/430 )
+Statements   : 90.67% ( 846/933 )
+Branches     : 74.64% ( 318/426 )
 Functions    : 93.62% ( 191/204 )
-Lines        : 91.06% ( 734/806 )
+Lines        : 91.07% ( 735/807 )
 ================================================================================
 ------------------|---------|----------|---------|---------|----------------------------------------
 File              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
 ------------------|---------|----------|---------|---------|----------------------------------------
-All files         |   90.56 |    73.72 |   93.62 |   91.06 |
+All files         |   90.67 |    74.64 |   93.62 |   91.07 |
  lib/repl-kit     |      40 |      100 |       0 |   33.33 |
   index.ts        |      40 |      100 |       0 |   33.33 | 2-4
- lib/stoa-ltk     |   96.88 |    85.84 |   95.74 |   97.48 |
+ lib/stoa-ltk     |   97.33 |    90.19 |   95.74 |    97.5 |
   language.ts     |   97.82 |    90.47 |     100 |     100 | 21,60
-  parser.ts       |   92.85 |       68 |   84.61 |   91.66 | 10-13,82
+  parser.ts       |   92.85 |    73.91 |   84.61 |   91.66 | 10-13,82
   reporter.ts     |     100 |      100 |     100 |     100 |
   runtime.ts      |     100 |      100 |     100 |     100 |
-  tokenizer.ts    |   97.24 |    91.37 |     100 |   97.84 | 214-215
+  tokenizer.ts    |   98.16 |    96.42 |     100 |   97.87 | 216-217
  stox/src         |   87.14 |    67.98 |   95.79 |   88.22 |
   cli-app.ts      |   84.21 |    84.61 |       0 |   88.23 | 32-33
   interpreter.ts  |   81.52 |     67.3 |   96.42 |   82.57 | ...151,168,185,203-205,214,216,231-237
