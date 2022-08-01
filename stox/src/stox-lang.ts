@@ -5,7 +5,7 @@ import { Tokenizer, Lexicon } from "./tokenizer";
 import { Parser } from "./parser";
 import { Resolver } from "./resolver";
 import { Interpreter } from "./interpreter";
-import { Result } from "runtime/values";
+import { Result } from "./runtime/values";
 
 export class StoxLang extends Language<Lexicon, Ast, Result> {
 

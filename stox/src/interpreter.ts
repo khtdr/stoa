@@ -5,7 +5,7 @@ import { isNumber, isString, truthy, Result } from "./runtime/values";
 import { BreakException, ContinueException, Function, isCallable, JumpException, ReturnException } from "./runtime/control-flow";
 
 import { Visitor } from './ast/visitor'
-import { TOKEN } from "ast/nodes";
+import { TOKEN } from "./ast/nodes";
 import * as Decl from './ast/declarations'
 import * as Expr from './ast/expressions'
 import * as Node from './ast/nodes'

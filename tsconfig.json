@@ -16,14 +16,9 @@
                 "baseUrl": ".",
                 "paths": {
                         "*": [
-                                "stox/src/*",
                                 "lib/*",
                                 "node_modules/*"
                         ]
                 },
-        },
-        "include": [
-                "stox",
-                "lib"
-        ]
+        }
 }
