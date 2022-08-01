@@ -1,0 +1,15 @@
+triforce:
+ ▲
+▲ ▲
+X
+X
+i,j 3,3
+-
+i,j 3,4
+i,j 4,4
+i,j 5,5
+-
+X
+i,j 6,6
+-
+done!

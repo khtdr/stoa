@@ -32,7 +32,7 @@ dev-stox: deps
 	@cd stox && make dev
 
 install-stox: deps
-	@cd stox && make install-stox
+	@cd stox && make install
 
 coverage-stox: deps
 	@cd stox && make coverage

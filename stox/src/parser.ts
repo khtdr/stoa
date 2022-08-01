@@ -389,12 +389,9 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
         }
         if (this.match(TOKEN.STRING)) {
             const str = this.previous<'STRING'>().text
-            let value: string
-            if (['"', "'"].includes(str.substring(str.length - 1)))
-                value = str.replace(/^.(.*).$/, "$1")
-            else
-                value = str.replace(/^.(.*)$/, "$1")
-            return new Expr.LiteralExpr(value);
+            const [first, ...rest] = str.split('')
+            if (first === rest[rest.length - 1]) rest.pop()
+            return new Expr.LiteralExpr(rest.join(''));
         }
         if (this.match(TOKEN.TRUE)) {
             return new Expr.LiteralExpr(true);

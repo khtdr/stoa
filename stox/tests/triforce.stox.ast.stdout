@@ -1,0 +1,33 @@
+(program 
+   (fun triforce (let [] (block 
+      (print triforce:
+       ▲
+      ▲ ▲)
+      (return nil)
+   )))
+   (call triforce)
+   (var i 0)
+   (var j 0)
+   (while true 
+      (while (< i 7) 
+         (block 
+            (= j i)
+            (= i (+ i 1))
+            (while (< j 7) 
+               (block 
+                  (= j (+ j 1))
+                  (if (== j 1) (CONTINUE 1))
+                  (if (== j 2) (BREAK 1))
+                  (print (+ (+ (+ i,j  i) ,) j))
+                  (if (== j 4) (CONTINUE 2))
+                  (print -)
+                  (if (== j 5) (BREAK 1))
+                  (if (== j 6) (BREAK 3))
+               )
+            )
+            (print X)
+         )
+      )
+   )
+   (print done!)
+)

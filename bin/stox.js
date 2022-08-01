@@ -1241,12 +1241,10 @@ var Parser2 = class extends Parser {
     }
     if (this.match(TOKEN.STRING)) {
       const str = this.previous().text;
-      let value;
-      if (['"', "'"].includes(str.substring(str.length - 1)))
-        value = str.replace(/^.(.*).$/, "$1");
-      else
-        value = str.replace(/^.(.*)$/, "$1");
-      return new LiteralExpr(value);
+      const [first, ...rest] = str.split("");
+      if (first === rest[rest.length - 1])
+        rest.pop();
+      return new LiteralExpr(rest.join(""));
     }
     if (this.match(TOKEN.TRUE)) {
       return new LiteralExpr(true);
