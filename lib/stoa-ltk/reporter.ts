@@ -29,7 +29,7 @@ export class StdErrReporter implements Reporter {
         return !this._errors.length ? false : this._errors
     }
 
-    tokenError() { this.reportErrors('Token') }
+    tokenError() { this.reportErrors('Syntax') }
     parseError() { this.reportErrors('Parse') }
     runtimeError() { this.reportErrors('Runtime') }
     private reportErrors(type: string) {

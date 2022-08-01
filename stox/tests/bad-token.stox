@@ -1,0 +1,8 @@
+#!/usr/bin/env stox
+
+⚡// no such token
+
+// missing semicolon at end of file
+print "Hello,
+(multiline)
+World!"

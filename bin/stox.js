@@ -272,6 +272,9 @@ var Language = class {
       parser.print(ast);
       return;
     }
+    if (this.errored) {
+      return;
+    }
     this.interpreter.visit(ast);
     if (this.reporter.errors) {
       this.errored = true;
@@ -300,7 +303,6 @@ var TokenStream = class {
     this.reporter = reporter;
     this.buffer = [];
     this.eof = false;
-    this.error = false;
     this.generator = tokenGenerator(source, lexicon, reporter, line, column);
   }
   take() {
@@ -330,19 +332,14 @@ var TokenStream = class {
         this.eof = true;
         break;
       }
-      if (token.name.toString().startsWith("_"))
-        continue;
       if (token.name == ERROR_TOKEN) {
-        this.err(token);
+        this.reporter.error(token, `Unrecognized input`);
         continue;
       }
+      if (token.name.toString().startsWith("_"))
+        continue;
       return token;
     }
-  }
-  err(token) {
-    this.error = true;
-    const { text, pos: { line, column } } = token;
-    this.reporter.error(token, `Syntax error near ${text} at ${line}:${column}`);
   }
 };
 __name(TokenStream, "TokenStream");
@@ -434,7 +431,7 @@ function cStyleCommentScanner(value, reporter, line, column) {
           stack -= 1;
       }
     }
-    reporter.error(opener, `Unclosed comment at line ${opener.pos.line}, column ${opener.pos.column}.`);
+    reporter.error(opener, `Unclosed comment`);
     return text;
   }
 }
@@ -454,7 +451,7 @@ function stringScanner(value, reporter, line, column) {
       if (closer.name == opener.name)
         return text;
     }
-    reporter.error(opener, `Unclosed string at line ${opener.pos.line}, column ${opener.pos.column}.`);
+    reporter.error(opener, `Unclosed string, expected ${opener.text}`);
     return text;
   }
 }
@@ -485,8 +482,15 @@ var Parser = class {
   consume(name, message) {
     if (this.check(name))
       return this.advance();
-    else
-      throw `Error: ${this.peek()} ${message}`;
+    let token = this.peek() || this.previous();
+    if (!this.peek()) {
+      const lines = token.text.split("\n");
+      const addLines = lines.length - 1;
+      const line = token.pos.line + addLines;
+      const column = addLines ? lines[lines.length - 1].length + 1 : token.pos.column + token.text.length;
+      token = new Token("<EOF>", "", { line, column });
+    }
+    throw this.error(token, message);
   }
   check(name) {
     var _a;
@@ -550,7 +554,7 @@ var StdErrReporter = class {
     return !this._errors.length ? false : this._errors;
   }
   tokenError() {
-    this.reportErrors("Token");
+    this.reportErrors("Syntax");
   }
   parseError() {
     this.reportErrors("Parse");
@@ -1560,7 +1564,9 @@ var Interpreter = class extends Visitor2 {
     return value;
   }
   BinaryExpr(expr) {
-    const { operator: { name: op } } = expr;
+    const {
+      operator: { name: op }
+    } = expr;
     const left = this.visit(expr.left);
     const right = this.visit(expr.right);
     if (op == TOKEN.COMMA)
@@ -1673,7 +1679,9 @@ var Interpreter = class extends Visitor2 {
     return expr.value;
   }
   LogicalExpr(expr) {
-    const { operator: { name: op } } = expr;
+    const {
+      operator: { name: op }
+    } = expr;
     const left = this.visit(expr.left);
     const left_truthy = truthy(left);
     if (op == TOKEN.OR && left_truthy)
@@ -1710,7 +1718,10 @@ var Interpreter = class extends Visitor2 {
     throw new ReturnException(value);
   }
   TernaryExpr(expr) {
-    const { op1: { name: op1 }, op2: { name: op2 } } = expr;
+    const {
+      op1: { name: op1 },
+      op2: { name: op2 }
+    } = expr;
     if (op1 == TOKEN.QUESTION && op2 == TOKEN.COLON) {
       const left = this.visit(expr.left);
       if (truthy(left))
@@ -1720,7 +1731,9 @@ var Interpreter = class extends Visitor2 {
     throw new RuntimeError(op1, "Unexpected ternary expression");
   }
   UnaryExpr(expr) {
-    const { operator: { name: op } } = expr;
+    const {
+      operator: { name: op }
+    } = expr;
     const value = this.visit(expr.operand);
     if (op == TOKEN.BANG)
       return !truthy(value);

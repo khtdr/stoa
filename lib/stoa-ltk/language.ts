@@ -71,6 +71,10 @@ export abstract class Language<Tokens extends Lib.Lexicon, Ast extends object, R
             return;
         }
 
+        if (this.errored) {
+            return
+        }
+
         this.interpreter.visit(ast);
         if (this.reporter.errors) {
             this.errored = true;

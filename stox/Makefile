@@ -44,7 +44,7 @@ lint:
 	@npx tsc --noEmit
 
 snapshot:
-	@../bin/run-snapshots.sh
+	@../bin/snapshot-stox-tests.sh
 
 graph:
 	@npx depcruise --exclude "^node_modules" --ts-config "../tsconfig.json" --output-type dot src | dot -T png > ../images/deps.png

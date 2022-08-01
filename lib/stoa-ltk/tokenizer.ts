@@ -1,7 +1,14 @@
 import * as Lib from ".";
 
-export type Lexeme = string | RegExp |
-    ((text: string, reporter: Lib.Reporter, line: number, column: number) => undefined | string);
+export type Lexeme =
+    | string
+    | RegExp
+    | ((
+        text: string,
+        reporter: Lib.Reporter,
+        line: number,
+        column: number
+    ) => undefined | string);
 export type Lexicon = Record<string, Lexeme>;
 const ERROR_TOKEN = "__stoa__::error";
 
@@ -23,7 +30,8 @@ export class TokenStream<Lx extends Lexicon> {
         source: string,
         lexicon: Lx,
         readonly reporter: Lib.Reporter,
-        line = 1, column = 1
+        line = 1,
+        column = 1
     ) {
         this.generator = tokenGenerator(source, lexicon, reporter, line, column);
     }
@@ -38,57 +46,46 @@ export class TokenStream<Lx extends Lexicon> {
         return this.buffer[0];
     }
     drain(): Token<keyof Lx>[] {
-        let token, tokens = [];
+        let token,
+            tokens = [];
         while ((token = this.take())) tokens.push(token);
         return tokens;
     }
-    print(tokens = this.buffer, level: 'error' | 'log' = 'log') {
-        console[level](tokens.map(t => `${t}`).join('\n'))
+    print(tokens = this.buffer, level: "error" | "log" = "log") {
+        console[level](tokens.map((t) => `${t}`).join("\n"));
     }
 
-    private eof = false
+    private eof = false;
     private next(): Token<keyof Lx> | undefined {
-        if (this.eof) return
+        if (this.eof) return;
         while (true) {
             const token = this.generator.next().value;
             if (!token) {
                 this.eof = true;
                 break;
             }
-
-            if (token.name.toString().startsWith("_")) continue;
             if (token.name == ERROR_TOKEN) {
-                this.err(token);
+                this.reporter.error(token, `Unrecognized input`);
                 continue;
             }
+            if (token.name.toString().startsWith("_")) continue;
             return token;
         }
-    }
-
-    public error = false;
-    private err(token: Token) {
-        this.error = true;
-        const { text, pos: { line, column } } = token;
-        this.reporter.error(
-            token,
-            `Syntax error near ${text} at ${line}:${column}`
-        );
     }
 }
 
 export class TokenStreamClass<Lx extends Lexicon> extends TokenStream<Lx> {
-    constructor(
-        source: string,
-        reporter: Lib.Reporter
-    ) { super(source, {} as Lx, reporter) }
+    constructor(source: string, reporter: Lib.Reporter) {
+        super(source, {} as Lx, reporter);
+    }
 }
-
 
 function* tokenGenerator<Lx extends Lexicon>(
     source: string,
     lexicon: Lx,
     reporter: Lib.Reporter,
-    start_line = 1, start_column = 1
+    start_line = 1,
+    start_column = 1
 ): Generator<Token<keyof Lx>> {
     let idx = 0,
         line = start_line,
@@ -113,10 +110,10 @@ function* tokenGenerator<Lx extends Lexicon>(
         if (!candidates.length) return [];
         if (candidates.length == 1) return candidates[0];
         return candidates.reduce((longest, current) => {
-            if (current[1].length > longest[1].length) return current
+            if (current[1].length > longest[1].length) return current;
             if (current[1].length == longest[1].length)
-                return !current[2] && longest[2] ? current : longest
-            return longest
+                return !current[2] && longest[2] ? current : longest;
+            return longest;
         });
     }
     function possible() {
@@ -126,7 +123,7 @@ function* tokenGenerator<Lx extends Lexicon>(
                 const text = rule(source.substring(idx), reporter, line, column);
                 if (text !== undefined) candidates.push([name, text, false]);
             } else if (typeof rule != "string") {
-                const dynamic = rule.source[rule.source.length - 1] == '*'
+                const dynamic = rule.source[rule.source.length - 1] == "*";
                 const regex = new RegExp(`^${rule.source}`, rule.flags);
                 const match = regex.exec(source.substring(idx));
                 if (match) return candidates.push([name, match[0], dynamic]);
@@ -140,7 +137,7 @@ function* tokenGenerator<Lx extends Lexicon>(
 
 export const Tokens = {
     STRINGS: {
-        STD: stringScanner
+        STD: stringScanner,
     },
     COMMENTS: {
         SHEBANG: /\#\!\/usr\/bin\/env\s.*/,
@@ -149,16 +146,27 @@ export const Tokens = {
     },
     SPACE: {
         ALL: /\s+/,
-    }
-}
+    },
+};
 
-function cStyleCommentScanner(value: string, reporter: Lib.Reporter, line: number, column: number) {
-    const tokenizer = new TokenStream(value, {
-        OPEN: "/*",
-        CLOSE: "*/",
-        ESCAPED_CHAR: /\\./,
-        CHAR: /.|\s/,
-    }, reporter, line, column);
+function cStyleCommentScanner(
+    value: string,
+    reporter: Lib.Reporter,
+    line: number,
+    column: number
+) {
+    const tokenizer = new TokenStream(
+        value,
+        {
+            OPEN: "/*",
+            CLOSE: "*/",
+            ESCAPED_CHAR: /\\./,
+            CHAR: /.|\s/,
+        },
+        reporter,
+        line,
+        column
+    );
     const opener = tokenizer.take();
     if (opener && opener.name == "OPEN") {
         let stack = 0,
@@ -172,18 +180,29 @@ function cStyleCommentScanner(value: string, reporter: Lib.Reporter, line: numbe
                 else stack -= 1;
             }
         }
-        reporter.error(opener, `Unclosed comment at line ${opener.pos.line}, column ${opener.pos.column}.`);
+        reporter.error(opener, `Unclosed comment`);
         return text;
     }
 }
 
-function stringScanner(value: string, reporter: Lib.Reporter, line: number, column: number) {
-    const tokenizer = new Lib.TokenStream(value, {
-        SINGLE: "'",
-        DOUBLE: '"',
-        ESCAPED_CHAR: /\\./,
-        CHAR: /.|\s/,
-    }, reporter, line, column);
+function stringScanner(
+    value: string,
+    reporter: Lib.Reporter,
+    line: number,
+    column: number
+) {
+    const tokenizer = new Lib.TokenStream(
+        value,
+        {
+            SINGLE: "'",
+            DOUBLE: '"',
+            ESCAPED_CHAR: /\\./,
+            CHAR: /.|\s/,
+        },
+        reporter,
+        line,
+        column
+    );
     const opener = tokenizer.take();
     if (opener && ["SINGLE", "DOUBLE"].includes(opener.name)) {
         let { text } = opener,
@@ -192,7 +211,7 @@ function stringScanner(value: string, reporter: Lib.Reporter, line: number, colu
             text += closer.text;
             if (closer.name == opener.name) return text;
         }
-        reporter.error(opener, `Unclosed string at line ${opener.pos.line}, column ${opener.pos.column}.`);
+        reporter.error(opener, `Unclosed string, expected ${opener.text}`);
         return text;
     }
 }

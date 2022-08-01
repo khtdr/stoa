@@ -1,4 +1,4 @@
-Token error in ./comments.stox at line,col 21,1
+Syntax error in ./comments.stox at line,col 21,1
 21. /* if you forget to close it.
     ↑
-Unclosed comment at line 21, column 1.
+Unclosed comment
