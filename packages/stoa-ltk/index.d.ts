@@ -42,11 +42,9 @@ declare class TokenStream<Lx extends Lexicon> {
     take(): Token<keyof Lx> | undefined;
     peek(): Token<keyof Lx> | undefined;
     drain(): Token<keyof Lx>[];
-    print(tokens?: (Token<keyof Lx> | undefined)[], level?: 'error' | 'log'): void;
+    print(tokens?: (Token<keyof Lx> | undefined)[], level?: "error" | "log"): void;
     private eof;
     private next;
-    error: boolean;
-    private err;
 }
 declare class TokenStreamClass<Lx extends Lexicon> extends TokenStream<Lx> {
     constructor(source: string, reporter: Reporter);
@@ -70,9 +68,9 @@ declare function stringScanner(value: string, reporter: Reporter, line: number, 
 declare class Parser<Lx extends Lexicon, Ast extends object> {
     private readonly tokens;
     protected reporter: Reporter;
-    constructor(tokens: Token<keyof Lx>[], reporter?: Reporter);
+    constructor(tokens: Token<keyof Lx>[], reporter: Reporter);
     parse(): Ast | undefined;
-    print(ast?: Ast, level?: 'error' | 'log'): void;
+    print(ast?: Ast, level?: "error" | "log"): void;
     private current;
     protected match(...names: string[]): boolean;
     protected consume<Name extends keyof Lx>(name: Name, message: string): Token<Name>;
@@ -81,7 +79,7 @@ declare class Parser<Lx extends Lexicon, Ast extends object> {
     protected advance(): Token<keyof Lx>;
     protected peek(ahead?: number): Token<keyof Lx> | undefined;
     protected previous<Name extends keyof Lx = keyof Lx>(): Token<Name>;
-    protected error(token: Token, message?: string): ParseError;
+    protected error(token: Token<any>, message: string): ParseError;
 }
 declare class Visitor<Ast extends object, Result = string> {
     readonly reporter: Reporter;
@@ -116,4 +114,9 @@ declare class StdErrReporter implements Reporter {
     protected log(message: string): void;
 }
 
-export { Language, Lexeme, Lexicon, ParseError, Parser, Reporter, StdErrReporter, Token, TokenStream, TokenStreamClass, Tokens, Visitor };
+declare class RuntimeError extends Error {
+    readonly token: Token;
+    constructor(token: Token, message: string);
+}
+
+export { Language, Lexeme, Lexicon, ParseError, Parser, Reporter, RuntimeError, StdErrReporter, Token, TokenStream, TokenStreamClass, Tokens, Visitor };

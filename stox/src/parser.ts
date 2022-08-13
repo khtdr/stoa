@@ -413,7 +413,7 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
         if (this.match(TOKEN.FUN)) {
             return this.Function()
         }
-        throw `Expected expression at ${this.peek()}`;
+        throw this.error('Expected to find an expression')
     }
 
     synchronize() {

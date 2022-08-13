@@ -1,7 +1,7 @@
 * Project Stoa
 
 ** Project Status
-*** [ ] create an example language, Stox, based on Crafting Interpreters
+*** [ ] create an example language based on Crafting Interpreters called =Stox=
 *** [ ] create a malleable language framework for exploring language ideas
 
 ** Example Languages

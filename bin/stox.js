@@ -483,15 +483,21 @@ var Parser = class {
   consume(name, message) {
     if (this.check(name))
       return this.advance();
+    throw this.error(message);
+  }
+  error(message) {
     let token = this.peek() || this.previous();
+    let error = new InvalidParseTree(message);
     if (!this.peek()) {
       const lines = token.text.split("\n");
       const addLines = lines.length - 1;
       const line = token.pos.line + addLines;
       const column = addLines ? lines[lines.length - 1].length + 1 : token.pos.column + token.text.length;
       token = new Token("<EOF>", "", { line, column });
+      error = new IncompleteParseTree(message);
     }
-    throw this.error(token, message);
+    this.reporter.error(token, message);
+    return error;
   }
   check(name) {
     var _a;
@@ -512,10 +518,6 @@ var Parser = class {
   previous() {
     return this.tokens[this.current - 1];
   }
-  error(token, message) {
-    this.reporter.error(token, message);
-    return new ParseError(message);
-  }
 };
 __name(Parser, "Parser");
 var Visitor = class {
@@ -528,13 +530,19 @@ var Visitor = class {
     const fn = this[name];
     if (typeof fn == "function")
       return fn.bind(this)(node);
-    throw new ParseError(`Unvisitable node: ${name} (UNIMPLEMENTED BY AUTHOR)`);
+    throw new Error(`Unvisitable node: ${name} (UNIMPLEMENTED BY AUTHOR)`);
   }
 };
 __name(Visitor, "Visitor");
 var ParseError = class extends Error {
 };
 __name(ParseError, "ParseError");
+var InvalidParseTree = class extends ParseError {
+};
+__name(InvalidParseTree, "InvalidParseTree");
+var IncompleteParseTree = class extends ParseError {
+};
+__name(IncompleteParseTree, "IncompleteParseTree");
 
 // ../lib/stoa-ltk/reporter.ts
 var StdErrReporter = class {
@@ -1266,7 +1274,7 @@ var Parser2 = class extends Parser {
     if (this.match(TOKEN.FUN)) {
       return this.Function();
     }
-    throw `Expected expression at ${this.peek()}`;
+    throw this.error("Expected to find an expression");
   }
   synchronize() {
     var _a;
@@ -1788,9 +1796,56 @@ __name(StoxLang, "StoxLang");
 var Repl = class {
   constructor(lang) {
     this.lang = lang;
+    this.prompt_width = 0;
+  }
+  prompt() {
+    this.prompt_width = 2;
+    process.stdout.write("> ");
   }
   async run() {
-    return new Promise((resolve) => resolve(void 0));
+    const { stdin, stdout } = process;
+    stdin.setRawMode(true);
+    stdin.setEncoding("utf8");
+    console.log("help: ?\u23CE");
+    console.log("exit: CTRL-d");
+    stdin.resume();
+    let line = "";
+    this.prompt();
+    return new Promise((resolve) => {
+      stdin.on("data", (key) => {
+        stdin.pause();
+        if ([""].includes(key.toString())) {
+          stdin.destroy();
+          resolve(void 0);
+        }
+        if (!key.toString().match(/[\p{Cc}\p{Cn}\p{Cs}]+/gu)) {
+          line += key.toString();
+          stdout.write(key);
+        }
+        if (key.toString() == "\x1B[C") {
+          process.stdout.moveCursor(-1, 0);
+        }
+        if (key.toString() == "\x1B[D") {
+          process.stdout.moveCursor(1, 0);
+        }
+        if (["\x7F"].includes(key.toString())) {
+          line = line.substring(0, line.length - 1);
+          process.stdout.cursorTo(0);
+          process.stdout.clearLine(0);
+          this.prompt();
+          stdout.write(line);
+        }
+        if (["\r", "\n"].includes(key.toString())) {
+          process.stdout.moveCursor(0, 1);
+          process.stdout.cursorTo(0);
+          console.log("");
+          this.lang.run("repl", line);
+          line = "";
+          this.prompt();
+        }
+        stdin.resume();
+      });
+    });
   }
 };
 __name(Repl, "Repl");
@@ -1801,6 +1856,7 @@ var Repl2 = class extends Repl {
 __name(Repl2, "Repl");
 
 // src/cli-app.ts
+process.stdin.pause();
 import_opts.default.parse([
   { short: "r", long: "repl", description: "runs the repl" },
   { short: "t", long: "tokens", description: "prints tokens and exits " },
@@ -1824,6 +1880,7 @@ if (import_opts.default.get("repl")) {
   const repl = new Repl2(Stox);
   repl.run().finally(() => process.exit(0));
 } else {
+  process.stdin.resume();
   const fileName = import_opts.default.arg("file") ?? "/dev/stdin";
   const sourceCode = import_fs.default.readFileSync(fileName).toString();
   Stox.run(fileName, sourceCode);

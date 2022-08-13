@@ -23,6 +23,7 @@ __export(stoa_ltk_exports, {
   Language: () => Language,
   ParseError: () => ParseError,
   Parser: () => Parser,
+  RuntimeError: () => RuntimeError,
   StdErrReporter: () => StdErrReporter,
   Token: () => Token,
   TokenStream: () => TokenStream,
@@ -88,6 +89,9 @@ var Language = class {
       parser.print(ast);
       return;
     }
+    if (this.errored) {
+      return;
+    }
     this.interpreter.visit(ast);
     if (this.reporter.errors) {
       this.errored = true;
@@ -114,7 +118,6 @@ var TokenStream = class {
     this.reporter = reporter;
     this.buffer = [];
     this.eof = false;
-    this.error = false;
     this.generator = tokenGenerator(source, lexicon, reporter, line, column);
   }
   take() {
@@ -136,27 +139,23 @@ var TokenStream = class {
     console[level](tokens.map((t) => `${t}`).join("\n"));
   }
   next() {
-    if (this.eof)
-      return;
     while (true) {
+      if (this.eof)
+        return;
       const token = this.generator.next().value;
       if (!token) {
         this.eof = true;
-        break;
-      }
-      if (token.name.toString().startsWith("_"))
         continue;
+      }
       if (token.name == ERROR_TOKEN) {
-        this.err(token);
+        this.reporter.error(token, `Unrecognized input`);
+        continue;
+      }
+      if (token.name.toString().startsWith("_")) {
         continue;
       }
       return token;
     }
-  }
-  err(token) {
-    this.error = true;
-    const { text, pos: { line, column } } = token;
-    this.reporter.error(token, `Syntax error near ${text} at ${line}:${column}`);
   }
 };
 var TokenStreamClass = class extends TokenStream {
@@ -164,7 +163,7 @@ var TokenStreamClass = class extends TokenStream {
     super(source, {}, reporter);
   }
 };
-function* tokenGenerator(source, lexicon, reporter, start_line = 1, start_column = 1) {
+function* tokenGenerator(source, lexicon, reporter, start_line, start_column) {
   let idx = 0, line = start_line, column = start_column;
   while (idx < source.length) {
     const [name = ERROR_TOKEN, text = source[idx]] = longest(possible());
@@ -248,7 +247,7 @@ function cStyleCommentScanner(value, reporter, line, column) {
           stack -= 1;
       }
     }
-    reporter.error(opener, `Unclosed comment at line ${opener.pos.line}, column ${opener.pos.column}.`);
+    reporter.error(opener, `Unclosed comment`);
     return text;
   }
 }
@@ -267,14 +266,14 @@ function stringScanner(value, reporter, line, column) {
       if (closer.name == opener.name)
         return text;
     }
-    reporter.error(opener, `Unclosed string at line ${opener.pos.line}, column ${opener.pos.column}.`);
+    reporter.error(opener, `Unclosed string, expected ${opener.text}`);
     return text;
   }
 }
 
 // lib/stoa-ltk/parser.ts
 var Parser = class {
-  constructor(tokens, reporter = new StdErrReporter()) {
+  constructor(tokens, reporter) {
     this.tokens = tokens;
     this.reporter = reporter;
     this.current = 0;
@@ -297,8 +296,15 @@ var Parser = class {
   consume(name, message) {
     if (this.check(name))
       return this.advance();
-    else
-      throw `Error: ${this.peek()} ${message}`;
+    let token = this.peek() || this.previous();
+    if (!this.peek()) {
+      const lines = token.text.split("\n");
+      const addLines = lines.length - 1;
+      const line = token.pos.line + addLines;
+      const column = addLines ? lines[lines.length - 1].length + 1 : token.pos.column + token.text.length;
+      token = new Token("<EOF>", "", { line, column });
+    }
+    throw this.error(token, message);
   }
   check(name) {
     var _a;
@@ -319,7 +325,7 @@ var Parser = class {
   previous() {
     return this.tokens[this.current - 1];
   }
-  error(token, message = "Unexpected token") {
+  error(token, message) {
     this.reporter.error(token, message);
     return new ParseError(message);
   }
@@ -359,7 +365,7 @@ var StdErrReporter = class {
     return !this._errors.length ? false : this._errors;
   }
   tokenError() {
-    this.reportErrors("Token");
+    this.reportErrors("Syntax");
   }
   parseError() {
     this.reportErrors("Parse");
@@ -386,11 +392,20 @@ var StdErrReporter = class {
     console.error(message);
   }
 };
+
+// lib/stoa-ltk/runtime.ts
+var RuntimeError = class extends Error {
+  constructor(token, message) {
+    super(message);
+    this.token = token;
+  }
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Language,
   ParseError,
   Parser,
+  RuntimeError,
   StdErrReporter,
   Token,
   TokenStream,

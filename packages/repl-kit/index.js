@@ -28,7 +28,30 @@ var Repl = class {
     this.lang = lang;
   }
   async run() {
-    return new Promise((resolve) => resolve(void 0));
+    var stdin = process.stdin;
+    stdin.setRawMode(true);
+    stdin.setEncoding("utf8");
+    let line = "";
+    return new Promise((resolve) => {
+      stdin.on("data", (key) => {
+        if (["", "", ""].includes(key.toString())) {
+          stdin.destroy();
+          resolve(void 0);
+        }
+        if (!key.toString().match(/[\p{Cc}\p{Cn}\p{Cs}]+/gu)) {
+          line += key.toString();
+          process.stdout.write(key);
+        }
+        if (["\x7F"].includes(key.toString())) {
+          line = line.substring(0, line.length - 2);
+          process.stdout.write("\b");
+        }
+        if (["\r", "\n"].includes(key.toString())) {
+          this.lang.run("repl", line);
+          line = "";
+        }
+      });
+    });
   }
 };
 // Annotate the CommonJS export names for ESM import in node:
