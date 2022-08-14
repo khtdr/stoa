@@ -20,6 +20,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // lib/stoa-ltk/index.ts
 var stoa_ltk_exports = {};
 __export(stoa_ltk_exports, {
+  IncompleteParseTree: () => IncompleteParseTree,
+  InvalidParseTree: () => InvalidParseTree,
   Language: () => Language,
   ParseError: () => ParseError,
   Parser: () => Parser,
@@ -296,15 +298,21 @@ var Parser = class {
   consume(name, message) {
     if (this.check(name))
       return this.advance();
+    throw this.error(message);
+  }
+  error(message) {
     let token = this.peek() || this.previous();
+    let error = new InvalidParseTree(message);
     if (!this.peek()) {
       const lines = token.text.split("\n");
       const addLines = lines.length - 1;
       const line = token.pos.line + addLines;
       const column = addLines ? lines[lines.length - 1].length + 1 : token.pos.column + token.text.length;
       token = new Token("<EOF>", "", { line, column });
+      error = new IncompleteParseTree(message);
     }
-    throw this.error(token, message);
+    this.reporter.error(token, message);
+    return error;
   }
   check(name) {
     var _a;
@@ -325,10 +333,6 @@ var Parser = class {
   previous() {
     return this.tokens[this.current - 1];
   }
-  error(token, message) {
-    this.reporter.error(token, message);
-    return new ParseError(message);
-  }
 };
 var Visitor = class {
   constructor(reporter = new StdErrReporter(), interpreter) {
@@ -340,10 +344,14 @@ var Visitor = class {
     const fn = this[name];
     if (typeof fn == "function")
       return fn.bind(this)(node);
-    throw new ParseError(`Unvisitable node: ${name} (UNIMPLEMENTED BY AUTHOR)`);
+    throw new Error(`Unvisitable node: ${name} (UNIMPLEMENTED BY AUTHOR)`);
   }
 };
 var ParseError = class extends Error {
+};
+var InvalidParseTree = class extends ParseError {
+};
+var IncompleteParseTree = class extends ParseError {
 };
 
 // lib/stoa-ltk/reporter.ts
@@ -402,6 +410,8 @@ var RuntimeError = class extends Error {
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  IncompleteParseTree,
+  InvalidParseTree,
   Language,
   ParseError,
   Parser,

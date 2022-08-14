@@ -74,12 +74,12 @@ declare class Parser<Lx extends Lexicon, Ast extends object> {
     private current;
     protected match(...names: string[]): boolean;
     protected consume<Name extends keyof Lx>(name: Name, message: string): Token<Name>;
+    protected error(message: string): InvalidParseTree;
     protected check(name: keyof Lx): boolean;
     protected atEnd(): boolean;
     protected advance(): Token<keyof Lx>;
     protected peek(ahead?: number): Token<keyof Lx> | undefined;
     protected previous<Name extends keyof Lx = keyof Lx>(): Token<Name>;
-    protected error(token: Token<any>, message: string): ParseError;
 }
 declare class Visitor<Ast extends object, Result = string> {
     readonly reporter: Reporter;
@@ -88,6 +88,10 @@ declare class Visitor<Ast extends object, Result = string> {
     visit(node: Ast): Result;
 }
 declare class ParseError extends Error {
+}
+declare class InvalidParseTree extends ParseError {
+}
+declare class IncompleteParseTree extends ParseError {
 }
 
 declare type Errors = [Token, string][];
@@ -119,4 +123,4 @@ declare class RuntimeError extends Error {
     constructor(token: Token, message: string);
 }
 
-export { Language, Lexeme, Lexicon, ParseError, Parser, Reporter, RuntimeError, StdErrReporter, Token, TokenStream, TokenStreamClass, Tokens, Visitor };
+export { IncompleteParseTree, InvalidParseTree, Language, Lexeme, Lexicon, ParseError, Parser, Reporter, RuntimeError, StdErrReporter, Token, TokenStream, TokenStreamClass, Tokens, Visitor };

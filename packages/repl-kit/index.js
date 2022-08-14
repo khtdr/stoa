@@ -26,30 +26,54 @@ module.exports = __toCommonJS(repl_kit_exports);
 var Repl = class {
   constructor(lang) {
     this.lang = lang;
+    this.prompt_width = 0;
+  }
+  prompt() {
+    this.prompt_width = 2;
+    process.stdout.write("> ");
   }
   async run() {
-    var stdin = process.stdin;
+    const { stdin, stdout } = process;
     stdin.setRawMode(true);
     stdin.setEncoding("utf8");
+    console.log("help: ?\u23CE");
+    console.log("exit: CTRL-d");
+    stdin.resume();
     let line = "";
+    this.prompt();
     return new Promise((resolve) => {
       stdin.on("data", (key) => {
-        if (["", "", ""].includes(key.toString())) {
+        stdin.pause();
+        if ([""].includes(key.toString())) {
           stdin.destroy();
           resolve(void 0);
         }
         if (!key.toString().match(/[\p{Cc}\p{Cn}\p{Cs}]+/gu)) {
           line += key.toString();
-          process.stdout.write(key);
+          stdout.write(key);
+        }
+        if (key.toString() == "\x1B[C") {
+          process.stdout.moveCursor(-1, 0);
+        }
+        if (key.toString() == "\x1B[D") {
+          process.stdout.moveCursor(1, 0);
         }
         if (["\x7F"].includes(key.toString())) {
-          line = line.substring(0, line.length - 2);
-          process.stdout.write("\b");
+          line = line.substring(0, line.length - 1);
+          process.stdout.cursorTo(0);
+          process.stdout.clearLine(0);
+          this.prompt();
+          stdout.write(line);
         }
         if (["\r", "\n"].includes(key.toString())) {
+          process.stdout.moveCursor(0, 1);
+          process.stdout.cursorTo(0);
+          console.log("");
           this.lang.run("repl", line);
           line = "";
+          this.prompt();
         }
+        stdin.resume();
       });
     });
   }
