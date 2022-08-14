@@ -11,7 +11,7 @@ build-watch:
 	          --out-dir ../bin stox.ts
 
 test:
-	make build
+	@make silent-build
 	@../bin/test-stox.sh
 
 test-watch: build
@@ -21,7 +21,8 @@ dev:
 	@make build
 	@make -j 2 build-watch test-watch
 
-install: build
+install:
+	make build
 	@mkdir -p ~/bin
 	@cp ../bin/stox.js ~/bin
 	cp ../bin/stox ~/bin
