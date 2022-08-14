@@ -1,1 +1,1 @@
-#!/usr/bin/env stox -v
+#!/usr/bin/env -S stox -v

@@ -10,11 +10,9 @@ build-watch:
 	@npx tsup --keep-names --no-splitting --sourcemap --watch \
 	          --out-dir ../bin stox.ts
 
-test: silent-build
+test:
+	make build
 	@../bin/test-stox.sh
-
-silent-test:
-	@make test &>/dev/null
 
 test-watch: build
 	@npx nodemon -e sh,stox,stderr,stdout,js -w tests -w ../bin/stox.js -x '../bin/test-stox.sh'
@@ -34,7 +32,7 @@ coverage: silent-build
 	@npx nyc --extends "@istanbuljs/nyc-config-typescript" \
 	         --exclude-after-remap \
 	         --reporter html --reporter text-summary --reporter text \
-             make silent-test
+             make test
 
 repl:
 	@make build >/dev/null
