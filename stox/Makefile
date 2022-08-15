@@ -29,7 +29,8 @@ install:
 	@chmod +x ~/bin/stox
 	stox -v
 
-coverage: silent-build
+coverage:
+	@make silent-build
 	@npx nyc --extends "@istanbuljs/nyc-config-typescript" \
 	         --exclude-after-remap \
 	         --reporter html --reporter text-summary --reporter text \

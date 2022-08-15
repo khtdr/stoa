@@ -1876,7 +1876,7 @@ var tokenize = import_opts.default.get("tokens");
 var parse = import_opts.default.get("parse");
 var stage = tokenize && "scan" || parse && "parse" || "eval";
 Stox.options({ stage });
-if (import_opts.default.get("repl")) {
+if (import_opts.default.get("repl") && process.stdout.isTTY) {
   const repl = new Repl2(Stox);
   repl.run().finally(() => process.exit(0));
 } else {
