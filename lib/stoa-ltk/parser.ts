@@ -33,20 +33,20 @@ export class Parser<Lx extends Lib.Lexicon, Ast extends object> {
     throw this.error(message);
   }
 
-  protected error(message: string) {
-    let token: Lib.Token<any> = this.peek() || this.previous();
+  protected error(message: string, token?: Lib.Token<any>) {
+    let tk: Lib.Token<any> = token || this.peek() || this.previous();
     let error = new InvalidParseTree(message);
     if (!this.peek()) {
-      const lines = token.text.split("\n");
+      const lines = tk.text.split("\n");
       const addLines = lines.length - 1;
-      const line = token.pos.line + addLines;
+      const line = tk.pos.line + addLines;
       const column = addLines
         ? lines[lines.length - 1].length + 1
-        : token.pos.column + token.text.length;
-      token = new Lib.Token("<EOF>", "", { line, column });
+        : tk.pos.column + tk.text.length;
+      tk = new Lib.Token("<EOF>", "", { line, column });
       error = new IncompleteParseTree(message);
     }
-    this.reporter.error(token, message);
+    this.reporter.error(tk, message);
     return error;
   }
 

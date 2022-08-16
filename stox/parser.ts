@@ -60,7 +60,7 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
         const parameters = this.Parameters()
         this.consume(TOKEN.RIGHT_PAREN, "Expected )")
         const block = this.Block()
-        if (!block) throw this.error(this.peek()!, "Expected {")
+        if (!block) throw this.error("Expected {")
         return new Expr.FunctionExpr(parameters, block)
     }
 
@@ -68,7 +68,7 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
     Parameters(): Ltk.Token<"IDENTIFIER">[] {
         const params: Ltk.Token<"IDENTIFIER">[] = []
         if (this.peek()?.name != TOKEN.RIGHT_PAREN) {
-            if (params.length >= 255) this.error(this.peek()!, 'Too many params (255 max)')
+            if (params.length >= 255) this.error('Too many params (255 max)')
             do {
                 const id = this.consume(TOKEN.IDENTIFIER, 'expected param name')
                 params.push(id as Ltk.Token<'IDENTIFIER'>)
@@ -238,7 +238,7 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
             if (expr instanceof Expr.VariableExpr) {
                 return new Expr.AssignExpr(expr.name, value)
             }
-            this.error(eq, "Invalid assignment target")
+            this.error("Invalid assignment target", eq)
         }
         return expr
     }
@@ -339,9 +339,9 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
     // _invalid_unary -> ("+" | "*" | "/") unary | e
     private _InvalidUnary(): ReturnType<typeof this._ValidUnary> | undefined {
         if (this.match(TOKEN.PLUS, TOKEN.STAR, TOKEN.SLASH)) {
-            this.reporter.error(
+            this.error(
+                "Binary operator is missing the left operand",
                 this.previous(),
-                "Binary operator is missing the left operand"
             );
             this.previous();
             return this.Unary();
@@ -368,7 +368,7 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
             if (!this.match(TOKEN.LEFT_PAREN)) break
             const args: Node.Expression[] = []
             if (!this.check(TOKEN.RIGHT_PAREN)) {
-                if (args.length >= 255) this.error(this.peek()!, 'Too many args (255 max)')
+                if (args.length >= 255) this.error('Too many args (255 max)')
                 do {
                     args.push(this.Expression())
                 } while (this.match(TOKEN.COMMA))

@@ -15,21 +15,53 @@ make graphics
 
 **** Build Status
 #+begin_src sh :exports both :results verbatim
-make stox
+make clean all
 #+end_src
 
 #+RESULTS:
 #+begin_example
-make[1]: Entering directory '/home/ubuntu/projects/stoa/stox'
-CLI Building entry: stox.ts
-CLI Using tsconfig: ../tsconfig.json
+rm -rf node_modules
+rm -rf coverage
+rm -f ./bin/stox.js
+pnpm install
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +300
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /home/ubuntu/.local/share/pnpm/store/v3
+  Virtual store is at:             node_modules/.pnpm
+Progress: resolved 300, reused 300, downloaded 0, added 300, done
+
+devDependencies:
++ @istanbuljs/nyc-config-typescript 1.0.2
++ @types/node 14.18.21
++ dependency-cruiser 11.13.0
++ nodemon 2.0.19
++ nyc 15.1.0
++ opts 2.0.2
++ tsup 6.1.2
++ typescript 4.7.4
+
+CLI Building entry: lib/repl-kit/index.ts
+CLI Using tsconfig: tsconfig.json
 CLI tsup v6.1.2
 CLI Target: node14
 CJS Build start
-CJS ⚡️ Build success in 31ms
-CJS ../bin/stox.js     51.33 KB
-CJS ../bin/stox.js.map 109.70 KB
-make[1]: Leaving directory '/home/ubuntu/projects/stoa/stox'
+CJS ⚡️ Build success in 35ms
+CJS packages/repl-kit/index.js     1.45 KB
+CJS packages/repl-kit/index.js.map 2.74 KB
+DTS Build start
+DTS ⚡️ Build success in 1414ms
+DTS packages/repl-kit/index.d.ts 168.00 B
+CLI Building entry: stox.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v6.1.2
+CLI Target: node14
+CJS Build start
+CJS ⚡️ Build success in 26ms
+CJS bin/stox.js     27.77 KB
+CJS bin/stox.js.map 104.74 KB
 #+end_example
 
 **** Usage Documentation
@@ -59,122 +91,58 @@ runs the repl
 #+end_src
 
 #+RESULTS:
-: stox-2022.07.31
+: stox-2022.08.15
 
 **** Code Coverage
 
 #+begin_src sh :exports both :results verbatim
-make coverage-stox
+make coverage
 #+end_src
 
 #+RESULTS:
 #+begin_example
-make[1]: Entering directory '/home/ubuntu/projects/stoa/stox'
-make[2]: Entering directory '/home/ubuntu/projects/stoa/stox'
-CLI Building entry: stox.ts
-CLI Using tsconfig: ../tsconfig.json
-CLI tsup v6.1.2
-CLI Target: node14
-CJS Build start
-make[2]: Entering directory '/home/ubuntu/projects/stoa/stox'
-CJS ⚡️ Build success in 51ms
-CJS ../bin/stox.js     51.33 KB
-CJS ../bin/stox.js.map 109.70 KB
-make[3]: Entering directory '/home/ubuntu/projects/stoa/stox'
-make[2]: Leaving directory '/home/ubuntu/projects/stoa/stox'
-make[3]: Leaving directory '/home/ubuntu/projects/stoa/stox'
-make[4]: Entering directory '/home/ubuntu/projects/stoa/stox'
-Testing: arithmetic.stox
-✔✔CLI Building entry: stox.ts
-CLI Using tsconfig: ../tsconfig.json
-CLI tsup v6.1.2
-CLI Target: node14
-CJS Build start
-CJS ⚡️ Build success in 48ms
-CJS ../bin/stox.js     51.33 KB
-CJS ../bin/stox.js.map 109.70 KB
-make[4]: Leaving directory '/home/ubuntu/projects/stoa/stox'
-✔✔✔✔
-Testing: bad-token.stox
-✔✔✔✔✔✔
-Testing: closures.stox
-✔✔✔✔✔✔
-Testing: comments.stox
-✔✔✔✔✔✔
-Testing: divide-by-zero.stox
-✔✔✔✔✔✔
-Testing: fib.stox
-✔✔✔✔✔✔
-Testing: functions.stox
-✔✔✔✔✔✔
-Testing: global-redefine.stox
-✔✔✔✔✔✔
-Testing: hello-world.stox
-✔✔✔✔✔✔
-Testing: literals.stox
-✔✔✔✔✔✔
-Testing: logical-ternary.stox
-✔✔✔✔✔✔
-Testing: name.stox
-✔✔✔✔✔✔
-Testing: same-names.stox
-✔✔✔✔✔✔
-Testing: scope.stox
-✔✔✔✔✔✔
-Testing: semantic-return.stox
-✔✔✔✔✔✔
-Testing: sticky-precision.stox
-✔✔✔✔✔✔
-Testing: triforce.stox
-✔✔✔✔✔✔
-Testing: version.stox
-✔✔✔✔✔✔
-
-Passing: 108 out of 108 (100%)
-Failing: 0 out of 108 (0%)
-
-make[2]: Leaving directory '/home/ubuntu/projects/stoa/stox'
+make[1]: Entering directory '/home/ubuntu/projects/stoa'
+make[1]: Leaving directory '/home/ubuntu/projects/stoa'
 
 =============================== Coverage summary ===============================
-Statements   : 90.48% ( 884/977 )
-Branches     : 76.48% ( 335/438 )
+Statements   : 94.64% ( 743/785 )
+Branches     : 78.24% ( 338/432 )
 Functions    : 95.14% ( 196/206 )
-Lines        : 90.47% ( 769/850 )
+Lines        : 94.5% ( 654/692 )
 ================================================================================
-------------------|---------|----------|---------|---------|----------------------------------------
+------------------|---------|----------|---------|---------|-----------------------------------
 File              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
-------------------|---------|----------|---------|---------|----------------------------------------
-All files         |   90.48 |    76.48 |   95.14 |   90.47 |
- lib/repl-kit     |    4.87 |        0 |       0 |     2.5 |
-  index.ts        |    4.87 |        0 |       0 |     2.5 | 2-57
- lib/stoa-ltk     |    97.4 |    90.19 |   95.74 |   97.54 |
-  language.ts     |   97.82 |    90.47 |     100 |     100 | 21,60
-  parser.ts       |   93.75 |    73.91 |   84.61 |    92.5 | 10-13,84
+------------------|---------|----------|---------|---------|-----------------------------------
+All files         |   94.64 |    78.24 |   95.14 |    94.5 |
+ lib/repl-kit     |   18.18 |        0 |       0 |      10 |
+  index.ts        |   18.18 |        0 |       0 |      10 | 2-25
+ lib/stoa-ltk     |   98.33 |    92.07 |   95.74 |   98.12 |
+  language.ts     |     100 |    95.23 |     100 |     100 | 60
+  parser.ts       |   95.23 |       75 |   84.61 |   94.28 | 13,84
   reporter.ts     |     100 |      100 |     100 |     100 |
   runtime.ts      |     100 |      100 |     100 |     100 |
-  tokenizer.ts    |   98.16 |    96.42 |     100 |   97.87 | 216-217
- stox/src         |   91.99 |    73.74 |   98.31 |   93.24 |
-  cli-app.ts      |   85.71 |    84.61 |       0 |      90 | 35-36
-  interpreter.ts  |   88.53 |    76.92 |     100 |   89.39 | ...128,145,150,168,185,203-205,214,216
-  parser.ts       |   91.62 |    68.42 |   97.05 |   93.48 | ...,43,152-153,241,342-347,416,422-434
-  printer.ts      |   96.61 |       75 |     100 |   96.15 | 48-49
+  tokenizer.ts    |   98.82 |    98.14 |     100 |   98.66 | 216
+ stox             |   94.11 |    75.27 |   98.31 |   94.56 |
+  cli-app.ts      |   88.23 |       80 |       0 |    87.5 | 34-35
+  interpreter.ts  |   92.18 |    77.22 |     100 |   92.92 | 77,91,105,107,128,205,214,216
+  parser.ts       |   93.29 |    71.75 |   97.05 |   94.21 | 17,43,152-153,241,342,416,422-434
+  printer.ts      |   96.55 |       75 |     100 |   96.07 | 48-49
   repl.ts         |     100 |      100 |     100 |     100 |
-  resolver.ts     |   96.29 |       85 |     100 |   97.26 | 46,152
+  resolver.ts     |     100 |       85 |     100 |     100 | 45,112,151
   stox-lang.ts    |     100 |      100 |     100 |     100 |
   tokenizer.ts    |     100 |      100 |     100 |     100 |
- stox/src/ast     |     100 |      100 |     100 |     100 |
+ stox/ast         |     100 |      100 |     100 |     100 |
   declarations.ts |     100 |      100 |     100 |     100 |
   expressions.ts  |     100 |      100 |     100 |     100 |
   nodes.ts        |     100 |      100 |     100 |     100 |
   statements.ts   |     100 |      100 |     100 |     100 |
   visitor.ts      |     100 |      100 |     100 |     100 |
- stox/src/runtime |   94.33 |    78.94 |   92.85 |   91.89 |
+ stox/runtime     |   93.33 |    83.33 |   92.85 |    90.9 |
   control-flow.ts |     100 |       75 |     100 |     100 | 7
-  environment.ts  |   90.47 |       75 |     100 |   84.61 | 17,23
-  globals.ts      |      75 |      100 |      50 |      75 | 7
+  environment.ts  |      90 |    82.14 |     100 |   84.61 | 17,23
+  globals.ts      |   66.66 |      100 |      50 |   66.66 | 7
   values.ts       |     100 |      100 |     100 |     100 |
-------------------|---------|----------|---------|---------|----------------------------------------
-make[1]: Leaving directory '/home/ubuntu/projects/stoa/stox'
+------------------|---------|----------|---------|---------|-----------------------------------
 #+end_example
 
 The latest uploaded code-coverage reports are at: https://khtdr.com/stoa/coverage
@@ -182,26 +150,13 @@ The latest uploaded code-coverage reports are at: https://khtdr.com/stoa/coverag
 **** Test Suite Status
 
 #+begin_src sh :exports both :results verbatim
-make test-stox
+make test
 #+end_src
 
 #+RESULTS:
 #+begin_example
-make[1]: Entering directory '/home/ubuntu/projects/stoa/stox'
-make[2]: Entering directory '/home/ubuntu/projects/stoa/stox'
-make[2]: Leaving directory '/home/ubuntu/projects/stoa/stox'
-make[3]: Entering directory '/home/ubuntu/projects/stoa/stox'
 Testing: arithmetic.stox
-✔✔✔✔CLI Building entry: stox.ts
-CLI Using tsconfig: ../tsconfig.json
-CLI tsup v6.1.2
-CLI Target: node14
-CJS Build start
-CJS ⚡️ Build success in 48ms
-CJS ../bin/stox.js     51.33 KB
-CJS ../bin/stox.js.map 109.70 KB
-make[3]: Leaving directory '/home/ubuntu/projects/stoa/stox'
-✔✔
+✔✔✔✔✔✔
 Testing: bad-token.stox
 ✔✔✔✔✔✔
 Testing: closures.stox
@@ -240,7 +195,6 @@ Testing: version.stox
 Passing: 108 out of 108 (100%)
 Failing: 0 out of 108 (0%)
 
-make[1]: Leaving directory '/home/ubuntu/projects/stoa/stox'
 #+end_example
 
 **** Potential Goals

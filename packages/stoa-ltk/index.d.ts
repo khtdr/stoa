@@ -74,7 +74,7 @@ declare class Parser<Lx extends Lexicon, Ast extends object> {
     private current;
     protected match(...names: string[]): boolean;
     protected consume<Name extends keyof Lx>(name: Name, message: string): Token<Name>;
-    protected error(message: string): InvalidParseTree;
+    protected error(message: string, token?: Token<any>): InvalidParseTree;
     protected check(name: keyof Lx): boolean;
     protected atEnd(): boolean;
     protected advance(): Token<keyof Lx>;

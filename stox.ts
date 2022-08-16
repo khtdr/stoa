@@ -1,0 +1,1 @@
+import './stox/cli-app'

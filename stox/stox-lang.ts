@@ -1,5 +1,5 @@
 import { Language } from "stoa-ltk";
-import { version } from "../../package.json";
+import { version } from "../package.json";
 import { Ast } from "./ast/nodes";
 import { Tokenizer, Lexicon } from "./tokenizer";
 import { Parser } from "./parser";
