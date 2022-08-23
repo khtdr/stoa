@@ -6,6 +6,8 @@ STOA_SRC := $(shell find . -wholename './lib/stoa-ltk/*.ts')
 STOX_SRC := $(shell find . -wholename './stox/*.ts')
 TEST_SRC := $(shell find . -wholename './stox/tests/*')
 
+all: build
+
 packages/repl-kit/index.js: node_modules ${REPL_SRC}
 	@${BUILD_CMD} --dts --out-dir ./packages/repl-kit lib/repl-kit/index.ts
 
@@ -24,7 +26,11 @@ node_modules: package.json
 
 .PHONY: all build build-watch clean coverage dev graphics install lint silent-test snapshot test uninstall
 
-all: build
+
+chonk: node_modules ${REPL_SRC}
+	mkdir -p tmp
+	@${BUILD_CMD} --dts --out-dir ./tmp lib/repl-kit/demo.ts
+	node ./tmp/demo.js
 
 build: packages/repl-kit/index.js packages/stoa-ltk/index.js bin/stox.js
 

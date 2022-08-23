@@ -1,60 +1,79 @@
-export class Repl {
-  constructor(readonly lang: any) {}
+import { IncompleteException } from "./errors";
+import { Line } from "./ui";
 
-  prompt_width = 0;
-  prompt() {
-    this.prompt_width = 2;
-    process.stdout.write("> ");
-  }
+export class Repl {
+  constructor(
+    readonly lang: {
+      name: string;
+      run(source: string): void;
+    }
+  ) {}
 
   async run() {
-    const { stdin, stdout } = process;
-    stdin.setRawMode(true);
-    stdin.setEncoding("utf8");
+    process.stdin.setRawMode(true);
+    process.stdin.setEncoding("utf8");
 
     console.log("help: ?⏎");
     console.log("exit: CTRL-d");
-    stdin.resume();
+    process.stdin.resume();
 
-    let line = "";
-    this.prompt();
+    let line = new Line(false, false);
+    line.render();
 
     return new Promise((resolve) => {
-      stdin.on("data", (key) => {
+      process.stdin.on("data", (key) => {
         // console.log({ key });
-        stdin.pause();
+        process.stdin.pause();
+        if (["\x01"].includes(key.toString())) {
+          // CTRL a
+          // go to beginning of line
+        }
         if (["\x04"].includes(key.toString())) {
-          // CTRL-d
-          stdin.destroy();
+          // CTRL d
+          process.stdin.destroy();
           resolve(undefined);
         }
+        if (["\x05"].includes(key.toString())) {
+          // CTRL a
+          // go to end of line
+        }
+        if (["\x0B"].includes(key.toString())) {
+          // CTRL k
+          line.clearTilEnd();
+        }
         if (!key.toString().match(/[\p{Cc}\p{Cn}\p{Cs}]+/gu)) {
-          line += key.toString();
-          stdout.write(key);
+          line.insert(key.toString());
         }
         if ("\x1B[C" == key.toString()) {
-          process.stdout.moveCursor(-1, 0);
+          line.right();
         }
         if ("\x1B[D" == key.toString()) {
-          process.stdout.moveCursor(1, 0);
+          line.left();
         }
         if (["\x7F"].includes(key.toString())) {
-          line = line.substring(0, line.length - 1);
-          process.stdout.cursorTo(0);
-          process.stdout.clearLine(0);
-          this.prompt();
-          stdout.write(line);
-          // process.stdout.write("\x08");
+          line.backspace();
         }
         if (["\r", "\n"].includes(key.toString())) {
-          process.stdout.moveCursor(0, 1);
-          process.stdout.cursorTo(0);
-          console.log("");
-          this.lang.run("repl", line);
-          line = "";
-          this.prompt();
+          // Enter
+          line.complete();
+          const command = line.input.text.trim();
+          if (command) {
+            try {
+              this.lang.run(command);
+              line = new Line(false, false);
+            } catch (e) {
+              if (e instanceof IncompleteException) {
+                line = new Line(false, true);
+              } else {
+                line = new Line(true, false);
+              }
+            }
+          } else {
+            line = new Line(false, false);
+          }
+          line.render();
         }
-        stdin.resume();
+        process.stdin.resume();
       });
     });
   }
