@@ -1,15 +1,18 @@
+import { TERM } from "./term";
+
 class Prompt {
   constructor(readonly isError: boolean, readonly isContinuation: boolean) {}
   get text() {
-    if (this.isContinuation) return "| ";
-    return "> ";
+    if (this.isError) return "× ";
+    if (this.isContinuation) return "  ";
+    return "» ";
   }
   get markup() {
-    if (this.isError) return `*${this.text}`;
-    return `-${this.text}`;
+    if (this.isError) return `${TERM.fgRed}${this.text}${TERM.reset}`;
+    return `${TERM.dim}${this.text}${TERM.reset}`;
   }
   get width() {
-    return this.markup.length;
+    return 2;
   }
 }
 
@@ -47,33 +50,33 @@ export class Line {
     this.input = new Input();
   }
   render() {
-    process.stdout.write("\u001B[?25l");
+    process.stdout.write(TERM.hideCursor);
     this.cursor = 0;
     process.stdout.moveCursor(this.cursor, 1);
     process.stdout.cursorTo(this.cursor);
     process.stdout.write(this.prompt.markup);
     process.stdout.write(this.input.text);
-    process.stdout.write("\u001B[?25h");
+    process.stdout.write(TERM.showCursor);
   }
   clearTilEnd() {
-    process.stdout.write("\u001B[?25l");
+    process.stdout.write(TERM.hideCursor);
     this.input.clear(this.cursor);
     process.stdout.clearScreenDown();
-    process.stdout.write("\u001B[?25h");
+    process.stdout.write(TERM.showCursor);
   }
   insert(text: string) {
-    process.stdout.write("\u001B[?25l");
+    process.stdout.write(TERM.hideCursor);
     this.input.insert(text, this.cursor);
     process.stdout.clearLine(1);
     const appended = this.input.text.substring(this.cursor);
     process.stdout.write(appended);
     this.cursor += text.length;
     process.stdout.moveCursor(-(appended.length - text.length), 0);
-    process.stdout.write("\u001B[?25h");
+    process.stdout.write(TERM.showCursor);
   }
   backspace() {
     if (this.cursor === 0) return;
-    process.stdout.write("\u001B[?25l");
+    process.stdout.write(TERM.hideCursor);
     this.input.backspace(this.cursor);
     this.cursor -= 1;
     process.stdout.moveCursor(-1, 0);
@@ -81,27 +84,33 @@ export class Line {
     const remaining = this.input.text.substring(this.cursor);
     process.stdout.write(remaining);
     process.stdout.moveCursor(-remaining.length, 0);
-    process.stdout.write("\u001B[?25h");
+    process.stdout.write(TERM.showCursor);
   }
-  right() {
+  moveRight(n = 1) {
     if (this.cursor === this.input.text.length) return;
-    process.stdout.write("\u001B[?25l");
-    this.cursor += 1;
-    process.stdout.moveCursor(1, 0);
-    process.stdout.write("\u001B[?25h");
+    process.stdout.write(TERM.hideCursor);
+    this.cursor += n;
+    process.stdout.moveCursor(n, 0);
+    process.stdout.write(TERM.showCursor);
   }
-  left() {
+  moveLeft(n = 1) {
     if (this.cursor === 0) return;
-    process.stdout.write("\u001B[?25l");
-    this.cursor -= 1;
-    process.stdout.moveCursor(-1, 0);
-    process.stdout.write("\u001B[?25h");
+    process.stdout.write(TERM.hideCursor);
+    this.cursor -= n;
+    process.stdout.moveCursor(-n, 0);
+    process.stdout.write(TERM.showCursor);
   }
-  complete() {
-    process.stdout.write("\u001B[?25l");
+  moveToLineStart() {
+    this.moveLeft(this.cursor);
+  }
+  moveToLineEnd() {
+    this.moveRight(this.input.text.length - this.cursor);
+  }
+  newline() {
+    process.stdout.write(TERM.hideCursor);
     process.stdout.moveCursor(0, 1);
     process.stdout.cursorTo(0);
     console.log("");
-    process.stdout.write("\u001B[?25h");
+    process.stdout.write(TERM.showCursor);
   }
 }
