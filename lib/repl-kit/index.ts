@@ -16,12 +16,12 @@ export class Repl {
     process.stdin.resume();
 
     return new Promise((resolve) => {
-      let { initial: line, apply } = lineKeyBinder(this.lang, () => {
+      let apply = lineKeyBinder(this.lang, () => {
         process.stdin.destroy();
         resolve(undefined);
       });
       process.stdin.on("data", (key) => {
-        line = apply(line, key) || line;
+        apply(key);
         process.stdin.resume();
       });
     });
