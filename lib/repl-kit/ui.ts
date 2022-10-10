@@ -50,33 +50,26 @@ export class Line {
     this.input = new Input();
   }
   render() {
-    process.stdout.write(TERM.hideCursor);
     this.cursor = 0;
     process.stdout.moveCursor(this.cursor, 1);
     process.stdout.cursorTo(this.cursor);
     process.stdout.write(this.prompt.markup);
     process.stdout.write(this.input.text);
-    process.stdout.write(TERM.showCursor);
   }
   clearTilEnd() {
-    process.stdout.write(TERM.hideCursor);
     this.input.clear(this.cursor);
     process.stdout.clearScreenDown();
-    process.stdout.write(TERM.showCursor);
   }
   insert(text: string) {
-    process.stdout.write(TERM.hideCursor);
     this.input.insert(text, this.cursor);
     process.stdout.clearLine(1);
     const appended = this.input.text.substring(this.cursor);
     process.stdout.write(appended);
     this.cursor += text.length;
     process.stdout.moveCursor(-(appended.length - text.length), 0);
-    process.stdout.write(TERM.showCursor);
   }
   backspace() {
     if (this.cursor === 0) return;
-    process.stdout.write(TERM.hideCursor);
     this.input.backspace(this.cursor);
     this.cursor -= 1;
     process.stdout.moveCursor(-1, 0);
@@ -84,21 +77,16 @@ export class Line {
     const remaining = this.input.text.substring(this.cursor);
     process.stdout.write(remaining);
     process.stdout.moveCursor(-remaining.length, 0);
-    process.stdout.write(TERM.showCursor);
   }
   moveRight(n = 1) {
     if (this.cursor === this.input.text.length) return;
-    process.stdout.write(TERM.hideCursor);
     this.cursor += n;
     process.stdout.moveCursor(n, 0);
-    process.stdout.write(TERM.showCursor);
   }
   moveLeft(n = 1) {
     if (this.cursor === 0) return;
-    process.stdout.write(TERM.hideCursor);
     this.cursor -= n;
     process.stdout.moveCursor(-n, 0);
-    process.stdout.write(TERM.showCursor);
   }
   moveToLineStart() {
     this.moveLeft(this.cursor);
@@ -107,10 +95,14 @@ export class Line {
     this.moveRight(this.input.text.length - this.cursor);
   }
   newline() {
-    process.stdout.write(TERM.hideCursor);
     process.stdout.moveCursor(0, 1);
     process.stdout.cursorTo(0);
     console.log("");
+  }
+  hideCursor() {
+    process.stdout.write(TERM.hideCursor);
+  }
+  showCursor() {
     process.stdout.write(TERM.showCursor);
   }
 }
