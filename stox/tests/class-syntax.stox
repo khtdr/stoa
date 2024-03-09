@@ -10,4 +10,8 @@ class Breakfast {
 }
 
 class Bagel {}
-Bagel();
+var bagel = Bagel();
+
+print bagel.isReady ? "Bagel is ready" : "... still toasting...";
+
+// Breakfast().cook().serve('Customer');

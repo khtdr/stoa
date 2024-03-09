@@ -32,6 +32,13 @@ export class FunctionExpr implements Node.Expression {
     ) { }
 }
 
+export class GetExpr implements Node.Expression {
+    constructor(
+        readonly name: Node.Token<"IDENTIFIER">,
+        readonly expr: Node.Expression,
+    ) { }
+}
+
 export class GroupExpr implements Node.Expression {
     constructor(
         readonly inner: Node.Expression

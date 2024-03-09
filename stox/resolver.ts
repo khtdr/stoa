@@ -107,6 +107,9 @@ export class Resolver extends Visitor<void> {
         this.define(decl.name);
         this.resolveFunction(decl.func, FunctionType.FUNCTION);
     }
+    GetExpr(expr: Expr.GetExpr) {
+        this.visit(expr.expr)
+    }
     GroupExpr(expr: Expr.GroupExpr) {
         this.visit(expr.inner);
     }

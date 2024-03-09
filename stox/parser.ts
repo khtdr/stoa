@@ -384,19 +384,22 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
     // call -> primary ("(" (expression ("," expression)*)? ")")*
     Call(): ReturnType<typeof this.Primary> | Expr.CallExpr {
         let expr: Expr.CallExpr | ReturnType<typeof this.Primary> = this.Primary();
-        if (!this.check(TOKEN.LEFT_PAREN)) return expr
-
         while (true) {
-            if (!this.match(TOKEN.LEFT_PAREN)) break
-            const args: Node.Expression[] = []
-            if (!this.check(TOKEN.RIGHT_PAREN)) {
-                if (args.length >= 255) this.error('Too many args (255 max)')
-                do {
-                    args.push(this.Expression())
-                } while (this.match(TOKEN.COMMA))
-            }
-            const paren = this.consume(TOKEN.RIGHT_PAREN, "Expected ) after arguments")
-            expr = new Expr.CallExpr(expr, args, paren)
+            if (this.match(TOKEN.LEFT_PAREN)) {
+
+                const args: Node.Expression[] = []
+                if (!this.check(TOKEN.RIGHT_PAREN)) {
+                    if (args.length >= 255) this.error('Too many args (255 max)')
+                    do {
+                        args.push(this.Expression())
+                    } while (this.match(TOKEN.COMMA))
+                }
+                const paren = this.consume(TOKEN.RIGHT_PAREN, "Expected ) after arguments")
+                expr = new Expr.CallExpr(expr, args, paren)
+            } else if (this.match(TOKEN.DOT)) {
+                const name = this.consume(TOKEN.IDENTIFIER, 'Expected method or attribute name')
+                expr = new Expr.GetExpr(name, expr)
+            } else break;
         }
         return expr
     }

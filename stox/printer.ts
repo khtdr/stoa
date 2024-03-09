@@ -41,6 +41,9 @@ export class Printer extends Visitor<string> {
         const val = this.visit(decl.func)
         return `(fun ${name} ${val})`
     }
+    GetExpr(expr: Expr.GetExpr): string {
+        return `(. ${JSON.stringify(expr.expr)} ${expr.name.text})`
+    }
     GroupExpr(expr: Expr.GroupExpr): string {
         const operand = this.visit(expr.inner)
         return `(group ${operand})`

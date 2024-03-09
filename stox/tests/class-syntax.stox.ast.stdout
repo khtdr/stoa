@@ -10,5 +10,6 @@
    (class Bagel
       
    )
-   (call Bagel)
+   (var bagel (call Bagel))
+   (print (?: (. {"name":{"name":"IDENTIFIER","text":"bagel","pos":{"line":15,"column":7}}} isReady) "Bagel is ready" "... still toasting..."))
 )

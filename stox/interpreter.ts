@@ -17,7 +17,7 @@ import * as Decl from "./ast/declarations";
 import * as Expr from "./ast/expressions";
 import * as Node from "./ast/nodes";
 import * as Stmt from "./ast/statements";
-import { Class } from "./runtime/classes";
+import { Class, Instance } from "./runtime/classes";
 
 /**
  * Goals
@@ -141,6 +141,13 @@ export class Interpreter extends Visitor<Result> {
         const func = this.FunctionExpr(decl.func);
         this.env.init(decl.name);
         this.env.set(decl.name, func);
+    }
+    GetExpr(expr: Expr.GetExpr): Result {
+        const object = this.visit(expr.expr)
+        if (object instanceof Instance) {
+            return object.get(expr.name)
+        }
+        throw new RuntimeError(expr.name, 'Only instances have properties')
     }
     GroupExpr(expr: Expr.GroupExpr): Result {
         return this.visit(expr.inner);
