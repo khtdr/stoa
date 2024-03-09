@@ -1,8 +1,8 @@
 #!/usr/bin/env stox
 
 class Breakfast {
-  cook() {
-    print "Fried eggs.";
+  cook(food) {
+    print "Fried eggs and " + food + ".";
   }
   serve(who) {
     print "Enjoy, " + who + ".";
@@ -17,4 +17,19 @@ print bagel.isReady ? "Bagel is ready" : "... still toasting...";
 bagel.isReady = true;
 print bagel.isReady ? "Bagel is ready" : "... still toasting...";
 
-// Breakfast().cook().serve('Customer');
+class Standard {}
+
+var object = Standard();
+object.name = "Standard";
+object.meal = Breakfast();
+
+var newBagel = Bagel();
+object.meal.toast = newBagel;
+
+object.meal.toast.isReady = false;
+print newBagel.isReady ? "Bagel is ready" : "... still toasting...";
+newBagel.isReady = true;
+print object.meal.toast.isReady ? "Bagel is ready" : "... still toasting...";
+
+// std.meal.cook(std.meal.toast);
+// std.meal.serve('customer');

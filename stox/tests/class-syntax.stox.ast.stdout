@@ -1,7 +1,7 @@
 (program 
    (class Breakfast
-      (fun cook (let [] (block 
-         (print "Fried eggs.")
+      (fun cook (let [food] (block 
+         (print (+ (+ "Fried eggs and " food) "."))
       )))
       (fun serve (let [who] (block 
          (print (+ (+ "Enjoy, " who) "."))
@@ -15,4 +15,16 @@
    (print (?: (.get bagel isReady) "Bagel is ready" "... still toasting..."))
    (.set bagel isReady true)
    (print (?: (.get bagel isReady) "Bagel is ready" "... still toasting..."))
+   (class Standard
+      
+   )
+   (var object (call Standard))
+   (.set object name "Standard")
+   (.set object meal (call Breakfast))
+   (var newBagel (call Bagel))
+   (.set (.get object meal) toast newBagel)
+   (.set (.get (.get object meal) toast) isReady false)
+   (print (?: (.get newBagel isReady) "Bagel is ready" "... still toasting..."))
+   (.set newBagel isReady true)
+   (print (?: (.get (.get (.get object meal) toast) isReady) "Bagel is ready" "... still toasting..."))
 )
