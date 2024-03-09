@@ -8,3 +8,6 @@ class Breakfast {
     print "Enjoy, " + who + ".";
   }
 }
+
+class Bagel {}
+Bagel();

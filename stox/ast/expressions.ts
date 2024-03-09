@@ -1,3 +1,4 @@
+import { Instance } from '../runtime/classes'
 import * as Node from './nodes'
 import * as Stmt from './statements'
 
@@ -39,9 +40,10 @@ export class GroupExpr implements Node.Expression {
 
 export class LiteralExpr implements Node.Expression {
     constructor(
-        readonly value: string | [number, number] | boolean | undefined | void
+        readonly value: string | [number, number] | boolean | undefined | void | Instance
     ) { }
     toString() {
+        if (this.value instanceof Instance) return this.value.toString()
         if (this.value === true || this.value === false) return `${this.value}`
         if (this.value === undefined) return 'nil'
         if (typeof this.value == 'string') return this.value

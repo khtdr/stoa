@@ -10,7 +10,8 @@ export class BreakException extends JumpException { }
 export class ContinueException extends JumpException { }
 
 export interface Callable {
-    arity: number; call(args: Result[]): Result
+    arity: number
+    call(args: Result[]): Result
 }
 export function isCallable(val: Result): val is Callable {
     if (!val) return false
