@@ -35,7 +35,15 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
     // declaration -> fun_declaration | var_declaration | statement
     Declaration() {
         try {
-            return this.FunDeclaration() || this.VarDeclaration() || this.Statement()
+            // second part is to allow anonymouse function expression in Primary
+            if (this.peek()?.name == TOKEN.FUN && this.peek(2)?.name == TOKEN.IDENTIFIER) {
+                this.match(TOKEN.FUN)
+                return this.FunDeclaration()
+            }
+            if (this.match(TOKEN.VAR)) {
+                return this.VarDeclaration()
+            }
+            return this.Statement()
         } catch (err) {
             if (err instanceof Ltk.ParseError) {
                 this.synchronize()
@@ -44,18 +52,15 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
         }
     }
 
-    // fun_declaration -> "fun" IDENTIFIER function ";"
-    FunDeclaration(): Decl.FunctionDecl | void {
-        if (this.peek(1)?.name == TOKEN.FUN && this.peek(2)?.name == TOKEN.IDENTIFIER) {
-            this.match(TOKEN.FUN)
-            const ident = this.consume("IDENTIFIER", "Expected identifier")
-            const fun = this.Function()
-            return new Decl.FunctionDecl(ident, fun)
-        }
+    // fun_declaration -> IDENTIFIER function
+    FunDeclaration(): Decl.FunctionDecl {
+        const ident = this.consume("IDENTIFIER", "Expected identifier")
+        const fun = this.FunctionExpr()
+        return new Decl.FunctionDecl(ident, fun)
     }
 
     // function -> "(" parameters? ")" block
-    Function(): Expr.FunctionExpr {
+    FunctionExpr(): Expr.FunctionExpr {
         this.consume(TOKEN.LEFT_PAREN, "Expected (")
         const parameters = this.Parameters()
         this.consume(TOKEN.RIGHT_PAREN, "Expected )")
@@ -78,16 +83,14 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
     }
 
     // var_declaration -> "var" IDENTIFIER ("=" expression)? ";"
-    VarDeclaration(): Decl.VariableDecl | void {
-        if (this.match(TOKEN.VAR)) {
-            const ident = this.consume("IDENTIFIER", "Expected identifier")
-            let expr: Node.Expression | undefined
-            if (this.match(TOKEN.EQUAL)) {
-                expr = this.Expression()
-            }
-            this.consume(TOKEN.SEMICOLON, "Expected ;")
-            return new Decl.VariableDecl(ident, expr)
+    VarDeclaration(): Decl.VariableDecl {
+        const ident = this.consume("IDENTIFIER", "Expected identifier")
+        let expr: Node.Expression | undefined
+        if (this.match(TOKEN.EQUAL)) {
+            expr = this.Expression()
         }
+        this.consume(TOKEN.SEMICOLON, "Expected ;")
+        return new Decl.VariableDecl(ident, expr)
     }
 
     // statement -> return_statement | print_statement | if_statement | while_statement |
@@ -172,7 +175,7 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
     ForStatement(): Stmt.BlockStmt | void {
         if (this.match(TOKEN.FOR)) {
             this.consume(TOKEN.LEFT_PAREN, "Expected (")
-            const init = this.VarDeclaration() ||
+            const init = (this.match(TOKEN.VAR) && this.VarDeclaration()) ||
                 this.ExpressionStatement() ||
                 (this.consume(TOKEN.SEMICOLON, "Expected ;") && new Expr.LiteralExpr(true))
             let cond: Node.Expression = new Expr.LiteralExpr(true)
@@ -411,7 +414,7 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
             return new Expr.GroupExpr(expr);
         }
         if (this.match(TOKEN.FUN)) {
-            return this.Function()
+            return this.FunctionExpr()
         }
         throw this.error('Expected to find an expression')
     }
