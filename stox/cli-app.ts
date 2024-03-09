@@ -3,7 +3,7 @@ process.stdin.pause();
 import fs from "fs";
 import opts from "opts";
 import { StoxLang } from "./stox-lang";
-import { Repl } from "./repl";
+// import { Repl } from "./repl";
 
 opts.parse(
   [
@@ -26,13 +26,14 @@ if (opts.get("version")) {
   process.exit(0);
 }
 
-const tokenize = opts.get("tokens"), parse = opts.get("parse");
+const tokenize = opts.get("tokens"),
+  parse = opts.get("parse");
 const stage = (tokenize && "scan") || (parse && "parse") || "eval";
 Stox.options({ stage });
 
 if (opts.get("repl") && process.stdout.isTTY) {
-  const repl = new Repl(Stox);
-  repl.run().finally(() => process.exit(0));
+  // const repl = new Repl(Stox);
+  // repl.run().finally(() => process.exit(0));
 } else {
   process.stdin.resume();
   const fileName = opts.arg("file") ?? "/dev/stdin";

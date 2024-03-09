@@ -27,4 +27,12 @@
    (print (?: (.get newBagel isReady) "Bagel is ready" "... still toasting..."))
    (.set newBagel isReady true)
    (print (?: (.get (.get (.get object meal) toast) isReady) "Bagel is ready" "... still toasting..."))
+   (call (.get (.get object meal) cook) (.get (.get object meal) toast))
+   (call (.get (.get object meal) serve) "customer")
+   (class Bacon
+      (fun eat (let [] (block 
+         (print "Crunch crunch crunch")
+      )))
+   )
+   (call (.get (call Bacon) eat))
 )

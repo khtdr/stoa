@@ -31,5 +31,8 @@ print newBagel.isReady ? "Bagel is ready" : "... still toasting...";
 newBagel.isReady = true;
 print object.meal.toast.isReady ? "Bagel is ready" : "... still toasting...";
 
-// std.meal.cook(std.meal.toast);
-// std.meal.serve('customer');
+object.meal.cook(object.meal.toast);
+object.meal.serve('customer');
+
+class Bacon { eat() { print "Crunch crunch crunch"; } }
+Bacon().eat();

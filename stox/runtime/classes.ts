@@ -1,38 +1,40 @@
-import { RuntimeError } from 'stoa-ltk'
-import { Token } from '../ast/nodes'
-import { Callable, Function } from './control-flow'
-import { Result } from './values'
+import { RuntimeError } from "stoa-ltk";
+import { Token } from "../ast/nodes";
+import { Callable, Function } from "./control-flow";
+import { Result } from "./values";
 
 export class Class implements Callable {
+  constructor(readonly name: string, readonly methods: Map<string, Function>) {}
 
-  constructor(
-    readonly name: string,
-    readonly methods: Map<string, Function>
-  ) { }
-
-  arity = 0
+  arity = 0;
   call(_args: Result[]) {
-    return new Instance(this)
+    return new Instance(this);
+  }
+
+  findMethod(name: string) {
+    return this.methods.get(name);
   }
 
   toString() {
-    return this.name
+    return this.name;
   }
 }
 
 export class Instance {
-  private fields: Map<string, Result> = new Map()
-  constructor(private klass: Class) { }
-  get(name: Token<'IDENTIFIER'>) {
+  private fields: Map<string, Result> = new Map();
+  constructor(private klass: Class) {}
+  get(name: Token<"IDENTIFIER">) {
     if (this.fields.has(name.text)) {
-      return this.fields.get(name.text)
+      return this.fields.get(name.text);
     }
-    throw new RuntimeError(name, `Undefined property [${name.text}].`)
+    const method = this.klass.findMethod(name.text);
+    if (method) return method;
+    throw new RuntimeError(name, `Undefined property [${name.text}].`);
   }
-  set(name: Token<'IDENTIFIER'>, value: Result) {
-    this.fields.set(name.text, value)
+  set(name: Token<"IDENTIFIER">, value: Result) {
+    this.fields.set(name.text, value);
   }
   toString() {
-    return `<<${this.klass.name} instance>>`
+    return `<<${this.klass.name} instance>>`;
   }
 }

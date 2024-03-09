@@ -1,4 +1,4 @@
-declare type Runnable = {
+type Runnable = {
     name: string;
     run(source: string): void;
 };
