@@ -110,11 +110,21 @@ export class Interpreter extends Visitor<Result> {
     }
     ClassDecl(decl: Decl.ClassDecl): Result{
         this.env.init(decl.name)
-        const klass = new Class(decl.name.text)
+        const methods = new Map<string, Function>()
+        for (const method of decl.funcs) {
+            const func = new Function()
+            methods.set(method.name.text, method.func)
+        }
+        const klass = new Class(decl.name.text, methods)
         this.env.set(decl.name, klass)
     }
     ExpressionStmt(statement: Stmt.ExpressionStmt): void {
         this.visit(statement.expr);
+    }
+    FunctionDecl(decl: Decl.FunctionDecl): Result {
+        const func = this.FunctionExpr(decl.func);
+        this.env.init(decl.name);
+        this.env.set(decl.name, func);
     }
     FunctionExpr(fun: Expr.FunctionExpr): Result {
         const closure = new Environment(this.env);
@@ -136,11 +146,6 @@ export class Interpreter extends Visitor<Result> {
                 this.env = previous;
             }
         });
-    }
-    FunctionDecl(decl: Decl.FunctionDecl): Result {
-        const func = this.FunctionExpr(decl.func);
-        this.env.init(decl.name);
-        this.env.set(decl.name, func);
     }
     GetExpr(expr: Expr.GetExpr): Result {
         const object = this.visit(expr.expr)

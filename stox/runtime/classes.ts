@@ -1,11 +1,14 @@
 import { RuntimeError } from 'stoa-ltk'
 import { Token } from '../ast/nodes'
-import { Callable } from './control-flow'
+import { Callable, Function } from './control-flow'
 import { Result } from './values'
 
 export class Class implements Callable {
 
-  constructor(readonly name: string) { }
+  constructor(
+    readonly name: string,
+    readonly methods: Map<string, Function>
+  ) { }
 
   arity = 0
   call(_args: Result[]) {
@@ -18,7 +21,7 @@ export class Class implements Callable {
 }
 
 export class Instance {
-  private fields:Map<string, Result> = new Map()
+  private fields: Map<string, Result> = new Map()
   constructor(private klass: Class) { }
   get(name: Token<'IDENTIFIER'>) {
     if (this.fields.has(name.text)) {

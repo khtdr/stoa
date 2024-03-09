@@ -9,6 +9,7 @@ import * as Stmt from './ast/statements'
 enum FunctionType {
     NONE,
     FUNCTION,
+    METHOD
 }
 
 enum VariableType {
@@ -95,6 +96,9 @@ export class Resolver extends Visitor<void> {
     ClassDecl(decl: Decl.ClassDecl) {
         this.declare(decl.name)
         this.define(decl.name)
+        for (const method of decl.funcs) {
+           this.resolveFunction(method.func, FunctionType.METHOD)
+        }
     }
     ExpressionStmt(stmt: Stmt.ExpressionStmt) {
         this.visit(stmt.expr);
