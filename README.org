@@ -24,14 +24,10 @@ rm -rf node_modules
 rm -rf coverage
 rm -f ./bin/stox.js
 pnpm install
-Lockfile is up to date, resolution step is skipped
-Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 0, reused 1, downloaded 0, added 0
 Packages: +300
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Packages are hard linked from the content-addressable store to the virtual store.
-  Content-addressable store is at: /home/ubuntu/.local/share/pnpm/store/v3
-  Virtual store is at:             node_modules/.pnpm
-Progress: resolved 300, reused 300, downloaded 0, added 300, done
+Progress: resolved 320, reused 300, downloaded 0, added 300, done
 
 devDependencies:
 + @istanbuljs/nyc-config-typescript 1.0.2
@@ -43,25 +39,26 @@ devDependencies:
 + tsup 6.1.2
 + typescript 4.7.4
 
+Done in 1.3s
 CLI Building entry: lib/repl-kit/index.ts
 CLI Using tsconfig: tsconfig.json
 CLI tsup v6.1.2
 CLI Target: node14
 CJS Build start
-CJS ⚡️ Build success in 35ms
-CJS packages/repl-kit/index.js     1.45 KB
-CJS packages/repl-kit/index.js.map 2.74 KB
+CJS ⚡️ Build success in 22ms
+CJS packages/repl-kit/index.js     4.90 KB
+CJS packages/repl-kit/index.js.map 12.82 KB
 DTS Build start
-DTS ⚡️ Build success in 1414ms
-DTS packages/repl-kit/index.d.ts 168.00 B
+DTS ⚡️ Build success in 452ms
+DTS packages/repl-kit/index.d.ts 236.00 B
 CLI Building entry: stox.ts
 CLI Using tsconfig: tsconfig.json
 CLI tsup v6.1.2
 CLI Target: node14
 CJS Build start
-CJS ⚡️ Build success in 26ms
-CJS bin/stox.js     27.77 KB
-CJS bin/stox.js.map 104.74 KB
+CJS ⚡️ Build success in 21ms
+CJS bin/stox.js     32.75 KB
+CJS bin/stox.js.map 119.90 KB
 #+end_example
 
 **** Usage Documentation
@@ -105,39 +102,45 @@ make[1]: Entering directory '/home/ubuntu/projects/stoa'
 make[1]: Leaving directory '/home/ubuntu/projects/stoa'
 
 =============================== Coverage summary ===============================
-Statements   : 94.64% ( 743/785 )
-Branches     : 78.24% ( 338/432 )
-Functions    : 95.14% ( 196/206 )
-Lines        : 94.5% ( 654/692 )
+Statements   : 87.84% ( 802/913 )
+Branches     : 75.75% ( 350/462 )
+Functions    : 79.02% ( 211/267 )
+Lines        : 87.11% ( 703/807 )
 ================================================================================
 ------------------|---------|----------|---------|---------|-----------------------------------
 File              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
 ------------------|---------|----------|---------|---------|-----------------------------------
-All files         |   94.64 |    78.24 |   95.14 |    94.5 |
- lib/repl-kit     |   18.18 |        0 |       0 |      10 |
-  index.ts        |   18.18 |        0 |       0 |      10 | 2-25
+All files         |   87.84 |    75.75 |   79.02 |   87.11 |
+ lib/repl-kit     |   19.78 |        0 |       2 |   14.45 |
+  errors.ts       |     100 |      100 |     100 |     100 |
+  history.ts      |      50 |      100 |   16.66 |   44.44 | 5-18
+  index.ts        |   22.22 |      100 |       0 |    12.5 | 5-24
+  key-bindings.ts |    3.44 |        0 |       0 |    3.44 | 8-78
+  term.ts         |   66.66 |      100 |       0 |   66.66 | 46
+  ui.ts           |   15.78 |        0 |       0 |    9.09 | 4-15,20-40,47-106
  lib/stoa-ltk     |   98.33 |    92.07 |   95.74 |   98.12 |
   language.ts     |     100 |    95.23 |     100 |     100 | 60
   parser.ts       |   95.23 |       75 |   84.61 |   94.28 | 13,84
   reporter.ts     |     100 |      100 |     100 |     100 |
   runtime.ts      |     100 |      100 |     100 |     100 |
   tokenizer.ts    |   98.82 |    98.14 |     100 |   98.66 | 216
- stox             |   94.11 |    75.27 |   98.31 |   94.56 |
+ stox             |    94.2 |     75.6 |   98.42 |   94.61 |
   cli-app.ts      |   88.23 |       80 |       0 |    87.5 | 34-35
-  interpreter.ts  |   92.18 |    77.22 |     100 |   92.92 | 77,91,105,107,128,205,214,216
-  parser.ts       |   93.29 |    71.75 |   97.05 |   94.21 | 17,43,152-153,241,342,416,422-434
-  printer.ts      |   96.55 |       75 |     100 |   96.07 | 48-49
+  interpreter.ts  |   91.85 |    76.69 |     100 |    92.5 | 78,92,106,108,134,150,218,227,229
+  parser.ts       |   93.62 |    72.66 |   97.14 |    94.5 | 17,54,174-175,263,364,441,447-459
+  printer.ts      |   96.82 |       80 |     100 |   96.36 | 55-56
   repl.ts         |     100 |      100 |     100 |     100 |
-  resolver.ts     |     100 |       85 |     100 |     100 | 45,112,151
+  resolver.ts     |     100 |       85 |     100 |     100 | 45,119,158
   stox-lang.ts    |     100 |      100 |     100 |     100 |
   tokenizer.ts    |     100 |      100 |     100 |     100 |
- stox/ast         |     100 |      100 |     100 |     100 |
+ stox/ast         |      99 |       90 |     100 |     100 |
   declarations.ts |     100 |      100 |     100 |     100 |
-  expressions.ts  |     100 |      100 |     100 |     100 |
+  expressions.ts  |   98.24 |       90 |     100 |     100 | 53
   nodes.ts        |     100 |      100 |     100 |     100 |
   statements.ts   |     100 |      100 |     100 |     100 |
   visitor.ts      |     100 |      100 |     100 |     100 |
- stox/runtime     |   93.33 |    83.33 |   92.85 |    90.9 |
+ stox/runtime     |   89.83 |    81.57 |      85 |   86.66 |
+  classes.ts      |   78.57 |       50 |   66.66 |      75 | 16,25,30
   control-flow.ts |     100 |       75 |     100 |     100 | 7
   environment.ts  |      90 |    82.14 |     100 |   84.61 | 17,23
   globals.ts      |   66.66 |      100 |      50 |   66.66 | 7
@@ -158,6 +161,8 @@ make test
 Testing: arithmetic.stox
 ✔✔✔✔✔✔
 Testing: bad-token.stox
+✔✔✔✔✔✔
+Testing: class-syntax.stox
 ✔✔✔✔✔✔
 Testing: closures.stox
 ✔✔✔✔✔✔
@@ -192,8 +197,8 @@ Testing: triforce.stox
 Testing: version.stox
 ✔✔✔✔✔✔
 
-Passing: 108 out of 108 (100%)
-Failing: 0 out of 108 (0%)
+Passing: 114 out of 114 (100%)
+Failing: 0 out of 114 (0%)
 
 #+end_example
 
