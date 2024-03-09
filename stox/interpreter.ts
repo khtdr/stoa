@@ -17,6 +17,7 @@ import * as Decl from "./ast/declarations";
 import * as Expr from "./ast/expressions";
 import * as Node from "./ast/nodes";
 import * as Stmt from "./ast/statements";
+import { StoxClass } from "./runtime/classes";
 
 /**
  * Goals
@@ -106,6 +107,11 @@ export class Interpreter extends Visitor<Result> {
         if (callee.arity != call.args.length)
             throw new RuntimeError(call.end, "wrong number of args");
         return callee.call(call.args.map((arg) => this.visit(arg)));
+    }
+    ClassDecl(decl: Decl.ClassDecl): Result{
+        this.env.init(decl.name)
+        const klass = new StoxClass(decl.name.text)
+        this.env.set(decl.name, klass)
     }
     ExpressionStmt(statement: Stmt.ExpressionStmt): void {
         this.visit(statement.expr);

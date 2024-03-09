@@ -1,14 +1,14 @@
 (program 
-   (var a a)
+   (var a "a")
    (print a)
-   (var a A)
+   (var a "A")
    (print a)
    (block 
-      (var a Eh.)
+      (var a "Eh.")
       (print a)
    )
    (block 
-      (var a eh...)
+      (var a "eh...")
       (print a)
    )
    (print a)

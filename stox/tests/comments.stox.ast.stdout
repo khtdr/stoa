@@ -1,7 +1,7 @@
 (program 
-   (print checkpoint 1)
-   (print checkpoint 2)
-   (print checkpoint 3)
-   (print checkpoint 4)
-   (print checkpoint 5)
+   (print "checkpoint 1")
+   (print "checkpoint 2")
+   (print "checkpoint 3")
+   (print "checkpoint 4")
+   (print "checkpoint 5")
 )

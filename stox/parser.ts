@@ -40,6 +40,9 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
                 this.match(TOKEN.FUN)
                 return this.FunDeclaration()
             }
+            if (this.match(TOKEN.CLASS)) {
+                return this.ClassDeclaration()
+            }
             if (this.match(TOKEN.VAR)) {
                 return this.VarDeclaration()
             }
@@ -52,11 +55,27 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
         }
     }
 
-    // fun_declaration -> IDENTIFIER function
-    FunDeclaration(): Decl.FunctionDecl {
+    // class_declaration -> IDENTIFIER "{" fun_declaration* "}"
+    ClassDeclaration(): Decl.ClassDecl{
         const ident = this.consume("IDENTIFIER", "Expected identifier")
-        const fun = this.FunctionExpr()
-        return new Decl.FunctionDecl(ident, fun)
+        this.consume(TOKEN.LEFT_CURL, 'Expected "{"')
+        const funs: Decl.FunctionDecl[] = []
+        while (true) {
+            const fun = this.FunDeclaration()
+            if (!fun) break;
+            funs.push(fun)
+        }
+        this.consume(TOKEN.RIGHT_CURL, 'Expected "}"')
+        return new Decl.ClassDecl(ident, funs)
+    }
+
+    // fun_declaration -> IDENTIFIER function
+    FunDeclaration(): Decl.FunctionDecl | void {
+        if (this.peek()?.name == TOKEN.IDENTIFIER) {
+            const ident = this.consume("IDENTIFIER", "Expected identifier")
+            const fun = this.FunctionExpr()
+            return new Decl.FunctionDecl(ident, fun)
+        }
     }
 
     // function -> "(" parameters? ")" block

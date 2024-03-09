@@ -4,6 +4,6 @@
    (and (group (== n b)) (group (= n (+ n 1))))
    (or (group (== n b)) (group (= n (+ n 1))))
    (or (group (!= n b)) (group (= n (+ n 1))))
-   (print (+ (+ n  ) b))
-   (print (?: (== (group (+ (+ n :) b)) 4:2) yep! oh-no))
+   (print (+ (+ n " ") b))
+   (print (?: (== (group (+ (+ n ":") b)) "4:2") "yep!" "oh-no"))
 )

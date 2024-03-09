@@ -92,6 +92,10 @@ export class Resolver extends Visitor<void> {
         this.visit(expr.callee);
         for (const arg of expr.args) this.visit(arg);
     }
+    ClassDecl(decl: Decl.ClassDecl) {
+        this.declare(decl.name)
+        this.define(decl.name)
+    }
     ExpressionStmt(stmt: Stmt.ExpressionStmt) {
         this.visit(stmt.expr);
     }

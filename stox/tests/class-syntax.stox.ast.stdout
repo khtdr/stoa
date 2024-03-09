@@ -1,0 +1,10 @@
+(program 
+   (class Breakfast
+      (fun cook (let [] (block 
+         (print "Fried eggs.")
+      )))
+      (fun serve (let [who] (block 
+         (print (+ (+ "Enjoy, " who) "."))
+      )))
+   )
+)

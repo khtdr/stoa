@@ -9,6 +9,7 @@ export abstract class Visitor<Result = void> extends Ltk.Visitor<Node.Ast, Resul
     abstract BinaryExpr(expr: Expr.BinaryExpr): Result
     abstract BlockStmt(stmt: Stmt.BlockStmt): Result
     abstract CallExpr(expr: Expr.CallExpr): Result
+    abstract ClassDecl(decl: Decl.ClassDecl): Result
     abstract ExpressionStmt(stmt: Stmt.ExpressionStmt): Result
     abstract FunctionExpr(expr: Expr.FunctionExpr): Result
     abstract FunctionDecl(decl: Decl.FunctionDecl): Result

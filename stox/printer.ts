@@ -24,6 +24,10 @@ export class Printer extends Visitor<string> {
         const args = call.args.map(arg => this.visit(arg)).join(' ')
         return `${callee} ${args})`
     }
+    ClassDecl(decl: Decl.ClassDecl): string {
+        const funs = decl.funcs.map(fun => this.visit(fun)).join('\n')
+        return `(class ${decl.name.text}\n${indent(funs)}\n)`
+    }
     ExpressionStmt(statement: Stmt.ExpressionStmt): string {
         return this.visit(statement.expr)
     }
@@ -54,7 +58,8 @@ export class Printer extends Visitor<string> {
         return `(${dest} ${dist})`
     }
     LiteralExpr(expr: Expr.LiteralExpr): string {
-        return expr.toString()
+        const printable = expr.toString()
+        return (typeof expr.value === 'string') ? JSON.stringify(printable) : printable
     }
     LogicalExpr(expr: Expr.LogicalExpr): string {
         return this.BinaryExpr(expr)

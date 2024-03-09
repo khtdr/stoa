@@ -1,8 +1,6 @@
 (program 
    (fun triforce (let [] (block 
-      (print triforce:
-       ▲
-      ▲ ▲)
+      (print "triforce:\n ▲\n▲ ▲")
       (return nil)
    )))
    (call triforce)
@@ -18,16 +16,16 @@
                   (= j (+ j 1))
                   (if (== j 1) (CONTINUE 1))
                   (if (== j 2) (BREAK 1))
-                  (print (+ (+ (+ i,j  i) ,) j))
+                  (print (+ (+ (+ "i,j " i) ",") j))
                   (if (== j 4) (CONTINUE 2))
-                  (print -)
+                  (print "-")
                   (if (== j 5) (BREAK 1))
                   (if (== j 6) (BREAK 3))
                )
             )
-            (print X)
+            (print "X")
          )
       )
    )
-   (print done!)
+   (print "done!")
 )

@@ -1,5 +1,5 @@
 (program 
-   (var counter outer-scope)
+   (var counter "outer-scope")
    (print counter)
    (var inc)
    (block 

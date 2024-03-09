@@ -1,4 +1,4 @@
 (program 
-   (var name Joey)
-   (print (+ (+ Hello,  name) !))
+   (var name "Joey")
+   (print (+ (+ "Hello, " name) "!"))
 )

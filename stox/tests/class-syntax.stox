@@ -1,0 +1,10 @@
+#!/usr/bin/env stox
+
+class Breakfast {
+  cook() {
+    print "Fried eggs.";
+  }
+  serve(who) {
+    print "Enjoy, " + who + ".";
+  }
+}
