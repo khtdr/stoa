@@ -11,5 +11,8 @@
       
    )
    (var bagel (call Bagel))
-   (print (?: (. {"name":{"name":"IDENTIFIER","text":"bagel","pos":{"line":15,"column":7}}} isReady) "Bagel is ready" "... still toasting..."))
+   (.set bagel isReady false)
+   (print (?: (.get bagel isReady) "Bagel is ready" "... still toasting..."))
+   (.set bagel isReady true)
+   (print (?: (.get bagel isReady) "Bagel is ready" "... still toasting..."))
 )

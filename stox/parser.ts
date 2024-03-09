@@ -259,6 +259,8 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
             const value = this.Assignment()
             if (expr instanceof Expr.VariableExpr) {
                 return new Expr.AssignExpr(expr.name, value)
+            } else if (expr instanceof Expr.GetExpr) {
+                return new Expr.SetExpr(expr.name, expr.expr, value)
             }
             this.error("Invalid assignment target", eq)
         }

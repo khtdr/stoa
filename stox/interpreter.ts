@@ -205,6 +205,14 @@ export class Interpreter extends Visitor<Result> {
         const value = this.visit(ret.expr);
         throw new ReturnException(value);
     }
+    SetExpr(expr: Expr.SetExpr): Result {
+        const obj = this.visit(expr.expr)
+        if (!(obj instanceof Instance))
+            throw new RuntimeError(expr.name, 'Only instances have fields')
+        const value = this.visit(expr.value)
+        obj.set(expr.name, value)
+        return value
+    }
     TernaryExpr(expr: Expr.TernaryExpr): Result {
         const {
             op1: { name: op1 },

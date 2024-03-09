@@ -67,6 +67,14 @@ export class LogicalExpr implements Node.Expression {
     ) { }
 }
 
+export class SetExpr implements Node.Expression {
+    constructor(
+        readonly name: Node.Token<"IDENTIFIER">,
+        readonly expr: Node.Expression,
+        readonly value: Node.Expression,
+    ) { }
+}
+
 export class TernaryExpr implements Node.Expression {
     constructor(
         readonly left: Node.Expression,

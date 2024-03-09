@@ -1,4 +1,0 @@
-Runtime error in ./class-syntax.stox at line,col 15,13
-15. print bagel.isReady ? "Bagel is ready" : "... still toasting...";
-                ↑
-Undefined property [isReady].

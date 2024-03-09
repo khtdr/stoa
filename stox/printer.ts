@@ -42,7 +42,7 @@ export class Printer extends Visitor<string> {
         return `(fun ${name} ${val})`
     }
     GetExpr(expr: Expr.GetExpr): string {
-        return `(. ${JSON.stringify(expr.expr)} ${expr.name.text})`
+        return `(.get ${this.visit(expr.expr)} ${expr.name.text})`
     }
     GroupExpr(expr: Expr.GroupExpr): string {
         const operand = this.visit(expr.inner)
@@ -76,6 +76,9 @@ export class Printer extends Visitor<string> {
     }
     ReturnStmt(ret: Stmt.ReturnStmt): string {
         return `(return ${this.visit(ret.expr)})`
+    }
+    SetExpr(expr: Expr.SetExpr):string {
+        return `(.set ${this.visit(expr.expr)} ${expr.name.text} ${this.visit(expr.value)})`
     }
     TernaryExpr(expr: Expr.TernaryExpr): string {
         const left = this.visit(expr.left)

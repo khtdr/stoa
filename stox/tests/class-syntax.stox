@@ -12,6 +12,9 @@ class Breakfast {
 class Bagel {}
 var bagel = Bagel();
 
+bagel.isReady = false;
+print bagel.isReady ? "Bagel is ready" : "... still toasting...";
+bagel.isReady = true;
 print bagel.isReady ? "Bagel is ready" : "... still toasting...";
 
 // Breakfast().cook().serve('Customer');

@@ -137,6 +137,10 @@ export class Resolver extends Visitor<void> {
             this.reporter.error(stmt.keyword, "No return from top-level allowed");
         this.visit(stmt.expr);
     }
+    SetExpr(expr: Expr.SetExpr) {
+        this.visit(expr.value)
+        this.visit(expr.expr)
+    }
     TernaryExpr(expr: Expr.TernaryExpr) {
         this.visit(expr.left);
         this.visit(expr.middle);

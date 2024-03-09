@@ -24,10 +24,11 @@ rm -rf node_modules
 rm -rf coverage
 rm -f ./bin/stox.js
 pnpm install
-Progress: resolved 0, reused 1, downloaded 0, added 0
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
 Packages: +300
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Progress: resolved 320, reused 300, downloaded 0, added 300, done
+Progress: resolved 300, reused 300, downloaded 0, added 300, done
 
 devDependencies:
 + @istanbuljs/nyc-config-typescript 1.0.2
@@ -39,26 +40,26 @@ devDependencies:
 + tsup 6.1.2
 + typescript 4.7.4
 
-Done in 1.3s
+Done in 925ms
 CLI Building entry: lib/repl-kit/index.ts
 CLI Using tsconfig: tsconfig.json
 CLI tsup v6.1.2
 CLI Target: node14
 CJS Build start
-CJS ⚡️ Build success in 22ms
+CJS ⚡️ Build success in 20ms
 CJS packages/repl-kit/index.js     4.90 KB
 CJS packages/repl-kit/index.js.map 12.82 KB
 DTS Build start
-DTS ⚡️ Build success in 452ms
+DTS ⚡️ Build success in 507ms
 DTS packages/repl-kit/index.d.ts 236.00 B
 CLI Building entry: stox.ts
 CLI Using tsconfig: tsconfig.json
 CLI tsup v6.1.2
 CLI Target: node14
 CJS Build start
-CJS ⚡️ Build success in 21ms
-CJS bin/stox.js     32.75 KB
-CJS bin/stox.js.map 119.90 KB
+CJS ⚡️ Build success in 22ms
+CJS bin/stox.js     33.21 KB
+CJS bin/stox.js.map 121.48 KB
 #+end_example
 
 **** Usage Documentation
@@ -98,19 +99,19 @@ make coverage
 
 #+RESULTS:
 #+begin_example
-make[1]: Entering directory '/home/ubuntu/projects/stoa'
-make[1]: Leaving directory '/home/ubuntu/projects/stoa'
+make[1]: Entering directory '/home/joey/opt/stoa'
+make[1]: Leaving directory '/home/joey/opt/stoa'
 
 =============================== Coverage summary ===============================
-Statements   : 87.84% ( 802/913 )
-Branches     : 75.75% ( 350/462 )
-Functions    : 79.02% ( 211/267 )
-Lines        : 87.11% ( 703/807 )
+Statements   : 87.93% ( 816/928 )
+Branches     : 75.96% ( 354/466 )
+Functions    : 79.41% ( 216/272 )
+Lines        : 87.21% ( 716/821 )
 ================================================================================
-------------------|---------|----------|---------|---------|-----------------------------------
+------------------|---------|----------|---------|---------|---------------------------------------
 File              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
-------------------|---------|----------|---------|---------|-----------------------------------
-All files         |   87.84 |    75.75 |   79.02 |   87.11 |
+------------------|---------|----------|---------|---------|---------------------------------------
+All files         |   87.93 |    75.96 |   79.41 |   87.21 |
  lib/repl-kit     |   19.78 |        0 |       2 |   14.45 |
   errors.ts       |     100 |      100 |     100 |     100 |
   history.ts      |      50 |      100 |   16.66 |   44.44 | 5-18
@@ -124,28 +125,28 @@ All files         |   87.84 |    75.75 |   79.02 |   87.11 |
   reporter.ts     |     100 |      100 |     100 |     100 |
   runtime.ts      |     100 |      100 |     100 |     100 |
   tokenizer.ts    |   98.82 |    98.14 |     100 |   98.66 | 216
- stox             |    94.2 |     75.6 |   98.42 |   94.61 |
+ stox             |    94.1 |    75.94 |   98.46 |    94.5 |
   cli-app.ts      |   88.23 |       80 |       0 |    87.5 | 34-35
-  interpreter.ts  |   91.85 |    76.69 |     100 |    92.5 | 78,92,106,108,134,150,218,227,229
-  parser.ts       |   93.62 |    72.66 |   97.14 |    94.5 | 17,54,174-175,263,364,441,447-459
-  printer.ts      |   96.82 |       80 |     100 |   96.36 | 55-56
+  interpreter.ts  |   91.42 |    77.14 |     100 |      92 | 78,92,106,108,134,150,211,226,235,237
+  parser.ts       |   93.68 |    73.04 |   97.14 |   94.55 | 17,54,174-175,265,366,443,449-461
+  printer.ts      |   96.87 |       80 |     100 |   96.42 | 55-56
   repl.ts         |     100 |      100 |     100 |     100 |
-  resolver.ts     |     100 |       85 |     100 |     100 | 45,119,158
+  resolver.ts     |     100 |       85 |     100 |     100 | 45,119,162
   stox-lang.ts    |     100 |      100 |     100 |     100 |
   tokenizer.ts    |     100 |      100 |     100 |     100 |
- stox/ast         |      99 |       90 |     100 |     100 |
+ stox/ast         |   99.04 |       90 |     100 |     100 |
   declarations.ts |     100 |      100 |     100 |     100 |
-  expressions.ts  |   98.24 |       90 |     100 |     100 | 53
+  expressions.ts  |   98.38 |       90 |     100 |     100 | 53
   nodes.ts        |     100 |      100 |     100 |     100 |
   statements.ts   |     100 |      100 |     100 |     100 |
   visitor.ts      |     100 |      100 |     100 |     100 |
- stox/runtime     |   89.83 |    81.57 |      85 |   86.66 |
-  classes.ts      |   78.57 |       50 |   66.66 |      75 | 16,25,30
+ stox/runtime     |      90 |    81.57 |   85.71 |   86.95 |
+  classes.ts      |      80 |       50 |   71.42 |   76.92 | 16,27,33
   control-flow.ts |     100 |       75 |     100 |     100 | 7
   environment.ts  |      90 |    82.14 |     100 |   84.61 | 17,23
   globals.ts      |   66.66 |      100 |      50 |   66.66 | 7
   values.ts       |     100 |      100 |     100 |     100 |
-------------------|---------|----------|---------|---------|-----------------------------------
+------------------|---------|----------|---------|---------|---------------------------------------
 #+end_example
 
 The latest uploaded code-coverage reports are at: https://khtdr.com/stoa/coverage

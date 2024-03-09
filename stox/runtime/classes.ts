@@ -26,6 +26,9 @@ export class Instance {
     }
     throw new RuntimeError(name, `Undefined property [${name.text}].`)
   }
+  set(name: Token<'IDENTIFIER'>, value: Result) {
+    this.fields.set(name.text, value)
+  }
   toString() {
     return `<<${this.klass.name} instance>>`
   }

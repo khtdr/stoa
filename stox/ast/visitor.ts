@@ -22,6 +22,7 @@ export abstract class Visitor<Result = void> extends Ltk.Visitor<Node.Ast, Resul
     abstract PrintStmt(stmt: Stmt.PrintStmt): Result
     abstract Program(program: Node.Program): Result
     abstract ReturnStmt(stmt: Stmt.ReturnStmt): Result
+    abstract SetExpr(expr: Expr.SetExpr): Result
     abstract TernaryExpr(expr: Expr.TernaryExpr): Result
     abstract UnaryExpr(expr: Expr.UnaryExpr): Result
     abstract VariableDecl(decl: Decl.VariableDecl): Result
