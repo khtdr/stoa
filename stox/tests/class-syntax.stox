@@ -1,13 +1,23 @@
 #!/usr/bin/env stox
 
+var cafe = 'Ole';
+
 class Breakfast {
-  cook(food) {
-    print "Fried eggs and " + food + ".";
+  cook() {
+    print cafe + ": Fried eggs and " + this.side + ".";
   }
   serve(who) {
-    print "Enjoy, " + who + ".";
+    print cafe + ": Enjoy, " + who + ".";
   }
 }
+
+fun makeBreakfast() {
+  var cafe = 'out of business';
+  var breakfast = Breakfast();
+  breakfast.side = 'bacon';
+  Breakfast().cook();
+}
+makeBreakfast();
 
 class Bagel {}
 var bagel = Bagel();
@@ -31,7 +41,8 @@ print newBagel.isReady ? "Bagel is ready" : "... still toasting...";
 newBagel.isReady = true;
 print object.meal.toast.isReady ? "Bagel is ready" : "... still toasting...";
 
-object.meal.cook(object.meal.toast);
+object.meal.side = object.meal.toast;
+object.meal.cook();
 object.meal.serve('customer');
 
 class Bacon { eat() { print "Crunch crunch crunch"; } }

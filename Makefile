@@ -21,7 +21,7 @@ node_modules: package.json
 	${NPM} install
 
 ./images/stox-code.png: bin/stox.js
-	@npx depcruise --exclude "^node_modules" --ts-config --output-type archi stox.ts \
+	@npx depcruise --exclude "^node_modules" --ts-config --output-type dot stox.ts \
 	               | dot -T png > ./images/stox-code.png
 
 .PHONY: all build build-watch clean coverage dev graphics install lint silent-test snapshot test uninstall

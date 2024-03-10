@@ -80,6 +80,9 @@ export class Printer extends Visitor<string> {
     SetExpr(expr: Expr.SetExpr):string {
         return `(.set ${this.visit(expr.expr)} ${expr.name.text} ${this.visit(expr.value)})`
     }
+    ThisExpr(_: Expr.ThisExpr): string {
+        return 'this';
+    }
     TernaryExpr(expr: Expr.TernaryExpr): string {
         const left = this.visit(expr.left)
         const middle = this.visit(expr.middle)

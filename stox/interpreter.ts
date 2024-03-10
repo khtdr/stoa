@@ -106,26 +106,28 @@ export class Interpreter extends Visitor<Result> {
       throw new RuntimeError(call.end, "uncallable target");
     if (callee.arity != call.args.length)
       throw new RuntimeError(call.end, "wrong number of args");
-    return callee.call(call.args.map((arg) => this.visit(arg)));
+    return callee.call(call.args.map((arg) => this.visit(arg)), this.env);
   }
   ClassDecl(decl: Decl.ClassDecl): Result {
     this.env.init(decl.name);
+    const closure = new Environment(this.env)
     const methods = new Map<string, Function>();
     for (const method of decl.funcs) {
-      const func = new Function(method.func.params.length, (args: Result[]) => {
-        try {
-          args.map((arg, i) => {
-            const param = method.func.params[i];
-            this.env.init(param);
-            this.env.set(param, arg);
-          });
-          this.visit(method.func.block);
-        } catch (e) {
-          if (e instanceof ReturnException) {
-            return e.value;
-          } else throw e;
-        }
-      });
+      // const func = new Function(method.func.params.length, (args: Result[]) => {
+      //   try {
+      //     args.map((arg, i) => {
+      //       const param = method.func.params[i];
+      //       this.env.init(param);
+      //       this.env.set(param, arg);
+      //     });
+      //     this.visit(method.func.block);
+      //   } catch (e) {
+      //     if (e instanceof ReturnException) {
+      //       return e.value;
+      //     } else throw e;
+      //   }
+      // });
+      const func = new Function(method.func, closure)
       methods.set(method.name.text, func);
     }
     const klass = new Class(decl.name.text, methods);
@@ -141,24 +143,25 @@ export class Interpreter extends Visitor<Result> {
   }
   FunctionExpr(fun: Expr.FunctionExpr): Result {
     const closure = new Environment(this.env);
-    return new Function(fun.params.length, (args: Result[]) => {
-      const previous = this.env;
-      this.env = new Environment(closure);
-      try {
-        args.map((arg, i) => {
-          const param = fun.params[i];
-          this.env.init(param);
-          this.env.set(param, arg);
-        });
-        this.visit(fun.block);
-      } catch (e) {
-        if (e instanceof ReturnException) {
-          return e.value;
-        } else throw e;
-      } finally {
-        this.env = previous;
-      }
-    });
+    return new Function(fun, closure);
+    // return new Function(fun.params.length, (args: Result[]) => {
+    //   const previous = this.env;
+    //   this.env = new Environment(closure);
+    //   try {
+    //     args.map((arg, i) => {
+    //       const param = fun.params[i];
+    //       this.env.init(param);
+    //       this.env.set(param, arg);
+    //     });
+    //     this.visit(fun.block);
+    //   } catch (e) {
+    //     if (e instanceof ReturnException) {
+    //       return e.value;
+    //     } else throw e;
+    //   } finally {
+    //     this.env = previous;
+    //   }
+    // });
   }
   GetExpr(expr: Expr.GetExpr): Result {
     const object = this.visit(expr.expr);
@@ -242,6 +245,9 @@ export class Interpreter extends Visitor<Result> {
       return this.visit(expr.right);
     }
     throw new RuntimeError(op1, "Unexpected ternary expression");
+  }
+  ThisExpr(expr: Expr.ThisExpr): Result {
+    this.lookUpVariable(expr.name, expr)
   }
   UnaryExpr(expr: Expr.UnaryExpr): Result {
     const {

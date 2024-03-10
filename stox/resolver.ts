@@ -96,9 +96,12 @@ export class Resolver extends Visitor<void> {
     ClassDecl(decl: Decl.ClassDecl) {
         this.declare(decl.name)
         this.define(decl.name)
+        this.beginScope()
+        this.scopes[0]['this'] = VariableType.DECLARED;
         for (const method of decl.funcs) {
            this.resolveFunction(method.func, FunctionType.METHOD)
         }
+        this.endScope();
     }
     ExpressionStmt(stmt: Stmt.ExpressionStmt) {
         this.visit(stmt.expr);
@@ -144,6 +147,9 @@ export class Resolver extends Visitor<void> {
     SetExpr(expr: Expr.SetExpr) {
         this.visit(expr.value)
         this.visit(expr.expr)
+    }
+    ThisExpr(expr: Expr.ThisExpr) {
+        this.resolveLocal(expr, expr.name)
     }
     TernaryExpr(expr: Expr.TernaryExpr) {
         this.visit(expr.left);

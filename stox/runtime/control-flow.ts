@@ -1,3 +1,6 @@
+import { Expression } from 'stox/ast/nodes'
+import { Instance } from './classes'
+import { Environment } from './environment'
 import { Result } from './values'
 
 export class ReturnException {
@@ -20,7 +23,25 @@ export function isCallable(val: Result): val is Callable {
 
 export class Function implements Callable {
     constructor(
+        readonly expr: Expression
         readonly arity: number,
+        readonly closure: Environment,
         readonly call: (args: Result[]) => Result
     ) { }
+    bind(instance: Instance) {
+        const env = new Environment(this.closure)
+        env.set({ text: 'this' }, instance)
+    }
+}
+
+export class Function implements Callable {
+    constructor(
+        readonly arity: number,
+        readonly closure: Environment,
+        readonly call: (args: Result[]) => Result
+    ) { }
+    bind(instance: Instance) {
+        const env = new Environment(this.closure)
+        env.set({ text: 'this' }, instance)
+    }
 }

@@ -85,6 +85,12 @@ export class TernaryExpr implements Node.Expression {
     ) { }
 }
 
+export class ThisExpr implements Node.Expression {
+    constructor(
+        readonly name: Node.Token<"IDENTIFIER">
+    ) { }
+}
+
 export class UnaryExpr implements Node.Expression {
     constructor(
         readonly operator: Node.Token<any>,

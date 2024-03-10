@@ -422,7 +422,8 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
         return expr;
     }
 
-    // primary    -> IDENTIFIER | NUMBER | STRING | TRUE | FALSE | NIL | "(" expression ")" | "fun" function
+    // primary    -> IDENTIFIER | NUMBER | STRING | TRUE | FALSE | NIL |
+    //               "this" | "(" expression ")" | "fun" function
     Primary():
         | Expr.LiteralExpr
         | Expr.VariableExpr
@@ -448,6 +449,9 @@ export class Parser extends Ltk.Parser<typeof TOKEN, Node.Ast> {
         }
         if (this.match(TOKEN.NIL)) {
             return new Expr.LiteralExpr(undefined);
+        }
+        if (this.match(TOKEN.THIS)) {
+            return new Expr.ThisExpr(this.previous())
         }
         if (this.match(TOKEN.IDENTIFIER)) {
             return new Expr.VariableExpr(this.previous());
